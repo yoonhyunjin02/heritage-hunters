@@ -46,39 +46,39 @@ def upsert_heritages(data: list[dict]):
     print("✅ heritages 테이블 저장 완료")
 
 
-def upsert_museums(data: list[dict]):
-    """museums 테이블에 데이터 삽입 또는 갱신"""
-    conn = psycopg2.connect(**DB_CONFIG)
-    with conn:
-        with conn.cursor() as cur:
-            sql = """
-            INSERT INTO museums (
-                name, category, latitude, longitude,
-                address, region, description
-            )
-            VALUES %s
-            ON CONFLICT (name) DO UPDATE SET
-                category = EXCLUDED.category,
-                latitude = EXCLUDED.latitude,
-                longitude = EXCLUDED.longitude,
-                address = EXCLUDED.address,
-                region = EXCLUDED.region,
-                description = EXCLUDED.description;
-            """
-            values = [
-                (
-                    d["name"],
-                    d.get("category"),
-                    d.get("latitude"),
-                    d.get("longitude"),
-                    d.get("address"),
-                    d.get("region"),
-                    d.get("description"),
-                )
-                for d in data
-            ]
-            execute_values(cur, sql, values)
-    print("✅ museums 테이블 저장 완료")
+# def upsert_museums(data: list[dict]):
+#     """museums 테이블에 데이터 삽입 또는 갱신"""
+#     conn = psycopg2.connect(**DB_CONFIG)
+#     with conn:
+#         with conn.cursor() as cur:
+#             sql = """
+#             INSERT INTO museums (
+#                 name, category, latitude, longitude,
+#                 address, region, description
+#             )
+#             VALUES %s
+#             ON CONFLICT (name) DO UPDATE SET
+#                 category = EXCLUDED.category,
+#                 latitude = EXCLUDED.latitude,
+#                 longitude = EXCLUDED.longitude,
+#                 address = EXCLUDED.address,
+#                 region = EXCLUDED.region,
+#                 description = EXCLUDED.description;
+#             """
+#             values = [
+#                 (
+#                     d["name"],
+#                     d.get("category"),
+#                     d.get("latitude"),
+#                     d.get("longitude"),
+#                     d.get("address"),
+#                     d.get("region"),
+#                     d.get("description"),
+#                 )
+#                 for d in data
+#             ]
+#             execute_values(cur, sql, values)
+#     print("✅ museums 테이블 저장 완료")
 
 
 # 연결 테스트

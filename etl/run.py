@@ -1,4 +1,4 @@
-from museum_api_adapter import fetch_museum_data, transform_museum_data
+from adapters.museum_api_adapter import fetch_museum_data, transform_museum_data
 from db import upsert_museums  # 이건 db.py에 별도로 정의되어 있어야 함
 
 def main():

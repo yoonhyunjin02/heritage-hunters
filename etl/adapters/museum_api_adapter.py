@@ -1,8 +1,8 @@
 import requests
 
 API_URL = "https://api.data.go.kr/openapi/tn_pubr_public_museum_artgr_info_api"
-API_KEY = "55riL2+bwuBd+mmQIrPh5d8mp2V8v5NEjNZRmWOUqeBnDstNLX1a7PIS3kw3dFpMxw0W8gqYYs1k0p2RsZdmOA=="  # Decoding 버전
-# API_KEY = "55riL2%2BbwuBd%2BmmQIrPh5d8mp2V8v5NEjNZRmWOUqeBnDstNLX1a7PIS3kw3dFpMxw0W8gqYYs1k0p2RsZdmOA%3D%3D"  # Encoding 버전
+# API_KEY = "55riL2+bwuBd+mmQIrPh5d8mp2V8v5NEjNZRmWOUqeBnDstNLX1a7PIS3kw3dFpMxw0W8gqYYs1k0p2RsZdmOA=="  # Decoding 버전
+API_KEY = "55riL2%2BbwuBd%2BmmQIrPh5d8mp2V8v5NEjNZRmWOUqeBnDstNLX1a7PIS3kw3dFpMxw0W8gqYYs1k0p2RsZdmOA%3D%3D"  # Encoding 버전
 
 def fetch_museum_data(page: int = 1, num_of_rows: int = 100):
     """API에서 원본 데이터 수집"""
