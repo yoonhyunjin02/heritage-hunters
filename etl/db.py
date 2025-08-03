@@ -1,91 +1,51 @@
 import psycopg2
 from psycopg2.extras import execute_values
-from config import DB_CONFIG  # 하드코딩된 DB 설정을 config.py에서 불러옴
+from config import DB_CONFIG
 
+def get_connection():
+    return psycopg2.connect(
+        host=DB_CONFIG["host"],
+        port=DB_CONFIG["port"],
+        user=DB_CONFIG["user"],
+        password=DB_CONFIG["password"],
+        dbname=DB_CONFIG["dbname"]
+    )
 
-def upsert_heritages(data: list[dict]):
-    """heritages 테이블에 데이터 삽입 또는 갱신"""
-    conn = psycopg2.connect(**DB_CONFIG)
-    with conn:
-        with conn.cursor() as cur:
-            sql = """
-            INSERT INTO heritages (
-                id, name, name_en, thumbnail_url, description,
-                designation, region, latitude, longitude, address, era
-            )
-            VALUES %s
-            ON CONFLICT (id) DO UPDATE SET
-                name = EXCLUDED.name,
-                name_en = EXCLUDED.name_en,
-                thumbnail_url = EXCLUDED.thumbnail_url,
-                description = EXCLUDED.description,
-                designation = EXCLUDED.designation,
-                region = EXCLUDED.region,
-                latitude = EXCLUDED.latitude,
-                longitude = EXCLUDED.longitude,
-                address = EXCLUDED.address,
-                era = EXCLUDED.era;
-            """
-            values = [
-                (
-                    d["id"],
-                    d["name"],
-                    d.get("name_en"),
-                    d.get("thumbnail_url"),
-                    d.get("description"),
-                    d.get("designation"),
-                    d.get("region"),
-                    d.get("latitude"),
-                    d.get("longitude"),
-                    d.get("address"),
-                    d.get("era"),
-                )
-                for d in data
-            ]
-            execute_values(cur, sql, values)
-    print("✅ heritages 테이블 저장 완료")
+def insert_heritages(heritage_list):
+    insert_sql = """
+    INSERT INTO heritages (
+        name, name_hanja, thumbnail_url, description,
+        designation, region, address, era, latitude, longitude
+    ) VALUES %s;
+    """
 
+    values = []
+    for h in heritage_list:
+        try:
+            values.append((
+                h.get("name"),
+                h.get("name_hanja"),
+                h.get("thumbnail_url"),
+                h.get("description"),
+                h.get("designation") or None,
+                h.get("region") or None,
+                h.get("address"),
+                h.get("era"),
+                float(h["latitude"]) if h.get("latitude") else None,
+                float(h["longitude"]) if h.get("longitude") else None
+            ))
+        except Exception as e:
+            print(f"[데이터 변환 오류] {h.get('name')} | {e}")
 
-# def upsert_museums(data: list[dict]):
-#     """museums 테이블에 데이터 삽입 또는 갱신"""
-#     conn = psycopg2.connect(**DB_CONFIG)
-#     with conn:
-#         with conn.cursor() as cur:
-#             sql = """
-#             INSERT INTO museums (
-#                 name, category, latitude, longitude,
-#                 address, region, description
-#             )
-#             VALUES %s
-#             ON CONFLICT (name) DO UPDATE SET
-#                 category = EXCLUDED.category,
-#                 latitude = EXCLUDED.latitude,
-#                 longitude = EXCLUDED.longitude,
-#                 address = EXCLUDED.address,
-#                 region = EXCLUDED.region,
-#                 description = EXCLUDED.description;
-#             """
-#             values = [
-#                 (
-#                     d["name"],
-#                     d.get("category"),
-#                     d.get("latitude"),
-#                     d.get("longitude"),
-#                     d.get("address"),
-#                     d.get("region"),
-#                     d.get("description"),
-#                 )
-#                 for d in data
-#             ]
-#             execute_values(cur, sql, values)
-#     print("✅ museums 테이블 저장 완료")
+    if not values:
+        print("[알림] 저장할 데이터 없음")
+        return
 
-
-# 연결 테스트
-if __name__ == "__main__":
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
-        print("✅ DB 연결 성공")
-        conn.close()
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                execute_values(cur, insert_sql, values)
+            conn.commit()
+        print(f"[✅ DB 저장 완료] {len(values)}건")
     except Exception as e:
-        print("❌ DB 연결 실패:", e)
+        print(f"[❌ DB 저장 실패] {e}")
