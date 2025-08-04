@@ -13,6 +13,18 @@
   --gray-800: #525359;
   --gray-900: #111111;
   --red-700: #ff1010;
+
+  /* 메인 컬러 예시 */
+  --purple-000: #f5f0ff;
+  --purple-100: #e0ccff;
+  --purple-200: #caaaff;
+  --purple-300: #b388ff;
+  --purple-400: #9c66ff;
+  --purple-500: #8544ff;
+  --purple-600: #6e22e6;
+  --purple-700: #5700cc;
+  --purple-800: #420099;
+  --purple-900: #2d0066;
 }
 
 * {
