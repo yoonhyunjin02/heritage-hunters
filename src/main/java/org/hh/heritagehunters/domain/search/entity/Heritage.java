@@ -1,37 +1,57 @@
 package org.hh.heritagehunters.domain.search.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "heritages")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "heritages")
 public class Heritage {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id; // 자동생성
+  private Long id;
 
+  @Column(name = "name", nullable = false, length = 50)
   private String name;
 
-  private String name_en;
+  @Column(name = "name_en", length = 50)
+  private String nameEn;
 
-  private String thumbnail_url; // 메인노출이미지 URL
+  @Column(name = "thumbnail_url", columnDefinition = "TEXT")
+  private String thumbnailUrl;
 
+  @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
-  private Integer designation;
+  @Column(name = "designation")
+  private String designation;
 
-  private Integer region;
+  @Column(name = "region")
+  private String region;
 
-  private String address; // 주소
+  @Column(name = "address", length = 100)
+  private String address;
 
+  @Column(name = "era", length = 10)
   private String era;
 
+  @Column(name = "latitude", precision = 12, scale = 8)
   private BigDecimal latitude;
 
+  @Column(name = "longitude", precision = 12, scale = 8)
   private BigDecimal longitude;
+
 }
