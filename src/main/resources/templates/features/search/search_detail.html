@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${heritage.name} | Heritage Hunters</title>
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/common/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/features/search/css/search_detail.css}" />
+  </head>
+  <body>
+    <div id="root">
+      <!-- 헤더 -->
+      <div id="header"></div>
+
+      <!-- 컨테이너 -->
+      <div id="container">
+        <div class="heritage__summary">
+          <div class="heritage__summary__title">
+            <p th:text="${heritage.designation}">국보</p>
+            <h1 th:text="${heritage.name} + ` (${heritage.nameHanja})`">서울 숭례문 (서울 崇禮門)</h1>
+            <p th:text="${heritage.nameEn}">Sungnyemun Gate, Seoul</p>
+          </div>
+          <div class="heritage__summary__info">
+            <img src="" alt="대표 이미지" />
+            <div class="heritage__summary__info__table">
+              <table>
+                <tr>
+                  <td><strong>소재지</strong></td>
+                  <td th:text="${heritage.region}"></td>
+                </tr>
+                <tr>
+                  <td><strong>상세주소</strong></td>
+                  <td th:text="${heritage.address}"></td>
+                </tr>
+                <tr>
+                  <td><strong>시대</strong></td>
+                  <td th:text="${heritage.era}"></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="heritage__content"></div>
+      </div>
+
+      <!-- 푸터 -->
+      <div id="footer"></div>
+    </div>
+
+    <!-- JS -->
+    <script type="module" th:src="@{/features/search/js/search_detail.js}"></script>
+  </body>
+</html>
