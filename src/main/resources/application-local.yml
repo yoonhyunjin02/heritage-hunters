@@ -5,25 +5,39 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
+    hikari:
+      pool-name: HeritagePool     # 로깅 편의성을 위한 이름
+      maximum-pool-size: 20       # 동시 요청 최대 처리 수
+      minimum-idle: 5             # 평상시 유지할 커넥션 수
+      idle-timeout: 600000        # 사용 안한 커넥션 10 뒤 제거
+      max-lifetime: 1800000       # 커넥션 최대 생명주기 30분
+      connection-timeout: 30000   # 30초 안에 커넥션 없으면 예외 발생
+      auto-commit: true
+      validation-timeout: 5000    # 유효성 검사 5초 제한
+      leak-detection-threshold: 20000 # 20초 넘게 반환 안 되는 커넥션 감지
+
   # JPA 설정
   jpa:
     hibernate:
       ddl-auto: update  # 개발 시 테이블 자동 수정
     show-sql: true
 
+  # Google OAuth
+  security:
+    user:
+      name: admin
+      password: 1234
+#    oauth2:
+#      client:
+#        registration:
+#          google:
+#            client-id: ${GOOGLE_CLIENT_ID}
+#            client-secret: ${GOOGLE_CLIENT_SECRET}
+#            scope: ${GOOGLE_SCOPE}
+#            redirect-uri: ${GOOGLE_REDIRECT_URI}
+
 # 로그
 logging:
   level:
     org.hibernate.SQL: INFO
     org.hh.heritagehunters: DEBUG
-
-  # Google OAuth
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope: ${GOOGLE_SCOPE}
-            redirect-uri: ${GOOGLE_REDIRECT_URI}

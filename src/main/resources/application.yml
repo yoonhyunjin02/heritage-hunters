@@ -2,12 +2,11 @@ server:
   port: 8080
 
 spring:
-  profiles:
-    active: local
-
   # secrets/application-secret.yml 파일을 선택적으로 불러오기
   config:
     import: optional:classpath:/secrets/application-secret.yml
+  profiles:
+    active: local
 
   # 파일 업로드 용량 제한
   servlet:
