@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>국가유산 검색</title>
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/common/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/features/search/css/search.css}" />
+  </head>
+  <body>
+    <div id="root">
+      <!-- 헤더 -->
+      <div id="header"></div>
+
+      <!-- 컨테이너 -->
+      <div id="container">
+        <div class="search__top"></div>
+        <div class="search__mid"></div>
+        <div class="search__bottom"></div>
+      </div>
+
+      <!-- 푸터 -->
+      <div id="footer"></div>
+    </div>
+
+    <!-- JS -->
+    <script type="module" th:src="@{/features/search/js/search.js}"></script>
+  </body>
+</html>
