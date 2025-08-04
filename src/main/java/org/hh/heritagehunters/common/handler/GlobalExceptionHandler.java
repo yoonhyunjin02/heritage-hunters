@@ -8,9 +8,7 @@ import org.hh.heritagehunters.common.exception.ConflictException;
 import org.hh.heritagehunters.common.exception.InternalServerErrorException;
 import org.hh.heritagehunters.common.exception.NotFoundException;
 import org.hh.heritagehunters.common.exception.UnauthorizedException;
-import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.springframework.http.HttpStatus;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -172,22 +170,6 @@ public class GlobalExceptionHandler {
 
     addToastMessage(redirectAttributes, "error", errorMessage);
     return redirectToPreviousPage(request);
-  }
-
-  /**
-   * 예상치 못한 모든 예외 처리
-   */
-  @ExceptionHandler(Exception.class)
-  public String handleException(Exception e,
-      HttpServletRequest request,
-      HttpServletResponse response,
-      Model model,
-      RedirectAttributes redirectAttributes) {
-
-    log.error("Unexpected Exception: {}. URI: {}", e.getMessage(), request.getRequestURI());
-
-    response.setStatus(ErrorCode.INTERNAL_SERVER_ERROR.getStatus().value());
-    return "redirect:/";
   }
 
   // ================= 유틸리티 메서드들 =================
