@@ -5,10 +5,6 @@ spring:
   profiles:
     active: local
 
-  # secrets/application-secret.yml 파일을 선택적으로 불러오기
-  config:
-    import: optional:classpath:/secrets/application-secret.yml
-
   # 파일 업로드 용량 제한
   servlet:
     multipart:
@@ -17,9 +13,9 @@ spring:
 
   # DB 설정
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://heritage-hunters.cx268qu2uk1o.eu-north-1.rds.amazonaws.com:5432/postgres
+    username: postgres
+    password: hh_password
     driver-class-name: org.postgresql.Driver
 
   # Spring Data JPA

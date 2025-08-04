@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입</title>
+  <link rel="stylesheet" th:href="@{/features/oauth/css/register.css}">
+</head>
+<body>
+<main class="auth-container">
+  <section class="image-section" id="auth-bg-image" aria-hidden="true"></section>
+
+  <section class="form-section">
+    <h1>회원가입</h1>
+    <form th:action="@{/register}" th:object="${registerDto}" method="post">
+      <div>
+        <label for="email">이메일</label>
+        <input type="email" id="email" th:field="*{email}">
+        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></div>
+      </div>
+
+      <div>
+        <label for="nickname">닉네임</label>
+        <input type="text" id="nickname" th:field="*{nickname}">
+        <div th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}" class="error-message"></div>
+      </div>
+
+      <div>
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" th:field="*{password}">
+        <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error-message"></div>
+      </div>
+
+      <div>
+        <label for="passwordConfirm">비밀번호 확인</label>
+        <input type="password" id="passwordConfirm" th:field="*{passwordConfirm}">
+        <div th:if="${#fields.hasErrors('passwordConfirm')}" th:errors="*{passwordConfirm}" class="error-message"></div>
+      </div>
+
+      <button type="submit" class="btn-submit">가입하기</button>
+    </form>
+
+    <p class="signin-text">
+      이미 계정이 있으신가요? <a th:href="@{/login}">로그인</a>
+    </p>
+  </section>
+</main>
+<script defer th:src="@{/features/oauth/js/oauth.js}"></script>
+</body>
+</html>

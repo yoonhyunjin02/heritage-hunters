@@ -12,7 +12,7 @@ public class User {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id; // 자동생성
+  private Long id; // 자동 생성
 
   @Column(unique = true, nullable = false)
   private String email; // UNIQUE

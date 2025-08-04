@@ -19,6 +19,7 @@ import javax.print.attribute.standard.MediaSize.NA;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.search.entity.Heritage;
 
@@ -39,7 +40,7 @@ public class Post {
   private User user;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "heritage_id", nullable = false)
+  @JoinColumn(name = "heritages_id", nullable = false)
   private Heritage heritage;
 
   @Column(name = "content", nullable = false, length = 200)
@@ -67,6 +68,7 @@ public class Post {
   private List<Comment> comments = new ArrayList<>();
 
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+  @ToString.Exclude
   private List<Like> likes = new ArrayList<>();
 
   // 비즈니스 메서드
