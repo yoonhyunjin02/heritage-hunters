@@ -3,7 +3,6 @@ package org.hh.heritagehunters.common.handler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Request;
 import org.hh.heritagehunters.common.exception.BadRequestException;
 import org.hh.heritagehunters.common.exception.ConflictException;
 import org.hh.heritagehunters.common.exception.InternalServerErrorException;
