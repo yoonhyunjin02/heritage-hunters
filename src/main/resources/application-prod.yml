@@ -1,0 +1,54 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  # Spring Data JPA
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+
+  # Thymeleaf
+  thymeleaf:
+    cache: false  # 개발 시 템플릿 캐시 비활성화
+    mode: HTML  # 타임리프 모드 설정
+    encoding: UTF-8  # 인코딩 설정
+
+  # Google OAuth
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: ${GOOGLE_SCOPE}
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+# Logging
+logging:
+  level:
+    org.springframework: INFO
+    org.hh.heritagehunters: DEBUG  # 패키지 이름 기준
+
+# Google Map API
+google:
+  map:
+    api:
+      key: ${GOOGLE_MAPS_API_KEY}  # Google Map API 키 설정
+
+# AWS S3
+aws:
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+  region: ${AWS_REGION}
+  s3:
+    bucket-name: ${AWS_BUCKET_NAME}
