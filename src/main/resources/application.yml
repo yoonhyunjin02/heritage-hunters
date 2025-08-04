@@ -2,12 +2,11 @@ server:
   port: 8080
 
 spring:
-  profiles:
-    active: local
-
   # secrets/application-secret.yml 파일을 선택적으로 불러오기
   config:
     import: optional:classpath:/secrets/application-secret.yml
+  profiles:
+    active: local
 
   # 파일 업로드 용량 제한
   servlet:
@@ -21,6 +20,17 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
+    hikari:
+      pool-name: HeritagePool     # 로깅 편의성을 위한 이름
+      maximum-pool-size: 20       # 동시 요청 최대 처리 수
+      minimum-idle: 5             # 평상시 유지할 커넥션 수
+      idle-timeout: 600000        # 사용 안한 커넥션 10 뒤 제거
+      max-lifetime: 1800000       # 커넥션 최대 생명주기 30분
+      connection-timeout: 30000   # 30초 안에 커넥션 없으면 예외 발생
+      auto-commit: true
+      validation-timeout: 5000    # 유효성 검사 5초 제한
+      leak-detection-threshold: 20000 # 20초 넘게 반환 안 되는 커넥션 감지
 
   # Spring Data JPA
   jpa:
