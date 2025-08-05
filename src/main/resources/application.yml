@@ -5,6 +5,8 @@ spring:
   # secrets/application-secret.yml 파일을 선택적으로 불러오기
   config:
     import: optional:classpath:/secrets/application-secret.yml
+  application:
+    name: testtttttttttttt
   profiles:
     active: local
 
@@ -14,13 +16,7 @@ spring:
       max-file-size: 10MB
       max-request-size: 50MB
 
-  # DB 설정
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-
     hikari:
       pool-name: HeritagePool     # 로깅 편의성을 위한 이름
       maximum-pool-size: 20       # 동시 요청 최대 처리 수
