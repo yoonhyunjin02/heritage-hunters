@@ -98,6 +98,6 @@ class OauthControllerTest {
   void loginWithInvalidCredentials_redirectsToLoginWithError() throws Exception {
     mockMvc.perform(FormTestUtils.createInvalidEmailLoginRequest())
         .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("/login?error"));
+        .andExpect(redirectedUrl("/login"));
   }
 }

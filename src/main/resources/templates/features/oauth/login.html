@@ -23,7 +23,7 @@
         <input type="password" id="password" name="password" required>
       </div>
 
-      <!-- 예외 메시지 출력 (GlobalExceptionHandler에서 전달된 loginError) -->
+      <!-- 예외 메시지 -->
       <div th:if="${loginError}" class="error-message">
         <span th:text="${loginError}"></span>
       </div>
