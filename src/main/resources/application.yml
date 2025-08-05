@@ -6,7 +6,7 @@ spring:
   config:
     import: optional:classpath:/secrets/application-secret.yml
   application:
-    name: testtttttttttttt
+    name: heritage-hunters
   profiles:
     active: local
 
