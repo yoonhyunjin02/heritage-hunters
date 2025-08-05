@@ -34,7 +34,7 @@
                 alt="대표 이미지"
                 loading="lazy"
               />
-              <figcaption>대표 이미지</figcaption>
+              <figcaption th:text="${heritage.name}">대표 이미지</figcaption>
             </figure>
 
             <dl>
@@ -63,7 +63,7 @@
         </section>
 
         <!-- 본문 내용 -->
-        <section class="heritage__content">
+        <section class="heritage__content" th:text="${heritage.content}">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris in rutrum magna. Aliquam interdum scelerisque pharetra. Nulla elit ligula, venenatis
           eget urna eu, maximus varius lacus. Nulla vulputate orci vitae suscipit finibus. Etiam quis arcu in magna feugiat ultrices. Nullam aliquam sapien id
           felis luctus semper. Phasellus nibh dui, vestibulum at consequat eu, venenatis id ante. Mauris feugiat nisl quis tristique tempor. Pellentesque
