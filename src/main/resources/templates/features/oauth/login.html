@@ -1,14 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Login</title>
+  <title>로그인</title>
+  <link rel="stylesheet" th:href="@{/features/oauth/css/oauth.css}">
 </head>
 <body>
-<form method="post" action="/login">
-  <input type="text" name="username" />
-  <input type="password" name="password" />
-  <button type="submit">로그인</button>
-</form>
+<main class="auth-container">
+  <section class="image-section" id="auth-bg-image" aria-hidden="true"></section>
+
+  <section class="form-section">
+    <h1>로그인</h1>
+
+    <form th:action="@{/login}" method="post">
+      <div>
+        <label for="email">이메일</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+
+      <div>
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+
+      <!-- 예외 메시지 -->
+      <div th:if="${loginError}" class="error-message">
+        <span th:text="${loginError}"></span>
+      </div>
+
+      <button type="submit" class="btn-submit">로그인</button>
+    </form>
+
+    <p class="signin-text">
+      회원이 아니신가요? <a th:href="@{/register}">회원가입</a>
+    </p>
+  </section>
+</main>
+<script defer th:src="@{/features/oauth/js/oauth.js}"></script>
 </body>
 </html>

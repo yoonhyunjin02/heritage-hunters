@@ -1,8 +1,8 @@
 package org.hh.heritagehunters.domain.oauth.service;
 
-import org.hh.heritagehunters.common.exception.DuplicateEmailException;
-import org.hh.heritagehunters.common.exception.DuplicateNicknameException;
-import org.hh.heritagehunters.common.exception.PasswordMismatchException;
+import org.hh.heritagehunters.common.exception.oauth.DuplicateEmailException;
+import org.hh.heritagehunters.common.exception.oauth.DuplicateNicknameException;
+import org.hh.heritagehunters.common.exception.oauth.PasswordMismatchException;
 import org.hh.heritagehunters.domain.oauth.dto.RegisterDto;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.oauth.repository.UserRepository;
