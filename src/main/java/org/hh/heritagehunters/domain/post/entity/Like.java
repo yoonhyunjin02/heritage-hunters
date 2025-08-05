@@ -41,14 +41,4 @@ public class Like {
 
   @Column(name="created_at", nullable = false)
   private LocalDateTime createdAt;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "post_id", insertable = false, updatable = false)
-  @ToString.Exclude
-  private Post post;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", insertable = false, updatable = false)
-  @ToString.Exclude
-  private User user;
 }
