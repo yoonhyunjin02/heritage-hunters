@@ -1,3 +1,4 @@
+<!-- src/main/resources/templates/features/search/search_page.html -->
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
@@ -144,18 +145,20 @@
         <section class="search__bottom">
           <div class="search__results">
             <div class="search__grid">
-              <article class="search__card" th:each="item : ${results}">
-                <img
-                  th:src="${item.thumbnailUrl}"
-                  src="https://www.heritage.go.kr/unisearch/images/national_treasure/thumb/2021042017434700.JPG?time=1754284453184"
-                  alt="유물 대표 이미지"
-                  class="search__card-image"
-                  loading="lazy"
-                />
-                <p class="search__card-designation" th:text="${item.designation}">국보</p>
-                <h4 class="search__card-title" th:text="${item.name}">숭례문</h4>
-                <p class="search__card-hanja" th:text="${item.nameHanja}">(崇禮門)</p>
-              </article>
+              <a th:href="@{/heritage/{id}(id=${item.id})}" class="search__card-link" th:each="item : ${results}">
+                <article class="search__card">
+                  <img
+                    th:src="${item.thumbnailUrl}"
+                    src="https://www.heritage.go.kr/unisearch/images/national_treasure/thumb/2021042017434700.JPG?time=1754284453184"
+                    alt="유물 대표 이미지"
+                    class="search__card-image"
+                    loading="lazy"
+                  />
+                  <p class="search__card-designation" th:text="${item.designation}">국보</p>
+                  <h4 class="search__card-title" th:text="${item.name}">숭례문</h4>
+                  <p class="search__card-hanja" th:text="${item.nameHanja}">(崇禮門)</p>
+                </article>
+              </a>
             </div>
           </div>
 
