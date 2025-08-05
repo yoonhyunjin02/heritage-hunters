@@ -1,6 +1,7 @@
 package org.hh.heritagehunters.domain.search.dto;
 
 import java.util.List;
+import org.hh.heritagehunters.common.util.HtmlSanitizer;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,8 +17,9 @@ public record HeritageSearchRequest(
 ) {
 
   public SearchCriteria toCriteria() {
+    String safeKeyword = HtmlSanitizer.sanitize(keyword);
     return new SearchCriteria(
-        keyword,
+        safeKeyword,
         designation,
         region,
         era,
