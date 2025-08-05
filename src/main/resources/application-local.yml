@@ -11,19 +11,22 @@ spring:
       ddl-auto: update  # 개발 시 테이블 자동 수정
     show-sql: true
 
+  # Google OAuth
+  security:
+    user:
+      name: admin
+      password: 1234
+#    oauth2:
+#      client:
+#        registration:
+#          google:
+#            client-id: ${GOOGLE_CLIENT_ID}
+#            client-secret: ${GOOGLE_CLIENT_SECRET}
+#            scope: ${GOOGLE_SCOPE}
+#            redirect-uri: ${GOOGLE_REDIRECT_URI}
+
 # 로그
 logging:
   level:
     org.hibernate.SQL: INFO
     org.hh.heritagehunters: DEBUG
-
-  # Google OAuth
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope: ${GOOGLE_SCOPE}
-            redirect-uri: ${GOOGLE_REDIRECT_URI}

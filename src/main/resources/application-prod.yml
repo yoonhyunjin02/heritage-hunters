@@ -16,12 +16,6 @@ spring:
       mode: always
       encoding: UTF-8
 
-# Logging
-logging:
-  level:
-    org.springframework: INFO
-    org.hh.heritagehunters: DEBUG  # 패키지 이름 기준
-
   # Thymeleaf
   thymeleaf:
     cache: false  # 개발 시 템플릿 캐시 비활성화
@@ -38,6 +32,12 @@ logging:
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: ${GOOGLE_SCOPE}
             redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+# Logging
+logging:
+  level:
+    org.springframework: INFO
+    org.hh.heritagehunters: DEBUG  # 패키지 이름 기준
 
 # Google Map API
 google:
