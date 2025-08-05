@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://heritage-hunters.cx268qu2uk1o.eu-north-1.rds.amazonaws.com:5432/postgres
+    username: postgres
+    password: hh_password
     driver-class-name: org.postgresql.Driver
 
   # JPA 설정
