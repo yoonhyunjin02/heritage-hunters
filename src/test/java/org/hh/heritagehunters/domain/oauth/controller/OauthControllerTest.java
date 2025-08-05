@@ -15,11 +15,12 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(RegisterController.class)
+@WebMvcTest(OauthController.class)
 @AutoConfigureMockMvc
-class RegisterControllerTest {
+class OauthControllerTest {
 
   @Autowired
   private MockMvc mockMvc;
@@ -52,6 +53,7 @@ class RegisterControllerTest {
   @WithMockUser
   void whenValidInput_thenRedirectToLogin() throws Exception {
     mockMvc.perform(FormTestUtils.createValidRegisterPostRequest())
+        .andDo(print())
         .andExpect(status().is3xxRedirection())
         .andExpect(redirectedUrl("/login"));
 
@@ -65,6 +67,7 @@ class RegisterControllerTest {
     doThrow(new DuplicateEmailException()).when(registerService).register(any());
 
     mockMvc.perform(FormTestUtils.createValidRegisterPostRequest())
+        .andDo(print())
         .andExpect(status().isOk())
         .andExpect(view().name("features/oauth/register"))
         .andExpect(model().attributeExists("registerError"));

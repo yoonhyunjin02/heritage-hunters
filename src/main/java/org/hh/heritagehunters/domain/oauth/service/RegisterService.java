@@ -9,8 +9,10 @@ import org.hh.heritagehunters.common.exception.DuplicateNicknameException;
 import org.hh.heritagehunters.common.exception.PasswordMismatchException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class RegisterService {
 

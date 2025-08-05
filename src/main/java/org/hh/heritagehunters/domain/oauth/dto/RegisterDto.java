@@ -8,8 +8,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -27,7 +29,7 @@ public class RegisterDto {
   @Size(min = 8, message = "비밀번호는 최소 8자 이상이어야 합니다.")
   @Pattern(
       regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$",
-      message = "비밀번호는 영문, 숫자, 특수문자를 포함하여 8~20자여야 합니다."
+      message = "비밀번호는 영문, 숫자, 특수문자(@$!%*?&)를 포함하여 8~20자여야 합니다."
   )
   private String password;
 
