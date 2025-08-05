@@ -30,6 +30,9 @@ public class Heritage {
   @Column(name = "name_en", length = 50)
   private String nameEn;
 
+  @Column(name = "name_hanja", length = 50)
+  private String nameHanja;
+
   @Column(name = "thumbnail_url", columnDefinition = "TEXT")
   private String thumbnailUrl;
 
