@@ -25,6 +25,6 @@ public class HeritageViewController {
   public String getHeritageDetail(@PathVariable Long id, Model model) {
     HeritageResponse detail = heritageService.getDetail(id);
     model.addAttribute("heritage", detail);
-    return "/features/search/search_detail";
+    return "/features/search/heritage_detail";
   }
 }

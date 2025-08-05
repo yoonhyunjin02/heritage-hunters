@@ -38,7 +38,7 @@ public class SearchViewController {
         "전체", "유적건조물", "기록유산", "유물", "무형유산", "자연유산", "등록문화유산"
     ));
     // 검색 결과, 페이징 정보 등도 model에 추가…
-    return "/features/search/search";
+    return "/features/search/search_page";
   }
 
 
