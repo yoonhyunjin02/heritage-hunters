@@ -1,11 +1,9 @@
 package org.hh.heritagehunters.domain.oauth.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.hh.heritagehunters.common.exception.oauth.LoginFailedException;
-import org.hh.heritagehunters.domain.oauth.dto.LoginDto;
 import org.hh.heritagehunters.domain.oauth.dto.RegisterDto;
-import org.hh.heritagehunters.domain.oauth.service.LoginService;
 import org.hh.heritagehunters.domain.oauth.service.RegisterService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,14 +11,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequiredArgsConstructor
 public class OauthController {
 
   private final RegisterService registerService;
-  private final LoginService loginService;
 
   // 회원가입 페이지 이동
   @GetMapping("/register")
@@ -43,7 +39,6 @@ public class OauthController {
     try {
       registerService.register(registerDto);
     } catch (RuntimeException e) {
-      // 예외 메시지 뷰에 전달
       model.addAttribute("registerError", e.getMessage());
       return "features/oauth/register";
     }
@@ -53,23 +48,14 @@ public class OauthController {
 
   // 로그인 폼 이동
   @GetMapping("/login")
-  public String loginPage(@RequestParam(value = "error", required = false) String error,
-      @RequestParam(value = "logout", required = false) String logout,
-      Model model) {
+  public String loginPage(HttpServletRequest request, Model model) {
+    String errorMessage = (String) request.getSession().getAttribute("LOGIN_ERROR");
 
-    model.addAttribute("loginDto", new LoginDto());
-
-    if (error != null) {
-      // Spring Security는 oginFailedException을 호출하지 않음
-      // LoginFailedException의 메시지를 직접 재사용
-      model.addAttribute("loginError", new LoginFailedException().getMessage());
-    }
-
-    if (logout != null) {
-      model.addAttribute("logoutMessage", "로그아웃 되었습니다.");
+    if (errorMessage != null) {
+      model.addAttribute("loginError", errorMessage);
+      request.getSession().removeAttribute("LOGIN_ERROR");
     }
 
     return "features/oauth/login";
   }
-
 }

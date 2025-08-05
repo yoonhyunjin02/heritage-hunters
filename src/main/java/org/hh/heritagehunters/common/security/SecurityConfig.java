@@ -1,4 +1,4 @@
-package org.hh.heritagehunters.config;
+package org.hh.heritagehunters.common.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,11 +22,11 @@ public class SecurityConfig {
             .requestMatchers(
                 "/register",
                 "/login",
-                "/features/**",
-                "/common/**",
+                "/logout",
                 "/css/**",
                 "/js/**",
-                "/images/**"
+                "/images/**",
+                "/features/**"
             ).permitAll()
             .anyRequest().authenticated()
         )
@@ -35,7 +35,7 @@ public class SecurityConfig {
             .usernameParameter("email")
             .loginProcessingUrl("/login")
             .defaultSuccessUrl("/main", true)
-            .failureUrl("/login?error")
+            .failureHandler(new CustomAuthenticationFailureHandler())
             .permitAll()
         )
         .logout(logout -> logout

@@ -1,7 +1,6 @@
 package org.hh.heritagehunters.domain.oauth.controller;
 
 import org.hh.heritagehunters.common.exception.oauth.DuplicateEmailException;
-import org.hh.heritagehunters.domain.oauth.service.LoginService;
 import org.hh.heritagehunters.domain.oauth.service.RegisterService;
 import org.hh.heritagehunters.testsupport.FormTestUtils;
 import org.junit.jupiter.api.DisplayName;
@@ -29,9 +28,6 @@ class OauthControllerTest {
 
   @MockitoBean
   private RegisterService registerService;
-
-  @MockitoBean
-  private LoginService loginService;
 
   // 회원가입 테스트
   @Test

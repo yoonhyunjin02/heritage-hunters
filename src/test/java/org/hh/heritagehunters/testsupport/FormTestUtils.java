@@ -47,8 +47,8 @@ public class FormTestUtils {
   // 로그인 성공 케이스
   public static MockHttpServletRequestBuilder createValidLoginPostRequest() {
     return post("/login")
-        .param("email", "test@example.com")
-        .param("password", "correctPassword")
+        .param("email", "test1234@gmail.com")         // ✅ DB에 등록된 이메일
+        .param("password", "asdf1234!!")              // ✅ DB에 등록된 비밀번호 (평문)
         .with(csrf());
   }
 

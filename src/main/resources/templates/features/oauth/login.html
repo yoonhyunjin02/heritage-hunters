@@ -12,31 +12,29 @@
   <section class="form-section">
     <h1>로그인</h1>
 
-      <!-- 전체 에러 메시지 처리 -->
-      <div th:if="${loginError}" th:text="${loginError}" class="error-message"></div>
+    <form th:action="@{/login}" method="post">
+      <div>
+        <label for="email">이메일</label>
+        <input type="email" id="email" name="email" required>
+      </div>
 
-      <form th:action="@{/login}" th:object="${loginDto}" method="post">
+      <div>
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" name="password" required>
+      </div>
 
-        <div>
-          <label for="email">이메일</label>
-          <input type="email" id="email" th:field="*{email}">
-          <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></div>
-        </div>
+      <!-- 예외 메시지 출력 (GlobalExceptionHandler에서 전달된 loginError) -->
+      <div th:if="${loginError}" class="error-message">
+        <span th:text="${loginError}"></span>
+      </div>
 
-        <div>
-          <label for="password">비밀번호</label>
-          <input type="password" id="password" th:field="*{password}">
-          <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="error-message"></div>
-        </div>
+      <button type="submit" class="btn-submit">로그인</button>
+    </form>
 
-        <button type="submit" class="btn-submit">로그인</button>
-      </form>
-
-      <p class="signin-text">
-        회원이 아니신가요? <a th:href="@{/register}">회원가입</a>
-      </p>
-    </section>
-
+    <p class="signin-text">
+      회원이 아니신가요? <a th:href="@{/register}">회원가입</a>
+    </p>
+  </section>
 </main>
 <script defer th:src="@{/features/oauth/js/oauth.js}"></script>
 </body>
