@@ -1,6 +1,7 @@
 package org.hh.heritagehunters.domain.search.service;
 
-import jakarta.persistence.EntityNotFoundException;
+import org.hh.heritagehunters.common.exception.NotFoundException;
+import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.search.dto.HeritageResponse;
 import org.hh.heritagehunters.domain.search.dto.HeritageSearchRequest;
 import org.hh.heritagehunters.domain.search.entity.Heritage;
@@ -27,7 +28,7 @@ public class HeritageService {
 
   public HeritageResponse getDetail(Long id) {
     Heritage h = repo.findById(id)
-        .orElseThrow(() -> new EntityNotFoundException("유산을 찾을 수 없습니다: " + id));
+        .orElseThrow(() -> new NotFoundException(ErrorCode.RESOURCE_NOT_FOUND));
     return HeritageResponse.fromEntity(h);
   }
 }
