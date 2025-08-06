@@ -45,11 +45,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         name = (String) attributes.get("name");
         if (name == null) name = (String) attributes.get("login");
         picture = (String) attributes.get("avatar_url");
+
+        // GitHub의 /user/emails API를 사용 -> primary, verified인 이메일을 강제로 직접 요청
+        // 비공개된 이메일도 받을 수 있음
         email = fetchGithubEmail(userRequest.getAccessToken().getTokenValue());
       }
 
       if (email == null) {
-        throw new OAuth2AuthenticationException("공개된 이메일이 아니므로 로그인이 불가합니다.");
+        throw new OAuth2AuthenticationException(
+            "로그인에 필요한 이메일 정보를 확인할 수 없습니다. " +
+                "GitHub 계정에 인증된(primary, verified) 이메일이 등록되어 있는지 확인해 주세요.");
       }
 
       User user = userRepository.findByEmail(email).orElse(null);
