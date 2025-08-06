@@ -2,121 +2,106 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <link rel="stylesheet" href="@{/features/post/css/post_write_modal.css}">
+  <!-- ✅ 정적 리소스 경로 치환 -->
+  <link rel="stylesheet" th:href="@{/features/post/css/post_write_modal.css}">
 </head>
 <body>
 
 <!-- 게시글 작성 모달 프래그먼트 -->
 <div th:fragment="postWriteModal" id="postModal" class="modal" sec:authorize="isAuthenticated()">
   <div class="modal-content">
-    <!-- 모달 헤더 -->
+    <!-- 헤더 -->
     <div class="modal-header">
       <h2 class="modal-title">새 게시글 작성</h2>
       <button type="button" class="modal-close" id="closePostModal">&times;</button>
     </div>
 
-    <!-- 모달 바디 -->
+    <!-- 본문 (좌/우 2열) -->
     <div class="modal-body">
       <form id="postForm" class="post-form" th:action="@{/posts}" method="post" enctype="multipart/form-data">
+        <!-- CSRF (스프링 시큐리티 사용 시) -->
+        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
 
-        <!-- 작성자 정보 표시 -->
-        <div class="author-display" sec:authorize="isAuthenticated()">
-          <img th:if="${#authentication.principal.user.profileImage != null}"
-               th:src="${#authentication.principal.user.profileImage}"
-               class="author-avatar"
-               alt="프로필">
-          <div th:unless="${#authentication.principal.user.profileImage != null}"
-               class="author-avatar-placeholder">
-            <span th:text="${#strings.substring(#authentication.principal.user.nickname, 0, 1)}">U</span>
-          </div>
-          <span class="author-name" th:text="${#authentication.principal.user.nickname}">사용자</span>
-        </div>
+        <div class="composer-grid">
+          <!-- 좌측: 이미지 스테이지 -->
+          <div class="compose-left">
+            <div class="image-upload-section" id="imageUploadSection">
+              <input type="file"
+                     name="images"
+                     id="imageInput"
+                     multiple
+                     accept="image/*"
+                     class="visually-hidden"
+                     required>
 
-        <!-- 이미지 업로드 -->
-        <div class="image-upload-section" id="imageUploadSection">
-          <input type="file"
-                 name="images"
-                 id="imageInput"
-                 multiple
-                 accept="image/*"
-                 style="display: none;"
-                 required>
-          <div class="upload-placeholder">
-            <div style="font-size: 24px; margin-bottom: 8px;">📷</div>
-            <div>사진을 추가하세요 (최대 3장)</div>
-            <div style="font-size: 12px; color: #999; margin-top: 4px;">
-              클릭하거나 드래그하여 업로드
+              <!-- 이미지 없을 때 플레이스홀더 -->
+              <div class="upload-placeholder">
+                <div class="emoji">📷</div>
+                <div>사진을 추가하세요 (최대 3장)</div>
+                <div class="hint">클릭하거나 드래그하여 업로드</div>
+              </div>
+
+              <!-- 대표 미리보기 영역 -->
+              <div id="imageStage" class="image-stage">
+                <!-- JS에서 <img class="stage-image"> 주입 -->
+              </div>
+
+              <!-- (선택) 하단 썸네일 스트립 -->
+              <div id="imageThumbs" class="thumb-strip"></div>
             </div>
           </div>
-          <div id="imagePreview" class="image-previews"></div>
-        </div>
 
-        <!-- 게시글 내용 -->
-        <div>
-          <label for="postContent" class="form-label">게시글 내용</label>
-          <textarea name="content"
-                    id="postContent"
-                    class="content-textarea"
-                    placeholder="문화유산에 대한 경험을 공유해주세요..."
-                    maxlength="200"
-                    required></textarea>
-          <div class="char-counter">
-            <span id="charCount">0</span> / 200자
-          </div>
-        </div>
-
-        <!-- Google Maps 위치 선택 -->
-        <div class="location-section">
-          <label for="locationInput" class="form-label">위치 정보</label>
-          <div class="location-input-group">
-            <input type="text"
-                   id="locationInput"
-                   name="location"
-                   class="location-input"
-                   placeholder="위치를 검색하세요..."
-                   required>
-            <button type="button"
-                    id="currentLocationBtn"
-                    class="current-location-btn"
-                    title="현재 위치 사용">
-              📍
-            </button>
-          </div>
-          <input type="hidden" name="heritageId" id="heritageId">
-          <div id="map" class="map-container"></div>
-          <div class="location-help">
-            💡 지도를 클릭하거나 마커를 드래그하여 정확한 위치를 설정하세요
-          </div>
-        </div>
-
-        <!-- 폼 액션 버튼 -->
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary" id="cancelPost">
-            <span>취소</span>
-          </button>
-          <button type="submit" class="btn btn-primary" id="submitBtn">
-            <span id="submitBtnText">게시글 작성</span>
-            <div id="submitBtnLoader" class="btn-loader" style="display: none;">
-              <div class="spinner"></div>
+          <!-- 우측: 작성 패널 -->
+          <div class="compose-right">
+            <!-- 작성자 -->
+            <div class="author-display" sec:authorize="isAuthenticated()">
+              <img th:if="${#authentication.principal.user.profileImage != null}"
+                   th:src="${#authentication.principal.user.profileImage}"
+                   class="author-avatar" alt="프로필">
+              <div th:unless="${#authentication.principal.user.profileImage != null}"
+                   class="author-avatar-placeholder">
+                <span th:text="${#strings.substring(#authentication.principal.user.nickname, 0, 1)}">U</span>
+              </div>
+              <span class="author-name" th:text="${#authentication.principal.user.nickname}">사용자</span>
             </div>
-          </button>
+
+            <!-- 본문 -->
+            <div class="form-group">
+              <label for="postContent" class="form-label">본문</label>
+              <textarea name="content" id="postContent" class="content-textarea"
+                        placeholder="문화유산에 대한 경험을 공유해주세요..." maxlength="200" required></textarea>
+              <div class="char-counter"><span id="charCount">0</span> / 200자</div>
+            </div>
+
+            <!-- 위치 (텍스트만) -->
+            <div class="form-group">
+              <label for="locationInput" class="form-label">위치</label>
+              <input type="text" id="locationInput" name="location" class="location-input"
+                     placeholder="예: 경복궁, 서울 종로구 사직로 161" maxlength="255" required>
+              <div class="field-help">정확한 장소명을 입력해주세요.</div>
+            </div>
+
+            <!-- 액션 -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="cancelPost">취소</button>
+              <button type="submit" class="btn btn-primary" id="submitBtn">
+                <span id="submitBtnText">작성하기</span>
+                <div id="submitBtnLoader" class="btn-loader" style="display:none;">
+                  <div class="spinner"></div>
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
       </form>
     </div>
+
   </div>
 </div>
 
-<!-- 모달 관련 스크립트들 -->
+<!-- 모달 관련 스크립트 프래그먼트 -->
 <div th:fragment="postWriteModalScripts">
-  <!-- Google Maps API (조건부 로드) -->
-  <script th:if="${@environment.getProperty('google.maps.api.key') != null}"
-          async defer
-          th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api.key')} + '&libraries=places&callback=initMap'">
-  </script>
-
-  <!-- 모달 관련 JavaScript -->
   <script th:src="@{/features/post/js/post_write_modal.js}"></script>
-  <script th:src="@{/features/post/js/google_maps.js}"></script>
 </div>
 
 </body>

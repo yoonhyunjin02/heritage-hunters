@@ -150,9 +150,7 @@ const PostListManager = {
     // 모바일 게시글 작성 버튼
     if (this.elements.mobilePostBtn) {
       this.elements.mobilePostBtn.addEventListener('click', () => {
-        if (window.PostModal) {
-          window.PostModal.open();
-        }
+        this.openPostModal();
       });
     }
 
@@ -707,6 +705,26 @@ const PostListManager = {
     });
 
     cards.forEach(card => cardObserver.observe(card));
+  },
+
+  /**
+   * 게시글 작성 모달 열기
+   */
+  openPostModal() {
+    // 로그인 체크 먼저 수행
+    const modal = document.getElementById('postModal');
+    if (!modal) {
+      alert('로그인이 필요합니다.');
+      window.location.href = '/auth/login';
+      return;
+    }
+    
+    if (window.PostModal) {
+      window.PostModal.open();
+    } else {
+      console.error('PostModal이 로드되지 않았습니다.');
+      alert('페이지를 새로고침 후 다시 시도해주세요.');
+    }
   },
 
   /**

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.print.attribute.standard.MediaSize.NA;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -29,6 +30,7 @@ import org.hh.heritagehunters.domain.search.entity.Heritage;
 @AllArgsConstructor
 @Entity
 @Table(name = "posts")
+@Builder
 public class Post {
 
   @Id

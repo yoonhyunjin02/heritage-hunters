@@ -9,7 +9,7 @@
   <!-- CSS 파일들 -->
   <link rel="stylesheet" th:href="@{/common/css/common.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_list.css}">
-  <link rel="stylesheet" th:href="@{/features/post/css/post_modal.css}">
+  <link rel="stylesheet" th:href="@{/features/post/css/post_write_modal.css}">
 </head>
 <body>
 
@@ -114,7 +114,8 @@
           <button type="button"
                   id="openPostModal"
                   class="control-btn new-post-btn"
-                  sec:authorize="isAuthenticated()">
+                  sec:authorize="isAuthenticated()"
+                  onclick="PostListManager.openPostModal()">
             ➕ 게시글 작성
           </button>
         </div>
