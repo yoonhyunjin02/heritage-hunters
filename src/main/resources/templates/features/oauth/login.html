@@ -31,6 +31,15 @@
       <button type="submit" class="btn-submit">로그인</button>
     </form>
 
+    <!-- 소셜 로그인 -->
+    <div class="social-login">
+      <p>SNS 계정으로 로그인</p>
+      <a href="/oauth2/authorization/google" class="btn-social btn-google">
+        <img src="/images/logo/google_G_logo.svg" alt="Google 로고" style="height: 20px; vertical-align: middle;">
+        <span>Google로 로그인</span>
+      </a>
+    </div>
+
     <p class="signin-text">
       회원이 아니신가요? <a th:href="@{/register}">회원가입</a>
     </p>
