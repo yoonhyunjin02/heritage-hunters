@@ -30,4 +30,11 @@ public class CurrentUserAdvice  {
 
     return null;
   }
+
+  // 4가지 랜덤 기본 프로필 이미지 제공
+  @ModelAttribute("defaultProfileImage")
+  public String defaultProfileImage() {
+    int randomIndex = (int) (Math.random() * 4) + 1; // 1~4
+    return "/images/profile/profile" + randomIndex + ".png";
+  }
 }

@@ -22,7 +22,7 @@
               </svg>
               <img
                   class="profile-image"
-                  th:src="${#strings.isEmpty(currentUser.profileImage)} ? @{/images/auth-bg1.jpg} : ${currentUser.profileImage}"
+                  th:src="${#strings.isEmpty(currentUser.profileImage)} ? ${defaultProfileImage} : ${currentUser.profileImage}"
                   alt="프로필 이미지"
               />
             </div>
