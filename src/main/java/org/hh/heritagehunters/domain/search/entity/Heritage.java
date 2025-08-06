@@ -24,13 +24,10 @@ public class Heritage {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "name", nullable = false, length = 50)
+  @Column(name = "name", nullable = false, columnDefinition = "TEXT")
   private String name;
 
-  @Column(name = "name_en", length = 50)
-  private String nameEn;
-
-  @Column(name = "name_hanja", length = 50)
+  @Column(name = "name_hanja", columnDefinition = "TEXT")
   private String nameHanja;
 
   @Column(name = "thumbnail_url", columnDefinition = "TEXT")
@@ -39,16 +36,16 @@ public class Heritage {
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
-  @Column(name = "designation")
+  @Column(name = "designation", columnDefinition = "TEXT")
   private String designation;
 
-  @Column(name = "region")
+  @Column(name = "region", columnDefinition = "TEXT")
   private String region;
 
-  @Column(name = "address", length = 100)
+  @Column(name = "address", columnDefinition = "TEXT")
   private String address;
 
-  @Column(name = "era", length = 10)
+  @Column(name = "era", columnDefinition = "TEXT")
   private String era;
 
   @Column(name = "latitude", precision = 12, scale = 8)

@@ -15,18 +15,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 2) 토글 버튼: 패널 클래스 교체(search__mid--open / search__mid--closed) 및 버튼 텍스트·aria-expanded 변경
+  // 2) 토글 버튼: 패널 클래스 교체(search-mid--open / search-mid--closed) 및 버튼 텍스트·aria-expanded 변경
   toggleBtn.addEventListener("click", () => {
-    const isClosed = filterPanel.classList.contains("search__mid--closed");
+    const isClosed = filterPanel.classList.contains("search-mid--closed");
 
     if (isClosed) {
-      filterPanel.classList.remove("search__mid--closed");
-      filterPanel.classList.add("search__mid--open");
+      filterPanel.classList.remove("search-mid--closed");
+      filterPanel.classList.add("search-mid--open");
       toggleBtn.textContent = "상세검색 닫기";
       toggleBtn.setAttribute("aria-expanded", "true");
     } else {
-      filterPanel.classList.remove("search__mid--open");
-      filterPanel.classList.add("search__mid--closed");
+      filterPanel.classList.remove("search-mid--open");
+      filterPanel.classList.add("search-mid--closed");
       toggleBtn.textContent = "상세검색 열기";
       toggleBtn.setAttribute("aria-expanded", "false");
     }
