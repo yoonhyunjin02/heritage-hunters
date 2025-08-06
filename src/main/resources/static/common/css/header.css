@@ -1,4 +1,4 @@
-/* header */
+/* 기본 헤더 스타일 */
 .header {
   background-color: var(--gray-050);
   border-bottom: 1px solid var(--gray-200);
@@ -11,7 +11,7 @@
   justify-content: space-between;
 }
 
-.header-inner {
+.header-wrapper {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
@@ -19,20 +19,85 @@
   align-items: center;
 }
 
+/* 로고 */
 .logo {
   font-size: 18px;
   font-weight: bold;
   color: var(--gray-900);
 }
 
+.logo-image {
+  height: 32px;
+}
+
+/* 로그인 버튼 (비로그인 상태) */
 .login-button {
   padding: 8px 16px;
   background-color: var(--gray-200);
   border-radius: 6px;
   font-weight: 600;
   color: var(--gray-800);
+  text-decoration: none;
 }
 
+/* 프로필 이미지 */
+.profile-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+}
+
+/* 드롭다운 컨테이너 */
+.user-dropdown {
+  position: relative;
+}
+
+.user-welcome {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 드롭다운 메뉴 */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--gray-050);
+  border: 1px solid var(--gray-200);
+  padding: 12px;
+  display: none;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  border-radius: 10px;
+}
+
+.user-dropdown.active .dropdown-menu {
+  display: block;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 6px 10px;
+  text-decoration: none;
+  color: var(--gray-900);
+  font-weight: 500;
+}
+
+.dropdown-item:hover {
+  background-color: #f2f2f2;
+}
+
+.dropdown-divider {
+  margin: 8px 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+/* profile-box는 hover 방식이라 지금은 미사용 */
 .profile-box {
   position: relative;
 }
@@ -76,12 +141,4 @@
 .profile-dropdown a {
   color: var(--gray-900);
   font-weight: 500;
-}
-
-.profile-image {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 8px;
 }
