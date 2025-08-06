@@ -50,6 +50,10 @@ public class SecurityConfig {
             .userInfoEndpoint(userInfo -> userInfo
                 .userService(customOAuth2UserService)
             )
+            .failureHandler((request, response, exception) -> {
+              exception.printStackTrace(); // 콘솔에 예외 출력
+              response.sendRedirect("/login?error=" + exception.getMessage());
+            })
             .defaultSuccessUrl("/main", true)
         )
         .logout(logout -> logout

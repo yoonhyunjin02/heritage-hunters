@@ -20,6 +20,11 @@ spring:
             client-secret: ${oauth.google.client-secret}
             redirect-uri: ${oauth.google.redirect-uri-base}/login/oauth2/code/google
             scope: ${oauth.google.scope}
+          github:
+            client-id: ${oauth.github.client-id}
+            client-secret: ${oauth.github.client-secret}
+            scope: user:email
+            redirect-uri: ${oauth.github.redirect-uri-base}/login/oauth2/code/github
 
 # 로그
 logging:
@@ -27,3 +32,5 @@ logging:
     org.hibernate.SQL: INFO
     org.hh.heritagehunters: DEBUG
     org.springframework.core.env: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
