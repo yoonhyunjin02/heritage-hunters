@@ -57,17 +57,13 @@
   background-color: #003f6b;
 }
 
-.search__toggle-btn[aria-expanded="true"] {
-  transform: rotate(180deg);
-}
-
 .search__mid {
   background-color: var(--secondary-color);
   border: 1px solid var(--border-color);
   border-radius: 4px;
   padding: var(--gap);
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: 0.3s ease;
 }
 
 .search__mid--open {
