@@ -2,13 +2,8 @@
 .header {
   background-color: var(--gray-050);
   border-bottom: 1px solid var(--gray-200);
-  padding: 12px 24px;
-}
-
-.header-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  padding: 8px 16px; /* 기존: 12px 24px → 여백 축소 */
+  height: 56px; /* 고정 높이 설정 (선택사항) */
 }
 
 .header-wrapper {
@@ -17,6 +12,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 100%; /* 고정 높이 적용 시 필요 */
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 /* 로고 */
@@ -32,12 +35,14 @@
 
 /* 로그인 버튼 (비로그인 상태) */
 .login-button {
-  padding: 8px 16px;
+  padding: 6px 12px;
   background-color: var(--gray-200);
   border-radius: 6px;
   font-weight: 600;
   color: var(--gray-800);
+  font-size: 14px;
   text-decoration: none;
+  line-height: 1;
 }
 
 /* 프로필 이미지 */
@@ -58,7 +63,12 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+}
+
+.user-welcome .profile-image {
+  margin-right: 0;     /* 기존 margin 제거 */
+  margin-left: 8px;     /* 왼쪽에 간격 추가 (선택) */
 }
 
 /* 드롭다운 메뉴 */
@@ -141,4 +151,10 @@
 .profile-dropdown a {
   color: var(--gray-900);
   font-weight: 500;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  height: 100%;
 }

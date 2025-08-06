@@ -11,34 +11,35 @@
         </h1>
 
         <!-- 로그인 O -->
-        <div sec:authorize="isAuthenticated()" th:if="${currentUser != null}" class="user-dropdown">
-          <div class="user-welcome" onclick="toggleDropdown(event)">
-            <img
-                class="profile-image"
-                th:src="${#strings.isEmpty(currentUser.profileImage)} ? @{/images/auth-bg1.jpg} : ${currentUser.profileImage}"
-                alt="프로필 이미지"
-            />
-            <span class="welcome-text">어서오세요</span>
-            <span class="user-name" th:text="${currentUser.nickname} ?: '사용자'">닉네임</span>
-            <span class="welcome-text">님</span>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="dropdown-arrow">
-              <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+        <div class="header-user">
+          <div sec:authorize="isAuthenticated()" th:if="${currentUser != null}" class="user-dropdown">
+            <div class="user-welcome" onclick="toggleDropdown(event)">
+              <span class="welcome-text">어서오세요</span>
+              <span class="user-name" th:text="${currentUser.nickname} ?: '사용자'">닉네임</span>
+              <span class="welcome-text">님</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="dropdown-arrow">
+                <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <img
+                  class="profile-image"
+                  th:src="${#strings.isEmpty(currentUser.profileImage)} ? @{/images/auth-bg1.jpg} : ${currentUser.profileImage}"
+                  alt="프로필 이미지"
+              />
+            </div>
+            <div class="dropdown-menu">
+              <a th:href="@{/profile}" class="dropdown-item">👤 프로필</a>
+              <hr class="dropdown-divider">
+              <form class="dropdown-logout-form" th:action="@{/logout}" method="post">
+                <button type="submit" class="dropdown-item logout-item">🚪 로그아웃</button>
+              </form>
+            </div>
           </div>
-          <div class="dropdown-menu">
-            <a th:href="@{/profile}" class="dropdown-item">👤 프로필</a>
-            <hr class="dropdown-divider">
-            <form class="dropdown-logout-form" th:action="@{/logout}" method="post">
-              <button type="submit" class="dropdown-item logout-item">🚪 로그아웃</button>
-            </form>
+
+          <!-- 로그인 X -->
+          <div sec:authorize="isAnonymous()">
+            <a th:href="@{/login}" class="login-button">로그인</a>
           </div>
         </div>
-
-        <!-- 로그인 X -->
-        <div sec:authorize="isAnonymous()">
-          <a th:href="@{/login}" class="login-button">로그인</a>
-        </div>
-
       </div>
     </div>
   </header>
