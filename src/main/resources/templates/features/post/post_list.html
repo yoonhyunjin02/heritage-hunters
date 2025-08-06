@@ -50,13 +50,6 @@
           <button type="submit" class="search-btn" title="검색">
             🔍
           </button>
-          <button type="button"
-                  class="search-clear-btn"
-                  id="clearSearchBtn"
-                  th:style="${param.keyword != null and param.keyword != ''} ? 'display: block;' : 'display: none;'"
-                  title="검색어 지우기">
-            ✕
-          </button>
         </div>
       </div>
 
@@ -98,23 +91,11 @@
         <div class="region-filter-container">
           <select name="region" class="region-filter-select" onchange="submitForm()">
             <option value="">🌍 전체 지역</option>
-            <option value="11" th:selected="${param.region == '11'}">🏛️ 서울특별시</option>
-            <option value="21" th:selected="${param.region == '21'}">🌊 부산광역시</option>
-            <option value="22" th:selected="${param.region == '22'}">🏔️ 대구광역시</option>
-            <option value="23" th:selected="${param.region == '23'}">✈️ 인천광역시</option>
-            <option value="24" th:selected="${param.region == '24'}">🌸 광주광역시</option>
-            <option value="25" th:selected="${param.region == '25'}">🏛️ 대전광역시</option>
-            <option value="26" th:selected="${param.region == '26'}">🏭 울산광역시</option>
-            <option value="31" th:selected="${param.region == '31'}">🏞️ 경기도</option>
-            <option value="32" th:selected="${param.region == '32'}">⛰️ 강원특별자치도</option>
-            <option value="33" th:selected="${param.region == '33'}">🌿 충청북도</option>
-            <option value="34" th:selected="${param.region == '34'}">🌾 충청남도</option>
-            <option value="35" th:selected="${param.region == '35'}">🎭 전북특별자치도</option>
-            <option value="36" th:selected="${param.region == '36'}">🌺 전라남도</option>
-            <option value="37" th:selected="${param.region == '37'}">🏯 경상북도</option>
-            <option value="38" th:selected="${param.region == '38'}">🌊 경상남도</option>
-            <option value="45" th:selected="${param.region == '45'}">🏛️ 세종특별자치시</option>
-            <option value="50" th:selected="${param.region == '50'}">🏖️ 제주특별자치도</option>
+            <option th:each="regionCode : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getAllRegionCodes()}"
+                    th:value="${regionCode}"
+                    th:selected="${param.region == regionCode}"
+                    th:text="${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getKoreanName(regionCode)}">
+            </option>
           </select>
         </div>
 
@@ -128,21 +109,6 @@
             🔄 초기화
           </button>
 
-          <!-- 뷰 전환 버튼 -->
-          <div class="view-toggle-group">
-            <button type="button"
-                    id="gridViewBtn"
-                    class="control-btn view-btn active"
-                    title="그리드 보기">
-              ⊞
-            </button>
-            <button type="button"
-                    id="listViewBtn"
-                    class="control-btn view-btn"
-                    title="리스트 보기">
-              ☰
-            </button>
-          </div>
 
           <!-- 게시글 작성 버튼 -->
           <button type="button"
@@ -160,36 +126,6 @@
     </form>
   </section>
 
-  <!-- 결과 정보 및 통계 -->
-  <section class="result-info-section" th:if="${posts != null}">
-    <div class="result-stats">
-      <div class="stats-item">
-        <span class="stats-number" th:text="${posts.totalElements}">128</span>
-        <span class="stats-label">개의 게시글</span>
-      </div>
-
-      <div class="stats-divider">|</div>
-
-      <div class="stats-item" th:if="${posts.totalPages > 1}">
-        <span class="stats-number">
-          <span th:text="${posts.number + 1}">1</span>/<span th:text="${posts.totalPages}">8</span>
-        </span>
-        <span class="stats-label">페이지</span>
-      </div>
-
-      <!-- 현재 필터 표시 -->
-      <div class="active-filters" th:if="${param.keyword != null or param.region != null}">
-        <span class="filter-tag" th:if="${param.keyword != null and param.keyword != ''}">
-          🔍 "<span th:text="${param.keyword}">검색어</span>"
-          <button type="button" class="remove-filter" onclick="removeFilter('keyword')">✕</button>
-        </span>
-        <span class="filter-tag" th:if="${param.region != null and param.region != ''}">
-          📍 <span th:text="${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getShortName(param.region)}">서울</span>
-          <button type="button" class="remove-filter" onclick="removeFilter('region')">✕</button>
-        </span>
-      </div>
-    </div>
-  </section>
 
   <!-- 게시글 그리드 메인 섹션 -->
   <section class="posts-main-section">
@@ -399,13 +335,6 @@
       </a>
     </div>
 
-    <!-- 페이지 정보 -->
-    <div class="pagination-info">
-      <span>
-        총 <strong th:text="${posts.totalElements}">128</strong>개 중
-        <strong th:text="${posts.number * posts.size + 1}">1</strong>-<strong th:text="${T(java.lang.Math).min((posts.number + 1) * posts.size, posts.totalElements)}">16</strong>개 표시
-      </span>
-    </div>
   </nav>
 
   <!-- 스크롤 탑 버튼 -->

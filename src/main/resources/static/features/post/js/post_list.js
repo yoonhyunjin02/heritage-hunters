@@ -11,8 +11,6 @@ const PostListManager = {
     sortTabs: null,
     regionSelect: null,
     clearFiltersBtn: null,
-    gridViewBtn: null,
-    listViewBtn: null,
     postsContainer: null,
     scrollTopBtn: null,
     loadingOverlay: null,
@@ -28,7 +26,6 @@ const PostListManager = {
       direction: 'desc',
       page: 0
     },
-    viewMode: 'grid', // 'grid' 또는 'list'
     isLoading: false,
     searchDebounceTimer: null
   },
@@ -48,7 +45,6 @@ const PostListManager = {
     this.initElements();
     this.loadStateFromURL();
     this.bindEvents();
-    this.initViewMode();
     this.initScrollToTop();
     this.initLazyLoading();
     this.initQuickActions();
@@ -67,8 +63,6 @@ const PostListManager = {
       sortTabs: document.querySelectorAll('input[name="sort"]'),
       regionSelect: document.querySelector('.region-filter-select'),
       clearFiltersBtn: document.getElementById('clearFiltersBtn'),
-      gridViewBtn: document.getElementById('gridViewBtn'),
-      listViewBtn: document.getElementById('listViewBtn'),
       postsContainer: document.getElementById('postsContainer'),
       scrollTopBtn: document.getElementById('scrollToTopBtn'),
       loadingOverlay: document.getElementById('loadingOverlay'),
@@ -97,9 +91,6 @@ const PostListManager = {
       direction: urlParams.get('direction') || 'desc',
       page: parseInt(urlParams.get('page')) || 0
     };
-
-    // 뷰 모드 로드 (로컬 스토리지에서)
-    this.state.viewMode = localStorage.getItem('postListViewMode') || 'grid';
 
     console.log('PostListManager: URL 상태 로드됨', this.state.currentFilters);
   },
@@ -153,18 +144,6 @@ const PostListManager = {
     if (this.elements.clearFiltersBtn) {
       this.elements.clearFiltersBtn.addEventListener('click', () => {
         this.clearAllFilters();
-      });
-    }
-
-    // 뷰 모드 전환 버튼들
-    if (this.elements.gridViewBtn) {
-      this.elements.gridViewBtn.addEventListener('click', () => {
-        this.setViewMode('grid');
-      });
-    }
-    if (this.elements.listViewBtn) {
-      this.elements.listViewBtn.addEventListener('click', () => {
-        this.setViewMode('list');
       });
     }
 
@@ -344,8 +323,6 @@ const PostListManager = {
 
     this.updateURL();
     this.submitSearch();
-
-    this.showToast('필터가 초기화되었습니다.', 'info');
   },
 
   /**
@@ -365,41 +342,6 @@ const PostListManager = {
     }
   },
 
-  /**
-   * 뷰 모드 초기화
-   */
-  initViewMode() {
-    this.setViewMode(this.state.viewMode, false);
-  },
-
-  /**
-   * 뷰 모드 설정
-   */
-  setViewMode(mode, save = true) {
-    if (!['grid', 'list'].includes(mode)) return;
-
-    this.state.viewMode = mode;
-
-    // 버튼 활성화 상태 업데이트
-    if (this.elements.gridViewBtn) {
-      this.elements.gridViewBtn.classList.toggle('active', mode === 'grid');
-    }
-    if (this.elements.listViewBtn) {
-      this.elements.listViewBtn.classList.toggle('active', mode === 'list');
-    }
-
-    // 그리드 컨테이너 클래스 업데이트
-    if (this.elements.postsContainer) {
-      this.elements.postsContainer.className = mode === 'grid' ? 'posts-grid' : 'posts-list';
-    }
-
-    // 로컬 스토리지에 저장
-    if (save) {
-      localStorage.setItem('postListViewMode', mode);
-    }
-
-    console.log(`PostListManager: 뷰 모드 변경됨 - ${mode}`);
-  },
 
   /**
    * 스크롤 탑 버튼 초기화

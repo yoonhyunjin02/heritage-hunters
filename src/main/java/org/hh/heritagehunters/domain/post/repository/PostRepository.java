@@ -22,14 +22,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   Page<Post> findPostsWithFilters(@Param("keyword") String keyword,
                                   @Param("region") String region,
                                   Pageable pageable);
-
-  @Query("SELECT COUNT(p) FROM Post p " +
-         "WHERE (:keyword IS NULL OR :keyword = '' OR " +
-         "       LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-         "       LOWER(p.heritage.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-         "       LOWER(p.location) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-         "AND (:region IS NULL OR :region = '' OR p.heritage.region = :region)")
-  long countPostsWithFilters(@Param("keyword") String keyword,
-                            @Param("region") String region);
-
 }
