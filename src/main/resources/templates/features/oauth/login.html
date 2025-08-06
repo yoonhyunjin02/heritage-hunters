@@ -46,6 +46,11 @@
         <img src="/images/logo/github.svg" alt="GitHub 로고" style="height: 20px; vertical-align: middle;">
         <span>GitHub로 로그인</span>
       </a>
+
+      <!-- 소셜 로그인 에러 메시지 -->
+      <div th:if="${param.error}" class="error-message">
+        <span th:text="${param.error}"></span>
+      </div>
     </div>
 
     <p class="signin-text">
