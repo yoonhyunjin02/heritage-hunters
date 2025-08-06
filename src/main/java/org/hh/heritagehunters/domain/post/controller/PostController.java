@@ -19,11 +19,6 @@ public class PostController {
 
   private final PostService postService;
 
-  @GetMapping("/new")
-  public String createPostForm() {
-    return "feature/post/post_list";
-  }
-
   @GetMapping
   public String getPosts(
       @RequestParam(value = "keyword", required = false) String keyword,
@@ -37,29 +32,23 @@ public class PostController {
     log.debug("게시글 리스트 요청 - keyword: {}, region: {}, sort: {}, direction: {}, page: {}, size: {}", 
               keyword, region, sort, direction, page, size);
 
-    try {
-      // 게시글 조회
-      Page<Post> posts = postService.getPostsWithFilters(keyword, region, sort, direction, page, size);
-      
-      // 모델에 데이터 추가
-      model.addAttribute("posts", posts);
-      model.addAttribute("keyword", keyword);
-      model.addAttribute("region", region);
-      model.addAttribute("sort", sort);
-      model.addAttribute("direction", direction);
-      
-      // 현재 필터 정보
-      model.addAttribute("currentPage", page);
-      model.addAttribute("totalPages", posts.getTotalPages());
-      model.addAttribute("totalElements", posts.getTotalElements());
-      
-      log.debug("게시글 리스트 조회 완료 - 총 {}개 게시글, {}페이지 중 {}페이지", 
-                posts.getTotalElements(), posts.getTotalPages(), page + 1);
-
-    } catch (Exception e) {
-      log.error("게시글 리스트 조회 중 오류 발생", e);
-      model.addAttribute("error", "게시글을 불러오는 중 오류가 발생했습니다.");
-    }
+    // 게시글 조회 (예외는 PostService에서 처리하고 GlobalExceptionHandler로 전달)
+    Page<Post> posts = postService.getPostsWithFilters(keyword, region, sort, direction, page, size);
+    
+    // 모델에 데이터 추가
+    model.addAttribute("posts", posts);
+    model.addAttribute("keyword", keyword);
+    model.addAttribute("region", region);
+    model.addAttribute("sort", sort);
+    model.addAttribute("direction", direction);
+    
+    // 현재 필터 정보
+    model.addAttribute("currentPage", page);
+    model.addAttribute("totalPages", posts.getTotalPages());
+    model.addAttribute("totalElements", posts.getTotalElements());
+    
+    log.debug("게시글 리스트 조회 완료 - 총 {}개 게시글, {}페이지 중 {}페이지", 
+              posts.getTotalElements(), posts.getTotalPages(), page + 1);
     
     return "features/post/post_list";
   }
