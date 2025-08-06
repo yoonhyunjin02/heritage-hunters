@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>회원가입</title>
-  <link rel="stylesheet" th:href="@{/features/oauth/css/register.css}">
+  <link rel="stylesheet" th:href="@{/features/oauth/css/oauth.css}">
 </head>
 <body>
 <main class="auth-container">
@@ -39,7 +39,7 @@
         <div th:if="${#fields.hasErrors('passwordConfirm')}" th:errors="*{passwordConfirm}" class="error-message"></div>
       </div>
 
-      <button type="submit" class="btn-submit">가입하기</button>
+      <button type="submit" class="btn-submit">회원가입</button>
     </form>
 
     <p class="signin-text">

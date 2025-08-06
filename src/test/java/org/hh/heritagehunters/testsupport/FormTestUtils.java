@@ -43,4 +43,35 @@ public class FormTestUtils {
         .param("passwordConfirm", "Password1!")
         .with(csrf());
   }
+
+  // 로그인 성공 케이스
+  public static MockHttpServletRequestBuilder createValidLoginPostRequest() {
+    return post("/login")
+        .param("email", "test1234@gmail.com")         // ✅ DB에 등록된 이메일
+        .param("password", "asdf1234!!")              // ✅ DB에 등록된 비밀번호 (평문)
+        .with(csrf());
+  }
+
+  public static MockHttpServletRequestBuilder createLoginRequest(String email, String password) {
+    return post("/login")
+        .param("email", email)
+        .param("password", password)
+        .with(csrf());
+  }
+
+  // 존재하지 않는 이메일
+  public static MockHttpServletRequestBuilder createInvalidEmailLoginRequest() {
+    return post("/login")
+        .param("email", "notfound@example.com")
+        .param("password", "anyPassword")
+        .with(csrf());
+  }
+
+  // 비밀번호 틀림
+  public static MockHttpServletRequestBuilder createWrongPasswordLoginRequest() {
+    return post("/login")
+        .param("email", "test@example.com")
+        .param("password", "wrongPassword")
+        .with(csrf());
+  }
 }

@@ -1,9 +1,4 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://heritage-hunters.cx268qu2uk1o.eu-north-1.rds.amazonaws.com:5432/postgres
-    username: postgres
-    password: hh_password
-    driver-class-name: org.postgresql.Driver
 
   # JPA 설정
   jpa:
@@ -16,17 +11,19 @@ spring:
     user:
       name: admin
       password: 1234
-#    oauth2:
-#      client:
-#        registration:
-#          google:
-#            client-id: ${GOOGLE_CLIENT_ID}
-#            client-secret: ${GOOGLE_CLIENT_SECRET}
-#            scope: ${GOOGLE_SCOPE}
-#            redirect-uri: ${GOOGLE_REDIRECT_URI}
+
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${oauth.google.client-id}
+            client-secret: ${oauth.google.client-secret}
+            redirect-uri: ${oauth.google.redirect-uri-base}/login/oauth2/code/google
+            scope: ${oauth.google.scope}
 
 # 로그
 logging:
   level:
     org.hibernate.SQL: INFO
     org.hh.heritagehunters: DEBUG
+    org.springframework.core.env: DEBUG

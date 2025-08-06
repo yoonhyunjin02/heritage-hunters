@@ -28,4 +28,8 @@ public class User {
   private Integer score = 0;
 
   private String bio;
+
+  @Column(nullable = false)
+  private String provider = "local"; // 그 외 "google", "github", "naver" 등
+
 }

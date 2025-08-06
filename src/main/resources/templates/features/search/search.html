@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>국가유산 검색 | Heritage Hunters</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/common/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/features/search/css/search.css}" href="/src/main/resources/static/features/search/css/search.css" />
+  </head>
+  <body>
+    <div id="root">
+      <!-- 헤더 -->
+      <header th:replace="fragments/header :: header"></header>
+
+      <!-- 메인 -->
+      <main id="container" class="search">
+        <!-- 1. 검색창 -->
+        <section class="search__top">
+          <form id="search-form" th:action="@{/search}" method="get" class="search__form">
+            <label for="keyword" class="search__label">검색어</label>
+            <input type="text" id="keyword" name="keyword" placeholder="검색어를 입력해주세요" th:value="${keyword}" class="search__input" />
+            <button type="submit" class="search__btn">검색</button>
+          </form>
+        </section>
+
+        <!-- 2. 필터 컨트롤 -->
+        <div class="search__filter-controls">
+          <button type="button" class="search__action-btn search__reset-btn" id="reset-filters">초기화</button>
+
+          <button
+            type="button"
+            class="search__action-btn search__toggle-btn"
+            id="toggle-filters"
+            aria-expanded="${#lists.isEmpty(results)}"
+            th:text="${#lists.isEmpty(results)} 
+             ? '상세검색 닫기' 
+             : '상세검색 열기'"
+          >
+            상세검색 열기
+          </button>
+        </div>
+        <!-- 3. 다중 체크박스 필터 -->
+        <section
+          class="search__mid"
+          id="filter-panel"
+          th:classappend="${#lists.isEmpty(results)} 
+            ? ' search__mid--open' 
+            : ' search__mid--closed'"
+        >
+          <div class="search__filters">
+            <!-- 지정 종목 -->
+            <div class="search__filter search__filter--designation">
+              <h3 class="search__filter-title">지정 종목</h3>
+              <div class="search__filter-options">
+                <ul class="search__options-list">
+                  <li th:each="item : ${designationOptions}">
+                    <label class="search__option">
+                      <input
+                        type="checkbox"
+                        name="designation"
+                        th:value="${item}"
+                        th:checked="${item.equals('전체')} 
+                                     || ${selectedDesignations.contains(item)}"
+                      />
+                      <span th:text="${item}">전체</span>
+                    </label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- 지역 -->
+            <div class="search__filter search__filter--region">
+              <h3 class="search__filter-title">지역</h3>
+              <div class="search__filter-options">
+                <ul class="search__options-list">
+                  <li th:each="item : ${regionOptions}">
+                    <label class="search__option">
+                      <input
+                        type="checkbox"
+                        name="region"
+                        th:value="${item}"
+                        th:checked="${item.equals('전체')} 
+                                     || ${selectedRegions.contains(item)}"
+                      />
+                      <span th:text="${item}">전체</span>
+                    </label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- 시대 -->
+            <div class="search__filter search__filter--era">
+              <h3 class="search__filter-title">시대</h3>
+              <div class="search__filter-options">
+                <ul class="search__options-list">
+                  <li th:each="item : ${eraOptions}">
+                    <label class="search__option">
+                      <input
+                        type="checkbox"
+                        name="era"
+                        th:value="${item}"
+                        th:checked="${item.equals('전체')} 
+                                     || ${selectedEras.contains(item)}"
+                      />
+                      <span th:text="${item}">전체</span>
+                    </label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- 유형 분류 -->
+            <div class="search__filter search__filter--type">
+              <h3 class="search__filter-title">유형 분류</h3>
+              <div class="search__filter-options">
+                <ul class="search__options-list">
+                  <li th:each="item : ${typeOptions}">
+                    <label class="search__option">
+                      <input
+                        type="checkbox"
+                        name="type"
+                        th:value="${item}"
+                        th:checked="${item.equals('전체')} 
+                                     || ${selectedTypes.contains(item)}"
+                      />
+                      <span th:text="${item}">전체</span>
+                    </label>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="search__actions">
+            <button type="submit" form="search-form" class="search__btn">검색</button>
+          </div>
+        </section>
+
+        <!-- 3. 검색 결과 그리드 & 페이지네이션 -->
+        <section class="search__bottom">
+          <div class="search__results">
+            <div class="search__grid">
+              <article class="search__card" th:each="item : ${results}">
+                <img
+                  th:src="${item.thumbnailUrl}"
+                  src="https://www.heritage.go.kr/unisearch/images/national_treasure/thumb/2021042017434700.JPG?time=1754284453184"
+                  alt="유물 대표 이미지"
+                  class="search__card-image"
+                  loading="lazy"
+                />
+                <p class="search__card-designation" th:text="${item.designation}">국보</p>
+                <h4 class="search__card-title" th:text="${item.name}">숭례문</h4>
+                <p class="search__card-hanja" th:text="${item.nameHanja}">(崇禮門)</p>
+              </article>
+            </div>
+          </div>
+
+          <nav class="search__pagination" aria-label="페이지 네비게이션">
+            <ul class="search__pagination-list">
+              <li>
+                <a
+                  th:href="@{/search(page=1,
+                                    keyword=${keyword},
+                                    designation=${selectedDesignations},
+                                    region=${selectedRegions},
+                                    era=${selectedEras},
+                                    type=${selectedTypes})}"
+                  class="search__pagination-link"
+                >
+                  &lt;&lt;
+                </a>
+              </li>
+              <li th:if="${hasPrev}">
+                <a
+                  th:href="@{/search(page=${currentPage-1},
+                                    keyword=${keyword},
+                                    designation=${selectedDesignations},
+                                    region=${selectedRegions},
+                                    era=${selectedEras},
+                                    type=${selectedTypes})}"
+                  class="search__pagination-link"
+                >
+                  &lt;
+                </a>
+              </li>
+              <li th:each="pageNum : ${pageNumbers}">
+                <a
+                  th:href="@{/search(page=${pageNum},
+                                    keyword=${keyword},
+                                    designation=${selectedDesignations},
+                                    region=${selectedRegions},
+                                    era=${selectedEras},
+                                    type=${selectedTypes})}"
+                  th:text="${pageNum}"
+                  th:classappend="${pageNum == currentPage} 
+                                   ? ' search__pagination-link--active' 
+                                   : ''"
+                  class="search__pagination-link"
+                >
+                  1
+                </a>
+              </li>
+              <li th:if="${hasNext}">
+                <a
+                  th:href="@{/search(page=${currentPage+1},
+                                    keyword=${keyword},
+                                    designation=${selectedDesignations},
+                                    region=${selectedRegions},
+                                    era=${selectedEras},
+                                    type=${selectedTypes})}"
+                  class="search__pagination-link"
+                >
+                  &gt;
+                </a>
+              </li>
+              <li>
+                <a
+                  th:href="@{/search(page=${totalPages},
+                                    keyword=${keyword},
+                                    designation=${selectedDesignations},
+                                    region=${selectedRegions},
+                                    era=${selectedEras},
+                                    type=${selectedTypes})}"
+                  class="search__pagination-link"
+                >
+                  &gt;&gt;
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </section>
+      </main>
+
+      <!-- 푸터 -->
+      <footer th:replace="fragments/footer :: footer"></footer>
+    </div>
+
+    <!-- JS -->
+    <script type="module" th:src="@{/features/search/js/search.js}"></script>
+  </body>
+</html>

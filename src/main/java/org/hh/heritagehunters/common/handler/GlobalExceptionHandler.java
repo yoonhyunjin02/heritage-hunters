@@ -5,10 +5,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.hh.heritagehunters.common.exception.BadRequestException;
 import org.hh.heritagehunters.common.exception.ConflictException;
+import org.hh.heritagehunters.common.exception.oauth.DuplicateEmailException;
+import org.hh.heritagehunters.common.exception.oauth.DuplicateNicknameException;
 import org.hh.heritagehunters.common.exception.InternalServerErrorException;
 import org.hh.heritagehunters.common.exception.NotFoundException;
+import org.hh.heritagehunters.common.exception.oauth.PasswordMismatchException;
 import org.hh.heritagehunters.common.exception.UnauthorizedException;
 import org.springframework.http.HttpStatus;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -170,6 +174,20 @@ public class GlobalExceptionHandler {
 
     addToastMessage(redirectAttributes, "error", errorMessage);
     return redirectToPreviousPage(request);
+  }
+
+  /**
+   * DuplicateEmailException, DuplicateNicknameException, PasswordMismatchException
+   * oauth 회원가입관련 요청 처리
+   */
+  @ExceptionHandler({
+      DuplicateEmailException.class,
+      DuplicateNicknameException.class,
+      PasswordMismatchException.class
+  })
+  public String handleRegisterExceptions(RuntimeException e, Model model) {
+    model.addAttribute("registerError", e.getMessage());
+    return "features/oauth/register";
   }
 
   // ================= 유틸리티 메서드들 =================

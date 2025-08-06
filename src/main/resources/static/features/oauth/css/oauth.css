@@ -54,3 +54,33 @@ input {
   margin-top: 1rem;
   text-align: center;
 }
+.social-login {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.btn-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.65rem 1rem;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  color: #444;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-social:hover {
+  background-color: #f0f0f0;
+}
+
+.btn-social img {
+  height: 20px;
+}
