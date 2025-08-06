@@ -1,6 +1,7 @@
 package org.hh.heritagehunters.domain.search.util;
 
 import java.util.Map;
+import java.util.Set;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -55,5 +56,15 @@ public class RegionCodeMapper {
    */
   public static String getShortName(String code) {
     return CODE_TO_SHORT_NAME.getOrDefault(code, "미분류");
+  }
+
+  /**
+   * 모든 지역 코드 목록 조회 (ZZ 제외)
+   */
+  public static Set<String> getAllRegionCodes() {
+    return CODE_TO_NAME.entrySet().stream()
+        .filter(entry -> !"ZZ".equals(entry.getKey())) // 전국일원 제외
+        .map(java.util.Map.Entry::getKey)
+        .collect(java.util.stream.Collectors.toSet());
   }
 }
