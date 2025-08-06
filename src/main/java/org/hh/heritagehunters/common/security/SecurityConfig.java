@@ -50,6 +50,15 @@ public class SecurityConfig {
             .userInfoEndpoint(userInfo -> userInfo
                 .userService(customOAuth2UserService)
             )
+            .failureHandler((request, response, exception) -> {
+              exception.printStackTrace(); // 개발 중 디버깅
+              String message = exception.getMessage();
+              if (message == null || message.trim().isEmpty()) {
+                message = "알 수 없는 오류가 발생했습니다.";
+              }
+              String encodedMessage = java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
+              response.sendRedirect("/login?error=" + encodedMessage);
+            })
             .defaultSuccessUrl("/main", true)
         )
         .logout(logout -> logout

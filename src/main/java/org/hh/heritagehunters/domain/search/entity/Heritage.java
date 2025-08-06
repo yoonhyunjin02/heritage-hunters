@@ -2,8 +2,6 @@ package org.hh.heritagehunters.domain.search.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,7 +22,7 @@ public class Heritage {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "name", nullable = false, columnDefinition = "TEXT")
+  @Column(name = "name", columnDefinition = "TEXT", nullable = false)
   private String name;
 
   @Column(name = "name_hanja", columnDefinition = "TEXT")
@@ -36,10 +34,10 @@ public class Heritage {
   @Column(name = "description", columnDefinition = "TEXT")
   private String description;
 
-  @Column(name = "designation", columnDefinition = "TEXT")
+  @Column(name = "designation", length = 50, nullable = true)
   private String designation;
 
-  @Column(name = "region", columnDefinition = "TEXT")
+  @Column(name = "region", length = 50, nullable = true)
   private String region;
 
   @Column(name = "address", columnDefinition = "TEXT")
@@ -53,5 +51,4 @@ public class Heritage {
 
   @Column(name = "longitude", precision = 12, scale = 8)
   private BigDecimal longitude;
-
 }
