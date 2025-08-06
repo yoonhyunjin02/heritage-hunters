@@ -67,7 +67,11 @@
     </p>
   </section>
 </main>
-<script defer th:src="@{/common/js/header.js}"></script>
+
+<!--footer-->
+<div th:replace="~{fragments/footer :: common-footer}"></div>
+
+<!--js-->
 <script defer th:src="@{/features/oauth/js/oauth.js}"></script>
 </body>
 </html>

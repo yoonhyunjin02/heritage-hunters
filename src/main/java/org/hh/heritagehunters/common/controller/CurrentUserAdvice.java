@@ -5,21 +5,14 @@ import org.hh.heritagehunters.common.security.CustomUserDetails;
 import org.hh.heritagehunters.domain.oauth.service.CustomUserDetailsService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 @ControllerAdvice
 @RequiredArgsConstructor
-public class WebController {
+public class CurrentUserAdvice  {
 
   private final CustomUserDetailsService customUserDetailsService;
-
-  @GetMapping("/")
-  public String redirectToMain() {
-    return "redirect:/main";
-  }
 
   @ModelAttribute("currentUser")
   public CustomUserDetails addCurrentUser(@AuthenticationPrincipal Object principal) {
