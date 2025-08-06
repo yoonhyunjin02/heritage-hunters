@@ -41,6 +41,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         email = (String) attributes.get("email");
         name = (String) attributes.get("name");
         picture = (String) attributes.get("picture");
+
       } else if ("github".equals(registrationId)) {
         name = (String) attributes.get("name");
         if (name == null) name = (String) attributes.get("login");
@@ -49,6 +50,21 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         // GitHub의 /user/emails API를 사용 -> primary, verified인 이메일을 강제로 직접 요청
         // 비공개된 이메일도 받을 수 있음
         email = fetchGithubEmail(userRequest.getAccessToken().getTokenValue());
+
+      } else if ("naver".equals(registrationId)) {
+        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+
+        email = (String) response.get("email");
+        String rawNickname = (String) response.get("nickname");
+        String rawName = (String) response.get("name");
+        picture = (String) response.get("profile_image");
+
+        // 닉네임 선택 우선순위: nickname > name > "naver_user"
+        name = rawNickname != null && !rawNickname.isBlank() ? rawNickname
+            : rawName != null && !rawName.isBlank() ? rawName
+                : "naver_user";
+
+        attributes = response;
       }
 
       if (email == null) {
@@ -103,7 +119,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     return userRepository.save(newUser);
   }
 
-  // 🔥 GitHub 이메일 직접 요청
+  // GitHub 이메일 직접 요청
   private String fetchGithubEmail(String accessToken) {
     String emailEndpoint = "https://api.github.com/user/emails";
 

@@ -47,6 +47,12 @@
         <span>GitHub로 로그인</span>
       </a>
 
+      <!-- Naver 로그인 버튼 -->
+      <a href="/oauth2/authorization/naver" class="btn-social btn-naver" style="margin-top: 10px;">
+        <img src="/images/logo/naver.svg" alt="Naver 로고" style="height: 20px; vertical-align: middle;">
+        <span>Naver로 로그인</span>
+      </a>
+
       <!-- 소셜 로그인 에러 메시지 -->
       <div th:if="${param.error}" class="error-message">
         <span th:text="${param.error}"></span>
