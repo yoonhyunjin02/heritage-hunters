@@ -1,32 +1,36 @@
 package org.hh.heritagehunters.domain.search.controller;
 
-import org.hh.heritagehunters.domain.search.entity.Heritage;
+import lombok.RequiredArgsConstructor;
+import org.hh.heritagehunters.domain.search.dto.HeritageResponse;
+import org.hh.heritagehunters.domain.search.dto.HeritageSearchRequest;
+import org.hh.heritagehunters.domain.search.service.HeritageService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
-@RequestMapping("/api/heritages")
+@RestController
+@RequestMapping("/heritages")
+@RequiredArgsConstructor
 public class HeritageController {
 
-  @GetMapping
-  public ResponseEntity<?> getHeritages(
-      @RequestParam(defaultValue = "0") int page,
-      @RequestParam(required = false) String designation,
-      @RequestParam(required = false) String category,
-      @RequestParam(required = false) String region,
-      @RequestParam(required = false) String keyword
-  ) {
+  private final HeritageService service;
 
-    return ResponseEntity.ok();
+  @GetMapping
+  public ResponseEntity<Page<HeritageResponse>> getHeritages(
+      HeritageSearchRequest request
+  ) {
+    Page<HeritageResponse> result = service.search(request);
+    return ResponseEntity.ok(result);
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Heritage> getHeritageDetail(Model model) {
-
-    return ResponseEntity.ok();
+  public ResponseEntity<HeritageResponse> getHeritageDetail(
+      @PathVariable Long id
+  ) {
+    HeritageResponse detail = service.getDetail(id);
+    return ResponseEntity.ok(detail);
   }
 }

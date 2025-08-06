@@ -1,0 +1,284 @@
+/*----------------------------------------
+  Variables
+----------------------------------------*/
+:root {
+  --primary-color: #005a9c;
+  --secondary-color: #f2f2f2;
+  --bg-light: #fff;
+  --text-color: #333;
+  --border-color: #ddd;
+  --spacing-unit: 1rem;
+  --filter-height: 200px;
+}
+
+/*----------------------------------------
+  Search Container
+----------------------------------------*/
+.search {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-unit);
+  box-sizing: border-box;
+  background: var(--bg-light);
+}
+
+/*----------------------------------------
+  Top Section & Form
+----------------------------------------*/
+.search-top {
+  margin: calc(var(--spacing-unit) * 2) 0 var(--spacing-unit);
+}
+
+.search__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-unit);
+}
+
+.search__label {
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.search__input {
+  flex: 1;
+  padding: 0.5em var(--spacing-unit);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/*----------------------------------------
+  Buttons
+----------------------------------------*/
+.search__btn {
+  padding: 0.5em var(--spacing-unit);
+  border: 1px solid var(--primary-color);
+  background-color: var(--primary-color);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.search__btn:hover {
+  background-color: #003f6b;
+}
+
+/*----------------------------------------
+  Filter Panel Toggle & Panel
+----------------------------------------*/
+.search__filter-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  margin-right: var(--spacing-unit);
+}
+
+.search__action-btn {
+  padding: 0.5em 1em;
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  border-radius: 4px 4px 0 0;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.search__action-btn:hover {
+  background-color: var(--border-color);
+}
+
+.search-mid {
+  background-color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+  margin-top: -1px; /* overlap with button’s bottom edge */
+  border-radius: 0 0 4px 4px;
+  padding: var(--spacing-unit);
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.search-mid--open {
+  max-height: 1000px; /* 충분히 큰 값 */
+}
+
+.search-mid--closed {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/*----------------------------------------
+  Filter Options Layout
+----------------------------------------*/
+.search__filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-unit);
+}
+
+.search__filter {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: calc(var(--spacing-unit) / 2);
+  display: flex;
+  flex-direction: column;
+}
+
+.search__filter-title {
+  margin-bottom: 0.5em;
+  font-size: 1rem;
+  color: var(--text-color);
+}
+
+.search__filter-options {
+  height: var(--filter-height);
+  overflow-y: auto;
+  padding-right: 0.5em;
+}
+
+.search__options-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.search__option {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5em;
+}
+
+.search__option input {
+  margin-right: 0.5em;
+}
+
+/*----------------------------------------
+  Actions (Apply / Reset)
+----------------------------------------*/
+.search__actions {
+  margin-top: var(--spacing-unit);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-unit);
+}
+
+/*----------------------------------------
+  Results Grid & Cards
+----------------------------------------*/
+.search__results {
+  margin-top: var(--spacing-unit);
+}
+
+.search__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-unit);
+}
+
+.search__card {
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.search__card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search__card-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.search__card-designation {
+  margin: 0.5em 0;
+  font-size: 0.9em;
+  color: var(--primary-color);
+}
+
+.search__card-title {
+  margin: 0.25em 0;
+  font-size: 1.1em;
+  color: var(--text-color);
+}
+
+.search__card-hanja {
+  margin-bottom: 0.5em;
+  font-size: 0.9em;
+  color: var(--border-color);
+}
+
+/*----------------------------------------
+  Pagination
+----------------------------------------*/
+.search__pagination {
+  margin-top: var(--spacing-unit);
+}
+
+.search__pagination-list {
+  display: flex;
+  justify-content: center;
+  gap: 0.5em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.search__pagination-link {
+  display: block;
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--primary-color);
+  background-color: var(--bg-light);
+  color: var(--primary-color);
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.search__pagination-link:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+.search__pagination-link--active {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+/*----------------------------------------
+  Responsive Breakpoints
+----------------------------------------*/
+@media (max-width: 1024px) {
+  .search__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .search__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .search__grid {
+    grid-template-columns: 1fr;
+  }
+}
