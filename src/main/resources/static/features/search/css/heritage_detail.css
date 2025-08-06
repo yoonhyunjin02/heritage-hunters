@@ -70,6 +70,7 @@ main {
 ----------------------------------------*/
 .heritage__summary {
   display: flex;
+  align-items: center;
   gap: var(--spacing-unit);
   flex-wrap: wrap;
   margin-top: calc(var(--spacing-unit) * 2);
@@ -80,6 +81,7 @@ main {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
   gap: 3%;
   background: #ffffff;
   border: 1px solid var(--border-color);
@@ -92,8 +94,15 @@ main {
   margin: 0;
 }
 
+.heritage__summary__info figcaption {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  /* margin-top: 0.5rem; */
+  text-align: center;
+}
+
 .heritage__summary__info img {
-  width: 200px;
+  width: 350px;
   max-width: 100%;
   height: auto;
   border-radius: 4px;
@@ -137,9 +146,14 @@ main {
   padding: var(--spacing-unit);
   color: var(--text-color);
   font-size: 0.9rem;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
+}
+
+.heritage__summary__ai > div strong {
+  display: inline-block;
+  font-weight: 700;
+  margin-right: 0.5rem;
 }
 
 .heritage__summary__ai__news {

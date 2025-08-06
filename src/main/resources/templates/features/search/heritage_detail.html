@@ -57,16 +57,17 @@
           </div>
 
           <aside class="heritage__summary__ai">
-            <div class="heritage__summary__ai__news" th:text="${heritage.aiNews}">
-              <strong>AI뉴스: </strong> 해당 지역의 최신 뉴스가 없습니다.해당 지역의 최신 뉴스가 없습니다.해당 지역의 최신 뉴스가 없습니다.해당 지역의 최신
-              뉴스가 없습니다.해당 지역의 최신 뉴스가 없습니다.해당 지역의 최신 뉴스가 없습니다.
+            <div class="heritage__summary__ai__news">
+              <strong>AI뉴스: </strong>
+              <span th:text="${heritage.aiNews}">해당 지역의 최신 뉴스가 없습니다.</span>
             </div>
-            <div class="heritage__summary__ai__weather" th:text="${heritage.aiWeather}">
-              <strong>AI날씨: </strong> 33°C 맑은 날씨에요.33°C 맑은 날씨에요.33°C 맑은 날씨에요.33°C 맑은 날씨에요.33°C 맑은 날씨에요.33°C 맑은 날씨에요.
+            <div class="heritage__summary__ai__weather">
+              <strong>AI날씨: </strong>
+              <span th:text="${heritage.aiWeather}">33°C 맑은 날씨에요.</span>
             </div>
-            <div class="heritage__summary__ai__content-summary" th:text="${heritage.aiSummary}">
-              <strong>AI요약: </strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit.Lorem ipsum dolor sit amet, consectetur adipiscing elit.Lorem
-              ipsum dolor sit amet, consectetur adipiscing elit.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            <div class="heritage__summary__ai__content-summary">
+              <strong>AI요약: </strong>
+              <span th:text="${heritage.aiSummary}"> Lorem ipsum dolor sit amet, consectetur adipiscing elit. </span>
             </div>
           </aside>
         </section>
