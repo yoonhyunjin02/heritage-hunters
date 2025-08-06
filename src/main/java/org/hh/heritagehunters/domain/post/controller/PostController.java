@@ -18,6 +18,11 @@ public class PostController {
   @GetMapping("/new")
   public String createPostForm() {
     // 게시글 작성 폼으로 이동
-    return "features/post/create_post";
+    return "post_write";
+  }
+
+  @GetMapping
+  public String getPosts() {
+    return "features/post/post_list";
   }
 }

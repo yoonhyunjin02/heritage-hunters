@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>게시글 페이지 - Heritage Hunters</title>
+
+  <!-- CSS 파일들 -->
+  <link rel="stylesheet" th:href="@{/common/css/common.css}">
+  <link rel="stylesheet" th:href="@{/features/post/css/post_list.css}">
+  <link rel="stylesheet" th:href="@{/features/post/css/post_modal.css}">
+</head>
+<body>
+
+<!-- Header Fragment -->
+<!--<div th:replace="~{fragments/header :: header}"></div>-->
+
+<main class="main-content">
+
+  <!-- 페이지 제목 섹션 -->
+  <section class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">📸 게시글 페이지</h1>
+      <p class="page-description">문화유산 탐방 기록을 공유하고 소통해보세요</p>
+    </div>
+
+    <!-- 게시글 작성 버튼 (모바일용 상단) -->
+    <button type="button"
+            id="mobilePostBtn"
+            class="mobile-post-btn"
+            sec:authorize="isAuthenticated()">
+      ✏️ 게시글 작성
+    </button>
+  </section>
+
+  <!-- 검색 및 필터 영역 -->
+  <section class="search-filter-section">
+    <form th:action="@{/posts}" method="get" class="search-form" id="searchForm">
+
+      <!-- 메인 검색바 -->
+      <div class="search-container">
+        <div class="search-input-wrapper">
+          <input type="text"
+                 name="keyword"
+                 th:value="${param.keyword}"
+                 placeholder="문화유산 이름이나 지역을 검색하세요..."
+                 class="search-input"
+                 id="searchInput">
+          <button type="submit" class="search-btn" title="검색">
+            🔍
+          </button>
+          <button type="button"
+                  class="search-clear-btn"
+                  id="clearSearchBtn"
+                  th:style="${param.keyword != null and param.keyword != ''} ? 'display: block;' : 'display: none;'"
+                  title="검색어 지우기">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- 필터 컨트롤 바 -->
+      <div class="filter-controls">
+
+        <!-- 정렬 필터 (탭 형식) -->
+        <div class="sort-filter-tabs">
+          <input type="radio" name="sort" value="createdAt" id="sort-time"
+                 th:checked="${param.sort == null or param.sort == 'createdAt'}"
+                 onchange="submitForm()">
+          <label for="sort-time" class="sort-tab">
+            ⏰ 최신순
+          </label>
+
+          <input type="radio" name="sort" value="viewCount" id="sort-view"
+                 th:checked="${param.sort == 'viewCount'}"
+                 onchange="submitForm()">
+          <label for="sort-view" class="sort-tab">
+            👁️ 조회순
+          </label>
+
+          <input type="radio" name="sort" value="likeCount" id="sort-like"
+                 th:checked="${param.sort == 'likeCount'}"
+                 onchange="submitForm()">
+          <label for="sort-like" class="sort-tab">
+            ❤️ 좋아요순
+          </label>
+
+          <input type="radio" name="sort" value="commentCount" id="sort-comment"
+                 th:checked="${param.sort == 'commentCount'}"
+                 onchange="submitForm()">
+          <label for="sort-comment" class="sort-tab">
+            💬 댓글순
+          </label>
+        </div>
+
+        <!-- 지역 필터 드롭다운 -->
+        <div class="region-filter-container">
+          <select name="region" class="region-filter-select" onchange="submitForm()">
+            <option value="">🌍 전체 지역</option>
+            <option value="11" th:selected="${param.region == '11'}">🏛️ 서울특별시</option>
+            <option value="21" th:selected="${param.region == '21'}">🌊 부산광역시</option>
+            <option value="22" th:selected="${param.region == '22'}">🏔️ 대구광역시</option>
+            <option value="23" th:selected="${param.region == '23'}">✈️ 인천광역시</option>
+            <option value="24" th:selected="${param.region == '24'}">🌸 광주광역시</option>
+            <option value="25" th:selected="${param.region == '25'}">🏛️ 대전광역시</option>
+            <option value="26" th:selected="${param.region == '26'}">🏭 울산광역시</option>
+            <option value="31" th:selected="${param.region == '31'}">🏞️ 경기도</option>
+            <option value="32" th:selected="${param.region == '32'}">⛰️ 강원특별자치도</option>
+            <option value="33" th:selected="${param.region == '33'}">🌿 충청북도</option>
+            <option value="34" th:selected="${param.region == '34'}">🌾 충청남도</option>
+            <option value="35" th:selected="${param.region == '35'}">🎭 전북특별자치도</option>
+            <option value="36" th:selected="${param.region == '36'}">🌺 전라남도</option>
+            <option value="37" th:selected="${param.region == '37'}">🏯 경상북도</option>
+            <option value="38" th:selected="${param.region == '38'}">🌊 경상남도</option>
+            <option value="45" th:selected="${param.region == '45'}">🏛️ 세종특별자치시</option>
+            <option value="50" th:selected="${param.region == '50'}">🏖️ 제주특별자치도</option>
+          </select>
+        </div>
+
+        <!-- 추가 컨트롤 버튼들 -->
+        <div class="control-buttons">
+          <!-- 필터 초기화 버튼 -->
+          <button type="button"
+                  id="clearFiltersBtn"
+                  class="control-btn reset-btn"
+                  title="필터 초기화">
+            🔄 초기화
+          </button>
+
+          <!-- 뷰 전환 버튼 -->
+          <div class="view-toggle-group">
+            <button type="button"
+                    id="gridViewBtn"
+                    class="control-btn view-btn active"
+                    title="그리드 보기">
+              ⊞
+            </button>
+            <button type="button"
+                    id="listViewBtn"
+                    class="control-btn view-btn"
+                    title="리스트 보기">
+              ☰
+            </button>
+          </div>
+
+          <!-- 게시글 작성 버튼 -->
+          <button type="button"
+                  id="openPostModal"
+                  class="control-btn new-post-btn"
+                  sec:authorize="isAuthenticated()">
+            ➕ 게시글 작성
+          </button>
+        </div>
+      </div>
+
+      <!-- 숨겨진 파라미터들 -->
+      <input type="hidden" name="direction" th:value="${param.direction ?: 'desc'}">
+      <input type="hidden" name="page" value="0">
+    </form>
+  </section>
+
+  <!-- 결과 정보 및 통계 -->
+  <section class="result-info-section" th:if="${posts != null}">
+    <div class="result-stats">
+      <div class="stats-item">
+        <span class="stats-number" th:text="${posts.totalElements}">128</span>
+        <span class="stats-label">개의 게시글</span>
+      </div>
+
+      <div class="stats-divider">|</div>
+
+      <div class="stats-item" th:if="${posts.totalPages > 1}">
+        <span class="stats-number">
+          <span th:text="${posts.number + 1}">1</span>/<span th:text="${posts.totalPages}">8</span>
+        </span>
+        <span class="stats-label">페이지</span>
+      </div>
+
+      <!-- 현재 필터 표시 -->
+      <div class="active-filters" th:if="${param.keyword != null or param.region != null}">
+        <span class="filter-tag" th:if="${param.keyword != null and param.keyword != ''}">
+          🔍 "<span th:text="${param.keyword}">검색어</span>"
+          <button type="button" class="remove-filter" onclick="removeFilter('keyword')">✕</button>
+        </span>
+        <span class="filter-tag" th:if="${param.region != null and param.region != ''}">
+          📍 <span th:text="${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getShortName(param.region)}">서울</span>
+          <button type="button" class="remove-filter" onclick="removeFilter('region')">✕</button>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 게시글 그리드 메인 섹션 -->
+  <section class="posts-main-section">
+
+    <!-- 게시글 그리드 (4×4 = 16개) -->
+    <div class="posts-grid" id="postsContainer" th:if="${posts != null and !posts.empty}">
+
+      <article class="post-card"
+               th:each="post, iterStat : ${posts.content}"
+               th:data-post-id="${post.id}"
+               th:data-index="${iterStat.index}">
+
+        <a th:href="@{/posts/{id}(id=${post.id})}" class="post-link">
+
+          <!-- 메인 이미지 영역 -->
+          <div class="post-image-container">
+            <img th:if="${post.mainImageUrl != null}"
+                 th:src="${post.mainImageUrl}"
+                 th:alt="${post.heritage.name + ' - ' + post.content}"
+                 class="post-image"
+                 loading="lazy"
+                 onerror="this.src='/images/heritage-placeholder.jpg'">
+
+            <!-- 이미지 없음 플레이스홀더 -->
+            <div th:unless="${post.mainImageUrl != null}" class="post-image-placeholder">
+              <span class="placeholder-icon">🏛️</span>
+              <span class="placeholder-text">이미지 없음</span>
+            </div>
+
+            <!-- 이미지 개수 표시 (2개 이상일 때) -->
+            <div class="image-count-badge" th:if="${post.images.size() > 1}">
+              📷 <span th:text="${post.images.size()}">3</span>
+            </div>
+
+            <!-- 종목 배지 -->
+            <div class="designation-badge-container">
+              <span class="designation-badge"
+                    th:data-designation="${post.heritage.designation}"
+                    th:text="${T(org.hh.heritagehunters.domain.search.util.DesignationCodeMapper).getKoreanName(post.heritage.designation)}">
+                국보
+              </span>
+            </div>
+
+            <!-- 호버 오버레이 -->
+            <div class="post-overlay">
+              <div class="overlay-content">
+                <h3 class="overlay-title" th:text="${post.heritage.name}">서울 숭례문</h3>
+                <p class="overlay-preview"
+                   th:text="${#strings.length(post.content) > 30 ? #strings.substring(post.content, 0, 30) + '...' : post.content}">
+                  정말 아름다운 문화유산이에요...
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 게시글 정보 영역 -->
+          <div class="post-info">
+
+            <!-- 문화유산 이름 -->
+            <h3 class="heritage-name" th:text="${post.heritage.name}">서울 숭례문</h3>
+
+            <!-- 위치 정보 -->
+            <p class="location-info">
+              📍 <span th:text="${#strings.length(post.location) > 20 ? #strings.substring(post.location, 0, 20) + '...' : post.location}">서울 중구 세종대로</span>
+            </p>
+
+            <!-- 게시글 메타 정보 -->
+            <div class="post-meta">
+
+              <!-- 작성자 정보 -->
+              <div class="author-info">
+                <img th:if="${post.user.profile_image != null}"
+                     th:src="${post.user.profile_image}"
+                     th:alt="${post.user.nickname}"
+                     class="author-avatar-small">
+                <div th:unless="${post.user.profile_image != null}"
+                     class="author-avatar-small-placeholder">
+                  <span th:text="${#strings.substring(post.user.nickname, 0, 1)}">H</span>
+                </div>
+                <span class="author-name" th:text="${post.user.nickname}">헌터123</span>
+              </div>
+
+              <!-- 작성일 -->
+              <time class="post-date"
+                    th:datetime="${post.createdAt}"
+                    th:text="${#temporals.format(post.createdAt, 'MM.dd')}">
+                01.15
+              </time>
+            </div>
+
+            <!-- 게시글 통계 -->
+            <div class="post-stats">
+              <span class="stat-item" th:if="${post.viewCount > 0}">
+                👁️ <span th:text="${post.viewCount}">127</span>
+              </span>
+              <span class="stat-item" th:if="${post.likeCount > 0}">
+                ❤️ <span th:text="${post.likeCount}">23</span>
+              </span>
+              <span class="stat-item" th:if="${post.commentCount > 0}">
+                💬 <span th:text="${post.commentCount}">8</span>
+              </span>
+            </div>
+          </div>
+        </a>
+
+        <!-- 빠른 액션 버튼들 (호버시 표시) -->
+        <div class="quick-actions" sec:authorize="isAuthenticated()">
+          <button class="quick-action-btn like-btn"
+                  th:data-post-id="${post.id}"
+                  th:class="'quick-action-btn like-btn' + (${post.isLikedByCurrentUser} ? ' active' : '')"
+                  title="좋아요">
+            ❤️
+          </button>
+          <button class="quick-action-btn comment-btn"
+                  th:onclick="'goToPost(' + ${post.id} + ', true)'"
+                  title="댓글 달기">
+            💬
+          </button>
+          <button class="quick-action-btn share-btn"
+                  th:onclick="'sharePost(' + ${post.id} + ')'"
+                  title="공유하기">
+            📤
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <!-- 빈 상태 (게시글이 없을 때) -->
+    <div th:if="${posts == null or posts.empty}" class="empty-state">
+      <div class="empty-content">
+        <div class="empty-icon">🏛️</div>
+        <h3 class="empty-title">조건에 맞는 게시글이 없습니다</h3>
+        <p class="empty-description">
+          <span th:if="${param.keyword != null or param.region != null}">
+            다른 검색어나 필터를 사용해보세요
+          </span>
+          <span th:unless="${param.keyword != null or param.region != null}">
+            첫 번째 게시글을 작성해보세요!
+          </span>
+        </p>
+
+        <div class="empty-actions">
+          <button type="button"
+                  id="openPostModalEmpty"
+                  class="btn-primary"
+                  sec:authorize="isAuthenticated()">
+            ✏️ 첫 번째 게시글 작성하기
+          </button>
+
+          <a th:href="@{/posts}"
+             class="btn-secondary"
+             th:if="${param.keyword != null or param.region != null}">
+            🔄 전체 게시글 보기
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 페이지네이션 -->
+  <nav class="pagination-nav" th:if="${posts != null and posts.totalPages > 1}">
+    <div class="pagination">
+
+      <!-- 첫 페이지 -->
+      <a th:if="${posts.number > 0}"
+         th:href="@{/posts(page=0, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
+         class="page-btn first-page"
+         title="첫 페이지">
+        ⏮️ 처음
+      </a>
+
+      <!-- 이전 페이지 -->
+      <a th:if="${posts.number > 0}"
+         th:href="@{/posts(page=${posts.number - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
+         class="page-btn prev-page">
+        ‹ 이전
+      </a>
+
+      <!-- 페이지 번호들 -->
+      <div class="page-numbers">
+        <span th:each="i : ${#numbers.sequence(T(java.lang.Math).max(0, posts.number - 2), T(java.lang.Math).min(posts.totalPages - 1, posts.number + 2))}">
+          <a th:if="${i != posts.number}"
+             th:href="@{/posts(page=${i}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
+             th:text="${i + 1}"
+             class="page-btn page-number">
+          </a>
+          <span th:if="${i == posts.number}"
+                th:text="${i + 1}"
+                class="page-btn page-number active">
+          </span>
+        </span>
+      </div>
+
+      <!-- 다음 페이지 -->
+      <a th:if="${posts.number < posts.totalPages - 1}"
+         th:href="@{/posts(page=${posts.number + 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
+         class="page-btn next-page">
+        다음 ›
+      </a>
+
+      <!-- 마지막 페이지 -->
+      <a th:if="${posts.number < posts.totalPages - 1}"
+         th:href="@{/posts(page=${posts.totalPages - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
+         class="page-btn last-page"
+         title="마지막 페이지">
+        마지막 ⏭️
+      </a>
+    </div>
+
+    <!-- 페이지 정보 -->
+    <div class="pagination-info">
+      <span>
+        총 <strong th:text="${posts.totalElements}">128</strong>개 중
+        <strong th:text="${posts.number * posts.size + 1}">1</strong>-<strong th:text="${T(java.lang.Math).min((posts.number + 1) * posts.size, posts.totalElements)}">16</strong>개 표시
+      </span>
+    </div>
+  </nav>
+
+  <!-- 스크롤 탑 버튼 -->
+  <button id="scrollToTopBtn" class="scroll-to-top-btn" title="맨 위로">
+    ↑
+  </button>
+</main>
+
+<!-- Footer Fragment -->
+<!--<div th:replace="~{fragments/footer :: footer}"></div>-->
+
+<!-- 게시글 작성 모달 포함 -->
+<div th:replace="~{features/post/post_write_modal :: postWriteModal}"></div>
+
+<!-- Toast 메시지 Fragment -->
+<div th:replace="~{fragments/toast :: toast}"></div>
+
+<!-- 로딩 오버레이 -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-spinner">
+    <div class="spinner"></div>
+    <p>게시글을 불러오는 중...</p>
+  </div>
+</div>
+
+<!-- JavaScript 파일들 -->
+<script th:src="@{/features/post/js/post_list.js}"></script>
+
+<!-- 모달 관련 스크립트들 포함 -->
+<div th:replace="~{features/post/post_write_modal :: postWriteModalScripts}"></div>
+
+</body>
+</html>
