@@ -10,24 +10,29 @@ def load_db_config():
     with open(yaml_path, "r", encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    db_url = config["DB_URL"]
+    try:
+        db_url = config["spring"]["datasource"]["url"]
+        username = config["spring"]["datasource"]["username"]
+        password = config["spring"]["datasource"]["password"]
+    except KeyError as e:
+        raise KeyError(f"YAML 설정 파일에서 필요한 키를 찾을 수 없습니다: {e}")
 
-    # "jdbc:postgresql://host:port/dbname" → 잘라내기
-    # 1. 접두사 제거
     if db_url.startswith("jdbc:postgresql://"):
         db_url = db_url.replace("jdbc:postgresql://", "")
     else:
-        raise ValueError("DB_URL 형식이 잘못되었습니다 (jdbc:postgresql://...)")
+        raise ValueError("DB URL 형식이 잘못되었습니다. 'jdbc:postgresql://'로 시작해야 합니다.")
 
-    # 2. host:port/dbname → 나누기
-    host_port, dbname = db_url.split("/")
-    host, port = host_port.split(":")
+    try:
+        host_port, dbname = db_url.split("/")
+        host, port = host_port.split(":")
+    except ValueError:
+        raise ValueError("DB URL 파싱 실패. 형식: jdbc:postgresql://host:port/dbname")
 
     return {
         "host": host,
         "port": int(port),
-        "user": config["DB_USERNAME"],
-        "password": config["DB_PASSWORD"],
+        "user": username,
+        "password": password,
         "dbname": dbname
     }
 
