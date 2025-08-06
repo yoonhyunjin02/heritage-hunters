@@ -1,10 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<head th:fragment="common-head(title)">
   <meta charset="UTF-8">
-  <title>Title</title>
-</head>
-<body>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${title}">기본 타이틀</title>
 
-</body>
-</html>
+  <!-- 공통 CSS -->
+  <link rel="stylesheet" th:href="@{/common/css/style.css}">
+  <link rel="stylesheet" th:href="@{/common/css/header.css}">
+  <link rel="stylesheet" th:href="@{/common/css/footer.css}">
+
+  <!-- favicon -->
+<!--  <link rel="icon" type="image/x-icon" th:href="@{/images/icons/favicon.ico}">-->
+</head>

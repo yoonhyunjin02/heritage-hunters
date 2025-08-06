@@ -112,7 +112,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     newUser.setEmail(email);
     newUser.setNickname(nickname);
     newUser.setPassword(null);
-    newUser.setProfile_image(picture);
+    newUser.setProfileImage(picture);
     newUser.setScore(0);
     newUser.setBio(null);
     newUser.setProvider(provider);

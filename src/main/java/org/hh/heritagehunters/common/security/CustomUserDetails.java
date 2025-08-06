@@ -33,7 +33,7 @@ public class CustomUserDetails implements UserDetails {
    */
   @Override
   public String getPassword() {
-    return user.getPassword(); // 일반 로그인 사용자만 비밀번호 있음
+    return user.getPassword();
   }
 
   /**
@@ -59,4 +59,19 @@ public class CustomUserDetails implements UserDetails {
   public User getUser() {
     return this.user;
   }
+
+  /**
+   * Thymeleaf 헤더 등에서 사용자 닉네임 표시
+   */
+  public String getNickname() {
+    return user.getNickname();
+  }
+
+  /**
+   * Thymeleaf에서 프로필 이미지 표시 (없으면 null)
+   */
+  public String getProfileImage() {
+    return user.getProfileImage();
+  }
+
 }

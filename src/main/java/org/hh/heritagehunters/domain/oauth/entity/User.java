@@ -22,7 +22,8 @@ public class User {
 
   private String password;
 
-  private String profile_image; // URL
+  @Column(name = "profile_image")
+  private String profileImage; // URL
 
   @Column(nullable = false)
   private Integer score = 0;

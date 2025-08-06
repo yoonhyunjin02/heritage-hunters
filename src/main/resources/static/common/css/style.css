@@ -1,6 +1,10 @@
-/* 컬러 팔레트 정해지면 여기에 추가! */
-
 :root {
+  /* Breakpoints */
+  --bp-mobile: 767px;
+  --bp-tablet: 1024px;
+  --bp-desktop: 1025px;
+
+  /* Color Palette */
   --gray-000: #ffffff;
   --gray-050: #f8f9fa;
   --gray-100: #f2f3f6;
@@ -27,17 +31,21 @@
   --purple-900: #2d0066;
 }
 
+body {
+  font-family: 'Pretendard Variable', sans-serif;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
+
 a {
   text-decoration: none;
   color: black;
 }
-ul,
-li,
-ol {
+
+ul, li, ol {
   list-style-type: none;
 }

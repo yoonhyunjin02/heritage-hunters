@@ -30,10 +30,14 @@ public class SecurityConfig {
                 "/register",
                 "/login",
                 "/logout",
+
+                // static resource allowlist
                 "/css/**",
                 "/js/**",
                 "/images/**",
-                "/features/**"
+                "/common/**",
+                "/features/**",
+                "/favicon.ico"
             ).permitAll()
             .anyRequest().authenticated()
         )
