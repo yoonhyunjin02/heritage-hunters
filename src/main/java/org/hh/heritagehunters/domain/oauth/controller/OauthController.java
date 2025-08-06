@@ -1,5 +1,6 @@
 package org.hh.heritagehunters.domain.oauth.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.hh.heritagehunters.domain.oauth.dto.RegisterDto;
@@ -24,7 +25,7 @@ public class OauthController {
     return "features/oauth/register";
   }
 
-  // 회원가입
+  // 회원가입 처리
   @PostMapping("/register")
   public String processRegister(
       @Valid @ModelAttribute RegisterDto registerDto,
@@ -38,7 +39,6 @@ public class OauthController {
     try {
       registerService.register(registerDto);
     } catch (RuntimeException e) {
-      // 예외 메시지 뷰에 전달
       model.addAttribute("registerError", e.getMessage());
       return "features/oauth/register";
     }
@@ -46,9 +46,16 @@ public class OauthController {
     return "redirect:/login";
   }
 
-  // 로그인 페이지 이동
+  // 로그인 폼 이동
   @GetMapping("/login")
-  public String loginPage() {
+  public String loginPage(HttpServletRequest request, Model model) {
+    String errorMessage = (String) request.getSession().getAttribute("LOGIN_ERROR");
+
+    if (errorMessage != null) {
+      model.addAttribute("loginError", errorMessage);
+      request.getSession().removeAttribute("LOGIN_ERROR");
+    }
+
     return "features/oauth/login";
   }
 }
