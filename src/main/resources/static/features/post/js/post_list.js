@@ -340,40 +340,6 @@ const PostListManager = {
     }
   },
 
-
-  /**
-   * 스크롤 탑 버튼 초기화
-   */
-  initScrollToTop() {
-    if (!this.elements.scrollTopBtn) return;
-
-    // 스크롤 이벤트 처리
-    let scrollTimeout;
-    window.addEventListener('scroll', () => {
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
-      }
-
-      scrollTimeout = setTimeout(() => {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-        if (scrollTop > this.config.scrollTopThreshold) {
-          this.elements.scrollTopBtn.classList.add('visible');
-        } else {
-          this.elements.scrollTopBtn.classList.remove('visible');
-        }
-      }, 100);
-    });
-
-    // 클릭 이벤트
-    this.elements.scrollTopBtn.addEventListener('click', () => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    });
-  },
-
   /**
    * 이미지 지연 로딩 초기화
    */
