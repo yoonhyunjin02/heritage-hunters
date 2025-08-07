@@ -3,13 +3,15 @@ package org.hh.heritagehunters.domain.search.controller;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+@Controller
 @RequestMapping("/search")
-public class SearchController {
+public class SearchViewController {
 
   @GetMapping
   public String searchForm(
@@ -38,7 +40,7 @@ public class SearchController {
         "전체", "유적건조물", "기록유산", "유물", "무형유산", "자연유산", "등록문화유산"
     ));
     // 검색 결과, 페이징 정보 등도 model에 추가…
-    return "/features/search/search";
+    return "features/search/search_page";
   }
 
 

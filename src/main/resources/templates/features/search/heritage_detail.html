@@ -1,3 +1,4 @@
+<!-- src/main/resources/templates/features/search/heritage_detail.html -->
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
@@ -7,7 +8,7 @@
 
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/common/css/style.css}" />
-    <link rel="stylesheet" th:href="@{/features/search/css/search_detail.css}" href="/src/main/resources/static/features/search/css/search_detail.css" />
+    <link rel="stylesheet" th:href="@{/features/search/css/heritage_detail.css}" href="/src/main/resources/static/features/search/css/heritage_detail.css" />
   </head>
 
   <body>
@@ -34,7 +35,7 @@
                 alt="대표 이미지"
                 loading="lazy"
               />
-              <figcaption th:text="${heritage.name}">대표 이미지</figcaption>
+              <figcaption th:text="${heritage.name}">서울 숭례문</figcaption>
             </figure>
 
             <dl>
@@ -56,9 +57,18 @@
           </div>
 
           <aside class="heritage__summary__ai">
-            <div class="heritage__summary__ai__news" th:text="${heritage.aiNews}">해당 지역의 최신 뉴스가 없습니다.</div>
-            <div class="heritage__summary__ai__weather" th:text="${heritage.aiWeather}">33°C 맑은 날씨에요.</div>
-            <div class="heritage__summary__ai__content-summary" th:text="${heritage.aiSummary}">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
+            <div class="heritage__summary__ai__news">
+              <strong>AI뉴스: </strong>
+              <span th:text="${heritage.aiNews}">해당 지역의 최신 뉴스가 없습니다.</span>
+            </div>
+            <div class="heritage__summary__ai__weather">
+              <strong>AI날씨: </strong>
+              <span th:text="${heritage.aiWeather}">33°C 맑은 날씨에요.</span>
+            </div>
+            <div class="heritage__summary__ai__content-summary">
+              <strong>AI요약: </strong>
+              <span th:text="${heritage.aiSummary}"> Lorem ipsum dolor sit amet, consectetur adipiscing elit. </span>
+            </div>
           </aside>
         </section>
 
@@ -93,6 +103,7 @@
     </div>
 
     <!-- JS -->
-    <script type="module" th:src="@{/features/search/js/search_detail.js}"></script>
+    <script type="module" th:src="@{/features/search/js/heritage_detail.js}"></script>
+    <script type="module" src="/src/main/resources/static/features/search/js/heritage_detail.js"></script>
   </body>
 </html>
