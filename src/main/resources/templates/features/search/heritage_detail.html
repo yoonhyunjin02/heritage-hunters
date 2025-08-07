@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title th:text="${heritage.name} + ' | Heritage Hunters'">서울 숭례문 | Heritage Hunters</title>
+    <title th:text="${heritage.name} + ' | Heritage Hunters'">유산 이름 | Heritage Hunters</title>
 
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/common/css/style.css}" />
@@ -20,9 +20,8 @@
       <main class="container">
         <!-- Heritage Title -->
         <div class="heritage__title">
-          <p class="heritage__subtitle" th:text="${heritage.designation}">국보</p>
-          <h1 th:text="|${heritage.name} (${heritage.nameHanja})|">서울 숭례문 (서울 崇禮門)</h1>
-          <p class="heritage__subtitle" th:text="${heritage.nameEn}">Sungnyemun Gate, Seoul</p>
+          <p class="heritage__subtitle" th:text="${heritage.designation}">유산 종목</p>
+          <h1 th:text="|${heritage.name} (${heritage.nameHanja})|">유산 이름 (유산 한자 이름)</h1>
         </div>
 
         <!-- 요약 섹션 -->
@@ -35,23 +34,23 @@
                 alt="대표 이미지"
                 loading="lazy"
               />
-              <figcaption th:text="${heritage.name}">서울 숭례문</figcaption>
+              <figcaption th:text="${heritage.name}">유산 이름</figcaption>
             </figure>
 
             <dl>
               <dt>소재지</dt>
               <dd>
-                <address th:text="${heritage.region}">서울</address>
+                <address th:text="${heritage.region}">유산 소재지</address>
               </dd>
 
               <dt>상세주소</dt>
               <dd>
-                <address th:text="${heritage.address}">서울 중구 세종대로 40</address>
+                <address th:text="${heritage.address}">유산 상세 주소</address>
               </dd>
 
               <dt>시대</dt>
               <dd>
-                <time th:attr="datetime=${heritage.eraDate}" th:text="${heritage.era}"> 조선 태조 7년(1398) </time>
+                <time th:text="${heritage.era}">유산 시대</time>
               </dd>
             </dl>
           </div>
@@ -59,21 +58,21 @@
           <aside class="heritage__summary__ai">
             <div class="heritage__summary__ai__news">
               <strong>AI뉴스: </strong>
-              <span th:text="${heritage.aiNews}">해당 지역의 최신 뉴스가 없습니다.</span>
+              <!-- <span th:text="${heritage.aiNews}">AI의 유산 주변 최신 뉴스</span> -->
             </div>
             <div class="heritage__summary__ai__weather">
               <strong>AI날씨: </strong>
-              <span th:text="${heritage.aiWeather}">33°C 맑은 날씨에요.</span>
+              <!-- <span th:text="${heritage.aiWeather}">AI의 유산 주변 현재 날씨</span> -->
             </div>
             <div class="heritage__summary__ai__content-summary">
               <strong>AI요약: </strong>
-              <span th:text="${heritage.aiSummary}"> Lorem ipsum dolor sit amet, consectetur adipiscing elit. </span>
+              <!-- <span th:text="${heritage.aiSummary}"> Lorem ipsum dolor sit amet, consectetur adipiscing elit. </span> -->
             </div>
           </aside>
         </section>
 
         <!-- 본문 내용 -->
-        <section class="heritage__content" th:text="${heritage.content}">
+        <section class="heritage__content" th:text="${heritage.description}">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris in rutrum magna. Aliquam interdum scelerisque pharetra. Nulla elit ligula, venenatis
           eget urna eu, maximus varius lacus. Nulla vulputate orci vitae suscipit finibus. Etiam quis arcu in magna feugiat ultrices. Nullam aliquam sapien id
           felis luctus semper. Phasellus nibh dui, vestibulum at consequat eu, venenatis id ante. Mauris feugiat nisl quis tristique tempor. Pellentesque
