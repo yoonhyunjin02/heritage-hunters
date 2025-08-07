@@ -82,24 +82,25 @@
               </div>
 
               <!-- 시대 -->
-              <!-- <div class="search__filter search__filter--era">
+              <div class="search__filter search__filter--era">
                 <h3 class="search__filter-title">시대</h3>
                 <div class="search__filter-options">
                   <ul class="search__options-list">
-                    <li th:each="item : ${eraOptions}">
+                    <!-- eraOptions 는 List<EraCategory> -->
+                    <li th:each="era : ${eraOptions}">
                       <label class="search__option">
                         <input
                           type="checkbox"
                           name="era"
-                          th:value="${item}"
-                          th:checked="${item == '전체' or (selectedEras != null and selectedEras.contains(item))}"
+                          th:value="${era.displayName}"
+                          th:checked="${(selectedEras == null or #lists.isEmpty(selectedEras)) ? era.displayName == '전체' : selectedEras.contains(era)}"
                         />
-                        <span th:text="${item}">전체</span>
+                        <span th:text="${era.displayName}">전체</span>
                       </label>
                     </li>
                   </ul>
                 </div>
-              </div> -->
+              </div>
             </div>
 
             <div class="search__actions">

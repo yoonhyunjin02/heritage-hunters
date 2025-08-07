@@ -1,9 +1,13 @@
 package org.hh.heritagehunters.domain.search.specification;
 
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
 import java.util.List;
 import org.hh.heritagehunters.domain.search.dto.SearchCriteria;
 import org.hh.heritagehunters.domain.search.entity.Heritage;
+import org.hh.heritagehunters.domain.search.util.EraCategory;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
@@ -67,12 +71,29 @@ public class HeritageSpecification {
   /**
    * 시대 필터 (전체가 아닌 경우 필드 값이 리스트에 포함된 경우)
    */
-  private static Specification<Heritage> byEra(List<String> eras) {
+  public static Specification<Heritage> byEra(List<EraCategory> eras) {
     return (root, query, cb) -> {
-      if (eras == null || eras.contains("00")) {
+      // 1) 필터 미지정(null/empty), 2) 전체(ALL) 혹은 3) 미상만(UNKNOWN) → 전체조회
+      if (eras == null
+          || eras.isEmpty()
+          || eras.contains(EraCategory.ALL)
+          || (eras.size() == 1 && eras.contains(EraCategory.UNKNOWN))) {
         return cb.conjunction();
       }
-      return root.get("era").in(eras);
+
+      Path<String> eraField = root.get("era");
+      List<Predicate> preds = new ArrayList<>();
+
+      for (EraCategory cat : eras) {
+        // UNKNOWN은 regex 매칭으로만, 이름으로는 OR 처리 안 할 수도 있으나
+        if (cat == EraCategory.UNKNOWN) {
+          preds.add(cb.isNull(eraField)); // 또는 cb.not(cb.isNotNull(eraField)) 등 DB와 맞춰 수정
+        } else {
+          preds.add(cb.like(eraField, "%" + cat.getDisplayName() + "%"));
+        }
+      }
+      return cb.or(preds.toArray(new Predicate[0]));
     };
   }
+
 }
