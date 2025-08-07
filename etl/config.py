@@ -36,4 +36,19 @@ def load_db_config():
         "dbname": dbname
     }
 
+def load_museum_api_key():
+    yaml_path = os.path.join(
+        os.path.dirname(__file__),
+        "../src/main/resources/secrets/application-secret.yml"
+    )
+
+    with open(yaml_path, "r", encoding="utf-8") as file:
+        config = yaml.safe_load(file)
+
+    try:
+        return config["public"]["data"]["museum"]["api-key"]
+    except KeyError as e:
+        raise KeyError(f"[❌ 공공데이터 인증키 누락] {e}")
+
+
 DB_CONFIG = load_db_config()

@@ -1,4 +1,4 @@
-from adapters.heritage_api_adapter import get_heritages_by_kind_code
+from adapters.heritage_api import get_heritages_by_kind_code
 from db import insert_heritages
 import time
 

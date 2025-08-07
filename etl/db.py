@@ -49,3 +49,38 @@ def insert_heritages(heritage_list):
         print(f"[✅ DB 저장 완료] {len(values)}건")
     except Exception as e:
         print(f"[❌ DB 저장 실패] {e}")
+
+def insert_museums(museum_list):
+    insert_sql = """
+    INSERT INTO museums (
+        name, category, latitude, longitude, address, region, description
+    ) VALUES %s;
+    """
+
+    values = []
+    for m in museum_list:
+        try:
+            values.append((
+                m.get("name"),
+                m.get("category"),
+                float(m["latitude"]) if m.get("latitude") else None,
+                float(m["longitude"]) if m.get("longitude") else None,
+                m.get("address"),
+                m.get("region"),
+                m.get("description")
+            ))
+        except Exception as e:
+            print(f"[데이터 변환 오류] {m.get('name')} | {e}")
+
+    if not values:
+        print("[알림] 저장할 데이터 없음")
+        return
+
+    try:
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                execute_values(cur, insert_sql, values)
+            conn.commit()
+        print(f"[✅ 박물관 DB 저장 완료] {len(values)}건")
+    except Exception as e:
+        print(f"[❌ 박물관 DB 저장 실패] {e}")
