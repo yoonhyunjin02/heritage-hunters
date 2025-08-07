@@ -55,13 +55,13 @@ public class Post {
   private LocalDateTime createdAt;
 
   @Column(name = "view_count", nullable = false)
-  private Integer viewCount;
+  private Integer viewCount = 0;
 
   @Column(name = "comment_count", nullable = false)
-  private Integer commentCount;
+  private Integer commentCount = 0;
 
   @Column(name = "like_count", nullable = false)
-  private Integer likeCount;
+  private Integer likeCount = 0;
 
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
   private List<PostImage> images = new ArrayList<>();
