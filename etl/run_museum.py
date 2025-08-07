@@ -1,5 +1,5 @@
 from adapters.museum_api import get_all_museums
-from db import insert_museums
+from db.insert_museums import insert_museums
 
 
 def main():

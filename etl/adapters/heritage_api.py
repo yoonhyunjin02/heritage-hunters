@@ -8,7 +8,7 @@ BASE_DETAIL_URL = "http://www.khs.go.kr/cha/SearchKindOpenapiDt.do"
 CITY_CODES = [
     "11", "21", "22", "23", "24", "25", "26", "45",
     "31", "32", "33", "34", "35", "36", "37", "38",
-    "50"
+    "50", "ZZ"
 ]
 
 def fetch_heritage_list_xml(ccbaKdcd, ccbaCtcd, page_index=1, page_unit=100):
