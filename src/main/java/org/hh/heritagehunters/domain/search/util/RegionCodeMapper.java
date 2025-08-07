@@ -13,6 +13,7 @@ public class RegionCodeMapper {
 
   // 지역코드 → 한글명 매핑
   private static final Map<String, String> CODE_TO_NAME = Map.ofEntries(
+      Map.entry("00", "전체"),
       Map.entry("11", "서울특별시"),
       Map.entry("21", "부산광역시"),
       Map.entry("22", "대구광역시"),
@@ -35,6 +36,7 @@ public class RegionCodeMapper {
 
   // 지역코드 → 줄임명 매핑
   private static final Map<String, String> CODE_TO_SHORT_NAME = Map.ofEntries(
+      Map.entry("전체", "전체"),
       Map.entry("11", "서울"), Map.entry("21", "부산"), Map.entry("22", "대구"),
       Map.entry("23", "인천"), Map.entry("24", "광주"), Map.entry("25", "대전"),
       Map.entry("26", "울산"), Map.entry("31", "경기"), Map.entry("32", "강원"),
@@ -55,5 +57,12 @@ public class RegionCodeMapper {
    */
   public static String getShortName(String code) {
     return CODE_TO_SHORT_NAME.getOrDefault(code, "미분류");
+  }
+
+  /**
+   * 전체 코드맵 출력
+   */
+  public static Map<String, String> getCodeMap() {
+    return CODE_TO_NAME;
   }
 }

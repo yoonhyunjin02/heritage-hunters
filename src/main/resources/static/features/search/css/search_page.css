@@ -26,12 +26,9 @@
   Top Section & Form
 ----------------------------------------*/
 .search-top {
-  margin: calc(var(--spacing-unit) * 2) 0 var(--spacing-unit);
-}
-
-.search__form {
+  margin: calc(var(--spacing-unit) * 2);
   display: flex;
-  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
   gap: var(--spacing-unit);
 }
@@ -97,7 +94,7 @@
   background-color: var(--secondary-color);
   border: 1px solid var(--border-color);
   margin-top: -1px; /* overlap with button’s bottom edge */
-  border-radius: 0 0 4px 4px;
+  border-radius: 4px;
   padding: var(--spacing-unit);
   overflow: hidden;
   transition: max-height 0.3s ease, padding 0.3s ease;
@@ -190,6 +187,7 @@
   display: flex;
   flex-direction: column;
   text-align: center;
+  align-items: center;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.3s, transform 0.3s;
@@ -202,8 +200,17 @@
 
 .search__card-image {
   width: 100%;
-  height: auto;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
+  display: block;
+}
+
+.search__card p,
+.search__card h4 {
+  width: calc(100% - 1em);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .search__card-designation {

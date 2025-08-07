@@ -35,9 +35,8 @@ public class HeritageSpecification {
       String pattern = "%" + keyword.trim() + "%";
       Predicate nameLike = cb.like(root.get("name"), pattern);
       Predicate hanjaLike = cb.like(root.get("nameHanja"), pattern);
-      Predicate enLike = cb.like(root.get("nameEn"), pattern);
       Predicate descLike = cb.like(root.get("description"), pattern);
-      return cb.or(nameLike, hanjaLike, enLike, descLike);
+      return cb.or(nameLike, hanjaLike, descLike);
     };
   }
 
@@ -46,7 +45,7 @@ public class HeritageSpecification {
    */
   private static Specification<Heritage> byDesignation(List<String> designations) {
     return (root, query, cb) -> {
-      if (designations == null || designations.contains("전체")) {
+      if (designations == null || designations.contains("00")) {
         return cb.conjunction();
       }
       return root.get("designation").in(designations);
@@ -58,7 +57,7 @@ public class HeritageSpecification {
    */
   private static Specification<Heritage> byRegion(List<String> regions) {
     return (root, query, cb) -> {
-      if (regions == null || regions.contains("전체")) {
+      if (regions == null || regions.contains("00")) {
         return cb.conjunction();
       }
       return root.get("region").in(regions);
@@ -70,7 +69,7 @@ public class HeritageSpecification {
    */
   private static Specification<Heritage> byEra(List<String> eras) {
     return (root, query, cb) -> {
-      if (eras == null || eras.contains("전체")) {
+      if (eras == null || eras.contains("00")) {
         return cb.conjunction();
       }
       return root.get("era").in(eras);
