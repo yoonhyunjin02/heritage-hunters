@@ -38,12 +38,6 @@ public class SearchViewController {
       @RequestParam(required = false) Boolean searchTriggered,
       Model model
   ) {
-//    model.addAttribute("eraOptions", List.of(
-//        "전체", "선사시대", "석기시대", "청동기시대", "철기시대",
-//        "삼한시대", "삼국시대", "삼국:고구려", "삼국:백제", "삼국:신라",
-//        "발해", "통일신라", "고려시대", "조선시대", "대한제국시대",
-//        "일제강점기", "시대미상"
-//    ));
 
     model.addAttribute("designationMap", DesignationCodeMapper.getCodeMap());
     model.addAttribute("designationCodes",DesignationCodeMapper.getCodeMap().keySet().stream().sorted());
