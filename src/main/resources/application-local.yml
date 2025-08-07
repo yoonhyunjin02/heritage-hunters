@@ -34,7 +34,7 @@ spring:
             scope:
               - name
               - email
-              - profile_image
+              - profileImage
 
         provider:
           naver:

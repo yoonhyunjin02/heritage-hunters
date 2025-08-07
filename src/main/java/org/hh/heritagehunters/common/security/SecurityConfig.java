@@ -1,7 +1,6 @@
 package org.hh.heritagehunters.common.security;
 
 import lombok.RequiredArgsConstructor;
-import org.hh.heritagehunters.domain.oauth.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -27,13 +26,19 @@ public class SecurityConfig {
     http
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
+                "/",
+                "/main",
                 "/register",
                 "/login",
                 "/logout",
+
+                // static resource allowlist
                 "/css/**",
                 "/js/**",
                 "/images/**",
-                "/features/**"
+                "/common/**",
+                "/features/**",
+                "/favicon.ico"
             ).permitAll()
             .anyRequest().authenticated()
         )
