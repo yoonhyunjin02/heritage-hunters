@@ -1,0 +1,160 @@
+/* 기본 헤더 스타일 */
+.header {
+  background-color: var(--gray-050);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 8px 16px; /* 기존: 12px 24px → 여백 축소 */
+  height: 56px; /* 고정 높이 설정 (선택사항) */
+}
+
+.header-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%; /* 고정 높이 적용 시 필요 */
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* 로고 */
+.logo {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--gray-900);
+}
+
+.logo-image {
+  height: 32px;
+}
+
+/* 로그인 버튼 (비로그인 상태) */
+.login-button {
+  padding: 6px 12px;
+  background-color: var(--gray-200);
+  border-radius: 6px;
+  font-weight: 600;
+  color: var(--gray-800);
+  font-size: 14px;
+  text-decoration: none;
+  line-height: 1;
+}
+
+/* 프로필 이미지 */
+.profile-image {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 8px;
+}
+
+/* 드롭다운 컨테이너 */
+.user-dropdown {
+  position: relative;
+}
+
+.user-welcome {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.user-welcome .profile-image {
+  margin-right: 0;     /* 기존 margin 제거 */
+  margin-left: 8px;     /* 왼쪽에 간격 추가 (선택) */
+}
+
+/* 드롭다운 메뉴 */
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--gray-050);
+  border: 1px solid var(--gray-200);
+  padding: 12px;
+  display: none;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  border-radius: 10px;
+}
+
+.user-dropdown.active .dropdown-menu {
+  display: block;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 6px 10px;
+  text-decoration: none;
+  color: var(--gray-900);
+  font-weight: 500;
+}
+
+.dropdown-item:hover {
+  background-color: #f2f2f2;
+}
+
+.dropdown-divider {
+  margin: 8px 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+/* profile-box는 hover 방식이라 지금은 미사용 */
+.profile-box {
+  position: relative;
+}
+
+.profile-button {
+  background-color: var(--gray-200);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: var(--gray-050);
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  margin-top: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  padding: 12px;
+  z-index: 10;
+}
+
+.profile-box:hover .profile-dropdown {
+  display: block;
+}
+
+.profile-dropdown ul li {
+  margin-bottom: 8px;
+}
+
+.profile-dropdown ul li:last-child {
+  margin-bottom: 0;
+}
+
+.profile-dropdown a {
+  color: var(--gray-900);
+  font-weight: 500;
+}
+
+.header-user {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}

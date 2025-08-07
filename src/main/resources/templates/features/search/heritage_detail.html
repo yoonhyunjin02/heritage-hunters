@@ -1,0 +1,109 @@
+<!-- src/main/resources/templates/features/search/heritage_detail.html -->
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${heritage.name} + ' | Heritage Hunters'">서울 숭례문 | Heritage Hunters</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" th:href="@{/common/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/features/search/css/heritage_detail.css}" href="/src/main/resources/static/features/search/css/heritage_detail.css" />
+  </head>
+
+  <body>
+    <div id="root">
+      <!-- 헤더 -->
+      <header></header>
+
+      <!-- 메인 컨텐트 -->
+      <main class="container">
+        <!-- Heritage Title -->
+        <div class="heritage__title">
+          <p class="heritage__subtitle" th:text="${heritage.designation}">국보</p>
+          <h1 th:text="|${heritage.name} (${heritage.nameHanja})|">서울 숭례문 (서울 崇禮門)</h1>
+          <p class="heritage__subtitle" th:text="${heritage.nameEn}">Sungnyemun Gate, Seoul</p>
+        </div>
+
+        <!-- 요약 섹션 -->
+        <section class="heritage__summary">
+          <div class="heritage__summary__info">
+            <figure>
+              <img
+                th:src="@{${heritage.thumbnailUrl}}"
+                src="https://www.heritage.go.kr/unisearch/images/national_treasure/thumb/2021042017434700.JPG?time=1754284453184"
+                alt="대표 이미지"
+                loading="lazy"
+              />
+              <figcaption th:text="${heritage.name}">서울 숭례문</figcaption>
+            </figure>
+
+            <dl>
+              <dt>소재지</dt>
+              <dd>
+                <address th:text="${heritage.region}">서울</address>
+              </dd>
+
+              <dt>상세주소</dt>
+              <dd>
+                <address th:text="${heritage.address}">서울 중구 세종대로 40</address>
+              </dd>
+
+              <dt>시대</dt>
+              <dd>
+                <time th:attr="datetime=${heritage.eraDate}" th:text="${heritage.era}"> 조선 태조 7년(1398) </time>
+              </dd>
+            </dl>
+          </div>
+
+          <aside class="heritage__summary__ai">
+            <div class="heritage__summary__ai__news">
+              <strong>AI뉴스: </strong>
+              <span th:text="${heritage.aiNews}">해당 지역의 최신 뉴스가 없습니다.</span>
+            </div>
+            <div class="heritage__summary__ai__weather">
+              <strong>AI날씨: </strong>
+              <span th:text="${heritage.aiWeather}">33°C 맑은 날씨에요.</span>
+            </div>
+            <div class="heritage__summary__ai__content-summary">
+              <strong>AI요약: </strong>
+              <span th:text="${heritage.aiSummary}"> Lorem ipsum dolor sit amet, consectetur adipiscing elit. </span>
+            </div>
+          </aside>
+        </section>
+
+        <!-- 본문 내용 -->
+        <section class="heritage__content" th:text="${heritage.content}">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris in rutrum magna. Aliquam interdum scelerisque pharetra. Nulla elit ligula, venenatis
+          eget urna eu, maximus varius lacus. Nulla vulputate orci vitae suscipit finibus. Etiam quis arcu in magna feugiat ultrices. Nullam aliquam sapien id
+          felis luctus semper. Phasellus nibh dui, vestibulum at consequat eu, venenatis id ante. Mauris feugiat nisl quis tristique tempor. Pellentesque
+          blandit leo sed erat faucibus, sit amet lacinia lectus sagittis. In pulvinar ut risus ut tristique. Quisque et dolor commodo, tempor ipsum non,
+          rhoncus augue. Vivamus nec tincidunt magna, vel posuere purus. Vivamus blandit nunc arcu, id aliquet sem convallis sit amet. Integer porttitor non
+          libero porta placerat. Phasellus rhoncus eros a pellentesque varius. Fusce tristique augue a augue aliquet molestie. Vivamus luctus ante vitae
+          consequat placerat. Aenean nisl ligula, volutpat ut ex eu, feugiat interdum massa. Sed consectetur, lacus non dapibus convallis, mauris nulla viverra
+          sapien, non ultricies lorem turpis at elit. Integer vel neque hendrerit, ullamcorper dolor a, consequat diam. Orci varius natoque penatibus et magnis
+          dis parturient montes, nascetur ridiculus mus. Sed mollis diam nec est ultricies mattis. Etiam at tortor pharetra metus elementum dapibus. Proin
+          laoreet, erat vel placerat eleifend, eros quam ornare purus, nec tempus mauris arcu nec tellus. Curabitur fringilla a ante sed fermentum. Proin tortor
+          tellus, lobortis vel rutrum ut, consequat et ligula. Nam sed lectus in dui auctor porttitor at at felis. Curabitur ut molestie justo. Nam ornare metus
+          sit amet tellus scelerisque eleifend. Quisque auctor erat rhoncus purus aliquet molestie. Ut cursus ornare mauris et volutpat. Pellentesque luctus
+          tellus vitae odio iaculis, eget fermentum dui interdum. Etiam lobortis ultrices enim, in rutrum nulla. Class aptent taciti sociosqu ad litora torquent
+          per conubia nostra, per inceptos himenaeos. Pellentesque magna lacus, sollicitudin ut bibendum quis, rutrum vel nisi. Sed nec sem enim. Ut dapibus
+          dapibus nisl. Praesent ex nibh, fringilla vel leo sit amet, cursus lobortis nibh. Mauris consectetur sollicitudin aliquam. Vivamus molestie eu nisl a
+          sodales. Aenean vitae lectus velit. Fusce volutpat, turpis et feugiat luctus, erat urna maximus orci, sed facilisis ante nisl nec purus. Duis quis
+          ante pulvinar leo congue luctus id ac diam. Donec nec dapibus nibh, in maximus felis. Nullam id nulla vitae neque malesuada consequat. Suspendisse
+          potenti. Aliquam convallis quis odio ac molestie. Fusce ultricies metus eget tortor rutrum, in maximus augue suscipit. Suspendisse ac ipsum sed nisl
+          maximus rhoncus. Vestibulum vel lorem rhoncus, lacinia magna nec, pharetra mauris. Integer tempus posuere sem vitae scelerisque. Etiam rhoncus aliquam
+          erat vel ultricies. In bibendum est et ex imperdiet tincidunt. Sed finibus est ante, nec vestibulum felis tincidunt ac. Integer hendrerit diam quis
+          convallis porta.
+        </section>
+      </main>
+
+      <!-- 푸터 -->
+      <footer></footer>
+    </div>
+
+    <!-- JS -->
+    <script type="module" th:src="@{/features/search/js/heritage_detail.js}"></script>
+    <script type="module" src="/src/main/resources/static/features/search/js/heritage_detail.js"></script>
+  </body>
+</html>

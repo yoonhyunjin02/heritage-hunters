@@ -1,0 +1,51 @@
+:root {
+  /* Breakpoints */
+  --bp-mobile: 767px;
+  --bp-tablet: 1024px;
+  --bp-desktop: 1025px;
+
+  /* Color Palette */
+  --gray-000: #ffffff;
+  --gray-050: #f8f9fa;
+  --gray-100: #f2f3f6;
+  --gray-200: #dbdce2;
+  --gray-300: #d0d1da;
+  --gray-400: #bdbec8;
+  --gray-500: #aaabb4;
+  --gray-600: #898a93;
+  --gray-700: #686971;
+  --gray-800: #525359;
+  --gray-900: #111111;
+  --red-700: #ff1010;
+
+  /* 메인 컬러 예시 */
+  --purple-000: #f5f0ff;
+  --purple-100: #e0ccff;
+  --purple-200: #caaaff;
+  --purple-300: #b388ff;
+  --purple-400: #9c66ff;
+  --purple-500: #8544ff;
+  --purple-600: #6e22e6;
+  --purple-700: #5700cc;
+  --purple-800: #420099;
+  --purple-900: #2d0066;
+}
+
+body {
+  font-family: 'Pretendard Variable', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+
+ul, li, ol {
+  list-style-type: none;
+}

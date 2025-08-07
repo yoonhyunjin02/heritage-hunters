@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:insert="~{fragments/head :: common-head('Login')}"></th:block>
+  <link rel="stylesheet" th:href="@{/features/oauth/css/oauth.css}">
+</head>
+<body>
+<!--header-->
+<div th:replace="~{fragments/header :: common-header}"></div>
+
+<!--main-->
+<main class="auth-container">
+  <section class="image-section" id="auth-bg-image" aria-hidden="true"></section>
+
+  <section class="form-section">
+    <h1>로그인</h1>
+
+    <form th:action="@{/login}" method="post">
+      <div>
+        <label for="email">이메일</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+
+      <div>
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+
+      <!-- 예외 메시지 -->
+      <div th:if="${loginError}" class="error-message">
+        <span th:text="${loginError}"></span>
+      </div>
+
+      <button type="submit" class="btn-submit">로그인</button>
+    </form>
+
+    <!-- 소셜 로그인 -->
+    <div class="social-login">
+      <p>SNS 계정으로 로그인</p>
+
+      <!-- Google 로그인 버튼 -->
+      <a href="/oauth2/authorization/google" class="btn-social btn-google">
+        <img src="/images/logo/google.svg" alt="Google 로고" style="height: 20px; vertical-align: middle;">
+        <span>Google로 로그인</span>
+      </a>
+
+      <!-- GitHub 로그인 버튼 -->
+      <a href="/oauth2/authorization/github" class="btn-social btn-github" style="margin-top: 10px;">
+        <img src="/images/logo/github.svg" alt="GitHub 로고" style="height: 20px; vertical-align: middle;">
+        <span>GitHub로 로그인</span>
+      </a>
+
+      <!-- Naver 로그인 버튼 -->
+      <a href="/oauth2/authorization/naver" class="btn-social btn-naver" style="margin-top: 10px;">
+        <img src="/images/logo/naver.svg" alt="Naver 로고" style="height: 20px; vertical-align: middle;">
+        <span>Naver로 로그인</span>
+      </a>
+
+      <!-- 소셜 로그인 에러 메시지 -->
+      <div th:if="${param.error}" class="error-message">
+        <span th:text="${param.error}"></span>
+      </div>
+    </div>
+
+    <p class="signin-text">
+      회원이 아니신가요? <a th:href="@{/register}">회원가입</a>
+    </p>
+  </section>
+</main>
+
+<!--footer-->
+<div th:replace="~{fragments/footer :: common-footer}"></div>
+
+<!--js-->
+<script defer th:src="@{/features/oauth/js/oauth.js}"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+server:
+  port: 8080
+
+spring:
+  # secrets/application-secret.yml 파일을 선택적으로 불러오기
+  config:
+    import: optional:classpath:/secrets/application-secret.yml
+  application:
+    name: heritage-hunters
+  profiles:
+    active: local
+
+  # 파일 업로드 용량 제한
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+  datasource:
+    hikari:
+      pool-name: HeritagePool     # 로깅 편의성을 위한 이름
+      maximum-pool-size: 20       # 동시 요청 최대 처리 수
+      minimum-idle: 5             # 평상시 유지할 커넥션 수
+      idle-timeout: 600000        # 사용 안한 커넥션 10 뒤 제거
+      max-lifetime: 1800000       # 커넥션 최대 생명주기 30분
+      connection-timeout: 30000   # 30초 안에 커넥션 없으면 예외 발생
+      auto-commit: true
+      validation-timeout: 5000    # 유효성 검사 5초 제한
+      leak-detection-threshold: 20000 # 20초 넘게 반환 안 되는 커넥션 감지
+
+  # Spring Data JPA
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  sql:
+    init:
+      mode: always
+      encoding: UTF-8
+
+  # thymeleaf
+  thymeleaf:
+    cache: false  # 개발 시 템플릿 캐시 비활성화
+    mode: HTML  # 타임리프 모드 설정
+    encoding: UTF-8  # 인코딩 설정
+
+# 로그 레벨 설정
+logging:
+  level:
+    org.springframework: INFO
+    org.hh.heritagehunters: DEBUG  # 패키지 이름 기준
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs  # OpenAPI 스펙 접속 엔드포인트
+  swagger-ui:
+    path: /swagger-ui.html  # Swagger UI 접속 엔드포인트
+    disable-swagger-default-url: true  # 기본적으로 swagger-ui URL을 직접 노출하지 않도록 설정

@@ -12,7 +12,7 @@ public class User {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id; // 자동생성
+  private Long id; // 자동 생성
 
   @Column(unique = true, nullable = false)
   private String email; // UNIQUE
@@ -22,10 +22,15 @@ public class User {
 
   private String password;
 
-  private String profile_image; // URL
+  @Column(name = "profile_image")
+  private String profileImage; // URL
 
   @Column(nullable = false)
   private Integer score = 0;
 
   private String bio;
+
+  @Column(nullable = false)
+  private String provider = "local"; // 그 외 "google", "github", "naver" 등
+
 }

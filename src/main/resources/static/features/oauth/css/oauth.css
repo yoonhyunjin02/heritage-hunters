@@ -1,0 +1,86 @@
+.auth-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: sans-serif;
+}
+
+.image-section {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+}
+
+.form-section {
+  flex: 1;
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #fff;
+}
+
+form > div {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+input {
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.signin-text {
+  margin-top: 1rem;
+  text-align: center;
+}
+.social-login {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.btn-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0.65rem 1rem;
+  width: 100%;
+  font-size: 1rem;
+  font-weight: bold;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  color: #444;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-social:hover {
+  background-color: #f0f0f0;
+}
+
+.btn-social img {
+  height: 20px;
+}
