@@ -12,6 +12,9 @@ public enum ErrorCode {
   MISSING_REQUEST_PARAMETER(HttpStatus.BAD_REQUEST, "필수 요청 파라미터가 누락되었습니다."),
   FILE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "파일 업로드에 실패했습니다."),
   UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 파일 형식입니다."),
+  EMPTY_IMAGE_FILE(HttpStatus.BAD_REQUEST, "이미지 파일이 비어 있습니다."),
+  INVALID_IMAGE_FORMAT(HttpStatus.BAD_REQUEST, "지원하지 않는 이미지 형식입니다."),
+  IMAGE_TOO_LARGE(HttpStatus.BAD_REQUEST, "이미지 파일이 너무 큽니다. 최대 크기는 50MB입니다."),
 
   // 401 - Unauthorized
   LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
