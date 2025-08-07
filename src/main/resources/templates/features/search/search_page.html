@@ -107,30 +107,23 @@
               <button type="submit" form="search-form" class="search__btn">검색</button>
             </div>
           </section>
-        </form>
 
-        <!-- 3. 검색 결과 그리드 & 페이지네이션 -->
-        <section class="search-bottom">
-          <div class="search__results">
-            <div class="search__grid">
-              <a th:href="@{/heritage/{id}(id=${item.id})}" class="search__card-link" th:each="item : ${results}">
-                <article class="search__card">
-                  <img th:src="${item.thumbnailUrl}" alt="유물 대표 이미지" class="search__card-image" loading="lazy" />
-                  <p class="search__card-designation" th:text="${item.designation}">유산 분류</p>
-                  <h4 class="search__card-title" th:text="${item.name}">유산 이름</h4>
-                  <p class="search__card-hanja" th:text="${item.nameHanja}">유산 한자 이름</p>
-                </article>
-              </a>
+          <!-- 3. 검색 결과 그리드 & 페이지네이션 -->
+          <section class="search-bottom">
+            <div class="search__results">
+              <div class="search__grid">
+                <a th:href="@{/heritage/{id}(id=${item.id})}" class="search__card-link" th:each="item : ${results}">
+                  <article class="search__card">
+                    <div class="search__card-image-wrapper">
+                      <img th:src="${item.thumbnailUrl}" alt="유물 대표 이미지" class="search__card-image" loading="lazy" />
+                    </div>
+                    <p class="search__card-designation" th:text="${item.designation}">유산 분류</p>
+                    <h4 class="search__card-title" th:text="${item.name}">유산 이름</h4>
+                    <p class="search__card-hanja" th:text="${item.nameHanja}">유산 한자 이름</p>
+                  </article>
+                </a>
+              </div>
             </div>
-          </div>
-
-          <!-- pagination 폼 추가 -->
-          <form id="pagination-form" th:action="@{/search}" method="get">
-            <!-- 현재 필터/키워드 값을 모두 hidden 으로 보관 -->
-            <input type="hidden" name="keyword" th:value="${keyword}" />
-            <input type="hidden" name="designation" th:each="d : ${selectedDesignations}" th:value="${d}" />
-            <input type="hidden" name="region" th:each="r : ${selectedRegions}" th:value="${r}" />
-            <input type="hidden" name="era" th:each="e : ${selectedEras}" th:value="${e}" />
 
             <nav class="search__pagination" th:if="${results != null and !results.empty}">
               <ul class="search__pagination-list">
@@ -170,8 +163,8 @@
                 </li>
               </ul>
             </nav>
-          </form>
-        </section>
+          </section>
+        </form>
       </main>
 
       <!-- 푸터 -->
