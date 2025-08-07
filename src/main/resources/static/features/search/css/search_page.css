@@ -179,6 +179,10 @@
   gap: var(--spacing-unit);
 }
 
+.search__card-link {
+  height: fit-content;
+}
+
 .search__card {
   background-color: var(--bg-light);
   border: 1px solid var(--border-color);
@@ -198,9 +202,20 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.search__card-image {
+/* 1:1 square container */
+.search__card-image-wrapper {
+  position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  padding-top: 100%; /* ← forces height = width */
+  overflow: hidden;
+}
+
+/* fill that square fully, cropping as needed */
+.search__card-image {
+  position: absolute;
+  inset: 0; /* shorthand for top/right/bottom/left = 0 */
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
