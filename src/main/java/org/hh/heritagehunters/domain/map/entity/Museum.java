@@ -13,19 +13,24 @@ public class Museum {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id; // 자동생성
+  private Long id;
 
+  @Column(columnDefinition = "TEXT")
   private String name;
 
+  @Column(columnDefinition = "TEXT")
   private String category;
 
   private BigDecimal latitude;
 
   private BigDecimal longitude;
 
+  @Column(columnDefinition = "TEXT")
   private String address;
 
+  @Column(columnDefinition = "TEXT")
   private String region;
 
+  @Column(columnDefinition = "TEXT")
   private String description;
 }
