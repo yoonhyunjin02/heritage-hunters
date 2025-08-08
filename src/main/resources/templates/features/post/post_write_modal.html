@@ -2,13 +2,13 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <!-- ✅ 정적 리소스 경로 치환 -->
-  <link rel="stylesheet" th:href="@{/features/post/css/post_write_modal.css}">
 </head>
 <body>
 
-<!-- 게시글 작성 모달 프래그먼트 -->
-<div th:fragment="postWriteModal" id="postModal" class="modal" sec:authorize="isAuthenticated()">
+<!-- (기존 모달 구조 그대로) -->
+<div th:fragment="postWriteModal"
+     id="postModal" class="modal"
+     sec:authorize="isAuthenticated()">
   <div class="modal-content">
     <!-- 헤더 -->
     <div class="modal-header">
@@ -16,37 +16,26 @@
       <button type="button" class="modal-close" id="closePostModal">&times;</button>
     </div>
 
-    <!-- 본문 (좌/우 2열) -->
+    <!-- 본문 -->
     <div class="modal-body">
-      <form id="postForm" class="post-form" th:action="@{/posts}" method="post" enctype="multipart/form-data">
-        <!-- CSRF (스프링 시큐리티 사용 시) -->
+      <form id="postForm" class="post-form"
+            th:action="@{/posts}" method="post"
+            enctype="multipart/form-data">
         <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
 
         <div class="composer-grid">
-          <!-- 좌측: 이미지 스테이지 -->
+          <!-- 좌측: 이미지 -->
           <div class="compose-left">
             <div class="image-upload-section" id="imageUploadSection">
-              <input type="file"
-                     name="images"
-                     id="imageInput"
-                     multiple
-                     accept="image/*"
-                     class="visually-hidden"
-                     required>
-
-              <!-- 이미지 없을 때 플레이스홀더 -->
+              <input type="file" name="images" id="imageInput"
+                     multiple accept="image/*"
+                     class="visually-hidden" required>
               <div class="upload-placeholder">
                 <div class="emoji">📷</div>
                 <div>사진을 추가하세요 (최대 3장)</div>
                 <div class="hint">클릭하거나 드래그하여 업로드</div>
               </div>
-
-              <!-- 대표 미리보기 영역 -->
-              <div id="imageStage" class="image-stage">
-                <!-- JS에서 <img class="stage-image"> 주입 -->
-              </div>
-
-              <!-- (선택) 하단 썸네일 스트립 -->
+              <div id="imageStage"  class="image-stage"></div>
               <div id="imageThumbs" class="thumb-strip"></div>
             </div>
           </div>
@@ -55,30 +44,40 @@
           <div class="compose-right">
             <!-- 작성자 -->
             <div class="author-display" sec:authorize="isAuthenticated()">
-              <img th:if="${#authentication.principal.user.profileImage != null}"
-                   th:src="${#authentication.principal.user.profileImage}"
+              <img th:if="${#authentication.principal.profileImage != null}"
+                   th:src="${#authentication.principal.profileImage}"
                    class="author-avatar" alt="프로필">
-              <div th:unless="${#authentication.principal.user.profileImage != null}"
+              <div th:unless="${#authentication.principal.profileImage != null}"
                    class="author-avatar-placeholder">
-                <span th:text="${#strings.substring(#authentication.principal.user.nickname, 0, 1)}">U</span>
+                <span th:text="${#strings.substring(#authentication.principal.nickname, 0, 1)}">U</span>
               </div>
-              <span class="author-name" th:text="${#authentication.principal.user.nickname}">사용자</span>
+              <span class="author-name"
+                    th:text="${#authentication.principal.nickname}">사용자</span>
             </div>
 
             <!-- 본문 -->
             <div class="form-group">
-              <label for="postContent" class="form-label">본문</label>
-              <textarea name="content" id="postContent" class="content-textarea"
-                        placeholder="문화유산에 대한 경험을 공유해주세요..." maxlength="200" required></textarea>
+              <label for="postContent"  class="form-label">본문</label>
+              <textarea name="content" id="postContent"
+                        class="content-textarea"
+                        placeholder="문화유산에 대한 경험을 공유해주세요..."
+                        maxlength="200" required></textarea>
               <div class="char-counter"><span id="charCount">0</span> / 200자</div>
             </div>
 
-            <!-- 위치 (텍스트만) -->
+            <!-- 위치 -->
             <div class="form-group">
               <label for="locationInput" class="form-label">위치</label>
-              <input type="text" id="locationInput" name="location" class="location-input"
-                     placeholder="예: 경복궁, 서울 종로구 사직로 161" maxlength="255" required>
+              <input  type="text"  id="locationInput" name="location"
+                      class="location-input"
+                      autocomplete="off"
+                      placeholder="예: 경복궁, 서울 종로구 사직로 161"
+                      maxlength="255" required>
               <div class="field-help">정확한 장소명을 입력해주세요.</div>
+
+              <!-- 📍 위·경도는 자동 주입 -->
+              <input type="hidden" name="lat" id="latHidden">
+              <input type="hidden" name="lng" id="lngHidden">
             </div>
 
             <!-- 액션 -->
@@ -95,13 +94,7 @@
         </div>
       </form>
     </div>
-
   </div>
-</div>
-
-<!-- 모달 관련 스크립트 프래그먼트 -->
-<div th:fragment="postWriteModalScripts">
-  <script th:src="@{/features/post/js/post_write_modal.js}"></script>
 </div>
 
 </body>

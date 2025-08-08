@@ -45,7 +45,6 @@ const PostListManager = {
     this.initElements();
     this.loadStateFromURL();
     this.bindEvents();
-    this.initScrollToTop();
     this.initLazyLoading();
     this.initQuickActions();
 
@@ -677,19 +676,20 @@ const PostListManager = {
    * 게시글 작성 모달 열기
    */
   openPostModal() {
-    // 로그인 체크 먼저 수행
-    const modal = document.getElementById('postModal');
-    if (!modal) {
+    if (!document.getElementById('postModal')) {
       alert('로그인이 필요합니다.');
-      window.location.href = '/auth/login';
+      location.href = '/auth/login';
       return;
     }
-    
-    if (window.PostModal) {
+    // PostModal 전역 초기화 보장
+    if (window.PostModal && window.PostModal.modal) {
       window.PostModal.open();
+    } else if (window.PostModal) {
+      window.PostModal.init();
+      if (window.PostModal.modal) window.PostModal.open();
+      else alert('모달 준비 중입니다. 새로고침 후 시도해주세요.');
     } else {
-      console.error('PostModal이 로드되지 않았습니다.');
-      alert('페이지를 새로고침 후 다시 시도해주세요.');
+      alert('모달 스크립트가 로드되지 않았습니다.');
     }
   },
 

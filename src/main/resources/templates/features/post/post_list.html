@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="gmaps-api-key" th:content="${@environment.getProperty('google.maps.api-key')}" />
   <title>게시글 페이지 - Heritage Hunters</title>
 
   <!-- CSS 파일들 -->
@@ -147,8 +148,7 @@
                  th:src="${post.mainImageUrl}"
                  th:alt="${post.heritage.name + ' - ' + post.content}"
                  class="post-image"
-                 loading="lazy"
-                 onerror="this.src='/images/heritage-placeholder.jpg'">
+                 loading="lazy">
 
             <!-- 이미지 없음 플레이스홀더 -->
             <div th:unless="${post.mainImageUrl != null}" class="post-image-placeholder">
@@ -356,11 +356,15 @@
   </div>
 </div>
 
+
+
 <!-- JavaScript 파일들 -->
+<script type="module" th:src="@{/features/post/js/post_write_modal.js}"></script>
 <script th:src="@{/features/post/js/post_list.js}"></script>
 
-<!-- 모달 관련 스크립트들 포함 -->
-<div th:replace="~{features/post/post_write_modal :: postWriteModalScripts}"></div>
-
+<!-- ① 사진 GPS 읽기용 EXIF 파서 -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+<!-- 구글 자동완성 -->
+<script defer src="/features/post/js/location-autocomplete.js"></script>
 </body>
 </html>
