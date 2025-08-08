@@ -40,7 +40,7 @@ public class Post {
   private User user;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "heritages_id", nullable = false)
+  @JoinColumn(name = "heritage_id", nullable = false)
   private Heritage heritage;
 
   @Column(name = "content", nullable = false, length = 200)
