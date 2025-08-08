@@ -11,11 +11,13 @@
   --spacing-unit: 1rem;
 
   /* AI 카드 컬러 */
+  --ai-recommends-color: #a671bf;
   --ai-news-color: #4a90e2;
   --ai-weather-color: #f5a623;
   --ai-content-color: #7ed321;
 
   /* AI 카드 호버용 연한 배경 */
+  --ai-recommends-light: rgba(167, 114, 192, 0.1);
   --ai-news-light: rgba(74, 144, 226, 0.1);
   --ai-weather-light: rgba(245, 166, 35, 0.1);
   --ai-content-light: rgba(126, 211, 33, 0.1);
@@ -156,6 +158,10 @@ main {
   margin-right: 0.5rem;
 }
 
+.heritage__summary__ai__recommends {
+  border-left: 4px solid var(--ai-recommends-color);
+}
+
 .heritage__summary__ai__news {
   border-left: 4px solid var(--ai-news-color);
 }
@@ -166,6 +172,12 @@ main {
 
 .heritage__summary__ai__content-summary {
   border-left: 4px solid var(--ai-content-color);
+}
+
+.heritage__summary__ai__recommends:hover {
+  background-color: var(--ai-recommends-light);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(167, 114, 192, 0.15);
 }
 
 .heritage__summary__ai__news:hover {
