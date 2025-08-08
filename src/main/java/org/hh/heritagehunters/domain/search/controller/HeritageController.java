@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+// 현재 사용 안함
 @RestController
-@RequestMapping("/heritages")
+@RequestMapping("/api/heritages")
 @RequiredArgsConstructor
 public class HeritageController {
 
