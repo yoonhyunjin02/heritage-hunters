@@ -352,7 +352,6 @@ const PostListManager = {
 
           // 로딩 에러 처리
           img.addEventListener('error', () => {
-            img.src = '/images/heritage-placeholder.jpg';
             img.alt = '이미지를 불러올 수 없습니다';
             img.classList.add('error');
           });

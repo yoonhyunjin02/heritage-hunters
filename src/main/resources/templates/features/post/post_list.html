@@ -198,11 +198,11 @@
 
               <!-- 작성자 정보 -->
               <div class="author-info">
-                <img th:if="${post.user.profile_image != null}"
-                     th:src="${post.user.profile_image}"
+                <img th:if="${post.user.profileImage != null}"
+                     th:src="${post.user.profileImage}"
                      th:alt="${post.user.nickname}"
                      class="author-avatar-small">
-                <div th:unless="${post.user.profile_image != null}"
+                <div th:unless="${post.user.profileImage != null}"
                      class="author-avatar-small-placeholder">
                   <span th:text="${#strings.substring(post.user.nickname, 0, 1)}">H</span>
                 </div>
