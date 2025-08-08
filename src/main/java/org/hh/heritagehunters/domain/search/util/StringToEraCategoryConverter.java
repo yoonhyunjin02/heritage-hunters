@@ -4,20 +4,18 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StringToEraCategoryConverter
-    implements Converter<String, EraCategory> {
+public class StringToEraCategoryConverter implements Converter<String, EraCategory> {
 
   @Override
   public EraCategory convert(String source) {
-
-    if ("전체".equals(source)) {
+    if (source == null || source.isBlank()) {
       return EraCategory.ALL;
     }
-    if ("시대미상".equals(source)) {
-      return EraCategory.UNKNOWN;
+
+    try {
+      return EraCategory.valueOf(source);
+    } catch (IllegalArgumentException e) {
+      throw new IllegalArgumentException("Unknown era code: " + source, e);
     }
-    return EraCategory.fromDisplayName(source)
-        .orElseThrow(() -> new IllegalArgumentException(
-            "Unknown era: " + source));
   }
 }

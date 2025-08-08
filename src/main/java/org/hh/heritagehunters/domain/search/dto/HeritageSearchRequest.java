@@ -49,14 +49,12 @@ public record HeritageSearchRequest(
   public boolean hasSearchCondition() {
     boolean hasKeyword = keyword != null && !keyword.isBlank();
 
-    // designation, region은 "00" 같은 코드값으로 비교해야 실제 맵 코드와 일치
     boolean hasDesignation = designation != null
         && designation.stream().anyMatch(d -> !"00".equals(d));
 
     boolean hasRegion = region != null
         && region.stream().anyMatch(r -> !"00".equals(r));
 
-    // era는 ALL이 아닐 때만 필터로 간주
     boolean hasEra = era != null
         && era.stream().anyMatch(e -> e != EraCategory.ALL);
 

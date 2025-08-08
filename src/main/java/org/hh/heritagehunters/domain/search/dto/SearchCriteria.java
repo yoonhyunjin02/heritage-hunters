@@ -32,7 +32,7 @@ public class SearchCriteria {
   /**
    * 시대 필터 전체 선택 시 List.of("전체")
    */
-  private List<EraCategory> era = List.of(EraCategory.UNKNOWN);
+  private List<EraCategory> era = List.of(EraCategory.ALL);
 
   /**
    * 페이지 번호 (1부터 시작)

@@ -40,7 +40,7 @@ public class SearchViewController {
   ) {
 
     model.addAttribute("designationMap", DesignationCodeMapper.getCodeMap());
-    model.addAttribute("designationCodes",DesignationCodeMapper.getCodeMap().keySet().stream().sorted());
+    model.addAttribute("designationCodes", DesignationCodeMapper.getCodeMap().keySet().stream().sorted());
     model.addAttribute("regionMap", RegionCodeMapper.getCodeMap());
     model.addAttribute("regionCodes", RegionCodeMapper.getCodeMap().keySet().stream().sorted());
 
