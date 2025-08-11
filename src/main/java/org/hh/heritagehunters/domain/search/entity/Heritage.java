@@ -43,7 +43,10 @@ public class Heritage {
   @Column(name = "address", columnDefinition = "TEXT")
   private String address;
 
-  @Column(name = "era", columnDefinition = "TEXT")
+  @Column(name = "era_detail", columnDefinition = "TEXT")  // era -> era_detail로 변경
+  private String eraDetail;
+
+  @Column(name = "era", length = 255)  // 새로 추가 era
   private String era;
 
   @Column(name = "latitude", precision = 12, scale = 8)
