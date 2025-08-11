@@ -36,7 +36,7 @@ public class DesignationCodeMapper {
   /**
    * 코드로 한글명 조회
    */
-  public String getKoreanName(String code) {
+  public static String getKoreanName(String code) {
     return CODE_TO_NAME.getOrDefault(code, "미분류");
   }
 }
