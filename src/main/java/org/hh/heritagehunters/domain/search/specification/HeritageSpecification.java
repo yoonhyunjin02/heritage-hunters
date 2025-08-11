@@ -1,11 +1,8 @@
 package org.hh.heritagehunters.domain.search.specification;
 
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.hh.heritagehunters.domain.search.dto.SearchCriteria;
 import org.hh.heritagehunters.domain.search.entity.Heritage;
 import org.hh.heritagehunters.domain.search.util.EraCategory;
