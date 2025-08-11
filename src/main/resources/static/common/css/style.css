@@ -1,8 +1,11 @@
 :root {
-  /* Breakpoints */
-  --bp-mobile: 767px;
-  --bp-tablet: 1024px;
-  --bp-desktop: 1025px;
+  /* Breakpoints (1rem = 16px) */
+  --bp-mobile: 47.9375rem;  /* 767px */
+  --bp-tablet: 64rem;       /* 1024px */
+  --bp-desktop: 64.0625rem; /* 1025px */
+
+  /* 공통 컨테이너 폭: 로그인 오른쪽 카드와 메인 사진 동일 */
+  --section-max: 62.5rem;   /* 1000px */
 
   /* Color Palette */
   --gray-000: #ffffff;
@@ -18,7 +21,6 @@
   --gray-900: #111111;
   --red-700: #ff1010;
 
-  /* 메인 컬러 예시 */
   --purple-000: #f5f0ff;
   --purple-100: #e0ccff;
   --purple-200: #caaaff;
@@ -31,21 +33,49 @@
   --purple-900: #2d0066;
 }
 
-body {
-  font-family: 'Pretendard Variable', sans-serif;
-}
+/* ===============================
+   Global Reset & Base Styles
+   =============================== */
 
+/* 기본 박스 모델 & 여백 제거 */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-a {
-  text-decoration: none;
-  color: black;
+/* 페이지 전체 높이 보장 */
+html,
+body {
+  height: 100%;
 }
 
-ul, li, ol {
-  list-style-type: none;
+/* 기본 폰트 & 본문 색상 */
+body {
+  font-family: 'Pretendard Variable', sans-serif;
+  color: var(--gray-900);
+}
+
+/* 링크: 밑줄 제거 + 색상 상속 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 리스트 스타일 제거 */
+ul,
+li,
+ol {
+  list-style: none;
+}
+
+/* ===============================
+   Common Container Utility
+   =============================== */
+
+/* 중앙 정렬 + 최대 폭 제한 */
+.container-max {
+  max-width: var(--section-max);
+  margin-left: auto;
+  margin-right: auto;
 }
