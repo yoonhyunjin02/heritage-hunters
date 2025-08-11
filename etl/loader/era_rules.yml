@@ -1,5 +1,3 @@
-# era_rules.yml
-# 주의: 위에서 아래 순서로 첫 매칭을 사용하세요.
 rules:
   - key: ALL
     label: "전체"
