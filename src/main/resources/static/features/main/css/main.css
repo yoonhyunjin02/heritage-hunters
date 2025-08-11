@@ -1,88 +1,115 @@
+/* 메인 컨테이너 */
 .main-container {
   text-align: center;
-  padding-top: 16px;           /* 헤더와 슬라이드 사이 패딩 */
+  padding-top: 1rem; /* 16px */
+  padding-bottom: 1rem; /* 16px */
 }
 
+/* 사진 영역: 로그인 컨테이너와 같은 최대 폭 사용 */
 .slideshow-container {
-  max-width: 1000px;
+  max-width: var(--section-max); /* ★ 동일 폭 */
   position: relative;
   margin: 0 auto;
 }
 
-.slide {
-  position: relative;
-}
-
+.slide { position: relative; }
 .slide img {
   width: 100%;
   height: auto;
-  border-radius: 10px;
+  border-radius: 0.625rem; /* 10px */
   display: block;
 }
 
-#slide-img {
-  transition: opacity .8s ease-in-out;  /* 더 부드러운 전환 */
-  opacity: 1;
-}
-
-.fade {
-  animation: fade 0.6s ease;
-}
-
-@keyframes fade {
-  from { opacity: 0.3; }
-  to   { opacity: 1; }
-}
+#slide-img { transition: opacity .8s ease-in-out; opacity: 1; }
+.fade { animation: fade .6s ease; }
+@keyframes fade { from { opacity: .3; } to { opacity: 1; } }
 
 .location-tag {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 0.875rem; right: 0.875rem;       /* 14px */
   background: rgba(255, 255, 255, 0.85);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  z-index: 2;                  /* 라벨도 사진 위로 */
+  padding: 0.5rem 0.75rem;              /* 8px 12px */
+  border-radius: 0.5rem;                /* 8px */
+  font-size: 0.875rem;                  /* 14px */
+  z-index: 2;
 }
 
 .dots {
-  position: absolute;          /* 사진 위에 겹치기 */
-  left: 0;
-  right: 0;
-  bottom: 14px;
-  text-align: center;
-  z-index: 3;                  /* z축 최상위로 */
-  margin: 0;                   /* 기존 margin 제거 */
+  position: absolute; left: 0; right: 0; bottom: 0.875rem; /* 14px */
+  text-align: center; z-index: 3; margin: 0;
 }
-
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 0.625rem; height: 0.625rem;    /* 10px */
   display: inline-block;
-  margin: 0 5px;
-  background: rgba(255,255,255,.75); /* 어두운 사진에서도 보이게 */
-  border: 1px solid rgba(0,0,0,.25);
+  margin: 0 0.3125rem;                  /* 5px */
+  background: rgba(255,255,255,.75);
+  border: 0.0625rem solid rgba(0,0,0,.25); /* 1px */
   border-radius: 50%;
   cursor: pointer;
   transition: transform .2s, background .2s, border-color .2s;
 }
-
-.dot.active {
-  background: #fff;
-  border-color: rgba(0,0,0,.4);
-  transform: scale(1.15);
-}
+.dot.active { background: #fff; border-color: rgba(0,0,0,.4); transform: scale(1.15); }
 
 .main-nav {
-  display: flex;
-  justify-content: center;
-  gap: 48px;
-  margin-top: 10px;
+  display: flex; justify-content: center;
+  gap: 3rem;                 /* 48px */
+  margin-top: 0.625rem;      /* 10px */
+}
+.main-nav a {
+  text-decoration: none; font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: 0.08em;
 }
 
-.main-nav a {
-  text-decoration: none;
-  font-weight: 700;
-  color: #111;
-  letter-spacing: 0.08em;
+/* ===== 반응형 ===== */
+/* ===== Tablet (≤ bp-tablet) ===== */
+@media (max-width: var(--bp-tablet)) {
+  /* 메인 컨테이너: 상단 패딩 축소 */
+  .main-container {
+    padding-top: 0.875rem; /* 14px */
+    padding-bottom: 0.875rem; /* 14px */
+  }
+
+  /* 네비게이션: 간격 축소 */
+  .main-nav {
+    gap: 2rem; /* 32px */
+  }
+}
+
+/* ===== Mobile (≤ bp-mobile) ===== */
+@media (max-width: var(--bp-mobile)) {
+  /* 메인 컨테이너: 상단 패딩 더 축소 */
+  .main-container {
+    padding-top: 0.75rem; /* 12px */
+    padding-bottom: 0.75rem; /* 12px */
+  }
+
+  /* 사진 컨테이너: 좌우 여백 추가 */
+  .slideshow-container {
+    padding: 0 0.5rem; /* 8px */
+  }
+
+  /* 위치 태그: 위치/폰트 크기 축소 */
+  .location-tag {
+    top: 0.625rem;   /* 10px */
+    right: 0.625rem; /* 10px */
+    font-size: 0.8125rem; /* 13px */
+  }
+
+  /* 인디케이터 도트 위치 조정 */
+  .dots {
+    bottom: 0.625rem; /* 10px */
+  }
+
+  /* 도트 크기 살짝 축소 */
+  .dot {
+    transform: scale(0.95);
+  }
+
+  /* 네비게이션: 간격 축소 + 줄바꿈 */
+  .main-nav {
+    gap: 1.25rem;      /* 20px */
+    flex-wrap: wrap;
+    row-gap: 0.5rem;   /* 8px */
+  }
 }

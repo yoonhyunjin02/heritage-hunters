@@ -1,69 +1,152 @@
-/* common/css/footer.css */
+/* ===============================
+   Footer (Base)
+   =============================== */
+
 .footer {
-  padding: 32px 24px 16px;
-  background-color: #fff;
-  color: #333;
-  font-size: 14px;
+  background-color: var(--gray-050);
+  color: var(--gray-900);
+  border-top: 0.0625rem solid var(--gray-200);     /* 1px */
+  padding: 1.25rem 1rem 1rem;                      /* 20px 16px 16px */
+  font-size: 0.875rem;                              /* 14px */
 }
 
+/* 상단 바: 로고 + 메뉴 같은 선상 */
 .footer-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 20px;
-  max-width: 1200px;
+  max-width: var(--section-max);
   margin: 0 auto;
+  display: flex;
+  align-items: center;                              /* 수직 가운데 정렬 */
+  justify-content: space-between;
+  gap: 1rem;
 }
 
-.footer-left {
-  max-width: 60%;
+/* 로고 이미지(헤더와 톤 맞춤) */
+.footer .logo-image {
+  display: block;
+  height: 2rem;                                     /* 32px */
 }
 
-.footer-logo {
-  background-color: var(--gray-200);
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-weight: bold;
-  display: inline-block;
-  margin-bottom: 10px;
-}
-
-.footer-desc {
-  line-height: 1.6;
-  color: #555;
-}
-
+/* 우측 메뉴 */
 .footer-right {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 1.25rem;                                     /* 20px */
 }
 
 .footer-right a {
   text-decoration: none;
-  color: #000;
-  font-weight: 500;
-  transition: color 0.2s;
+  color: var(--gray-900);
+  font-weight: 600;
+  line-height: 1;
 }
 
-.footer-right a:hover {
-  color: #007BFF;
+.footer-right a:hover,
+.footer-right a:focus-visible {
+  color: var(--primary-600, #007BFF);
+  outline: none;
+  text-decoration: underline;
 }
 
+/* 설명글: 상단 바 아래 전폭 */
+.footer-desc {
+  max-width: var(--section-max);
+  margin: 0.75rem auto 0;                           /* 12px 상단 간격 */
+  line-height: 1.6;
+  color: var(--gray-700);
+}
+
+/* 하단: 선 + 저작권(우측 정렬) */
 .footer-bottom {
-  max-width: 1200px;
-  margin: 24px auto 0;
+  max-width: var(--section-max);
+  margin: 1.25rem auto 0;                            /* 20px */
   text-align: right;
 }
 
 .footer-bottom hr {
-  border: none;
-  border-top: 1px solid #ddd;
-  margin-bottom: 10px;
+  border: 0;
+  border-top: 0.0625rem solid var(--gray-200);
+  margin: 0 0 0.625rem;                              /* 0 0 10px */
 }
 
 .footer-copy {
-  font-size: 13px;
-  color: #888;
+  font-size: 0.8125rem;                              /* 13px */
+  color: var(--gray-600);
+}
+
+/* 키보드 포커스 접근성 */
+.footer a:focus-visible {
+  outline: 0.125rem solid var(--primary-600, #007BFF);
+  outline-offset: 0.125rem;
+  border-radius: 0.25rem;
+}
+
+/* ===============================
+   Responsive - Footer
+   =============================== */
+
+/* Tablet (≤ bp-tablet): 여백과 간격 살짝 축소 */
+@media (max-width: var(--bp-tablet)) {
+  .footer {
+    padding: 1rem 0.875rem 0.875rem;                /* 16px 14px 14px */
+  }
+  .footer-container {
+    gap: 0.75rem;
+  }
+  .footer .logo-image {
+    height: 1.875rem;                               /* 30px */
+  }
+  .footer-right {
+    gap: 0.875rem;                                  /* 14px */
+  }
+  .footer-desc {
+    margin-top: 0.625rem;                           /* 10px */
+  }
+}
+
+/* Mobile (≤ bp-mobile): 상단 바는 래핑 허용, 글자 크기/간격 축소 */
+@media (max-width: var(--bp-mobile)) {
+  .footer {
+    padding: 0.875rem 0.75rem 0.75rem;              /* 14px 12px 12px */
+  }
+
+  .footer-container {
+    flex-wrap: wrap;                                 /* 필요 시 줄바꿈 */
+    gap: 0.5rem;                                     /* 8px */
+  }
+
+  /* 로고 왼쪽, 메뉴는 오른쪽 정렬 유지(같은 줄이 어려우면 다음 줄 맨 오른쪽) */
+  .footer-right {
+    margin-left: auto;
+    gap: 0.75rem;                                    /* 12px */
+    flex-wrap: wrap;
+  }
+
+  .footer-right a {
+    font-size: 0.8125rem;                            /* 13px */
+    font-weight: 600;
+  }
+
+  .footer .logo-image {
+    height: 1.75rem;                                 /* 28px */
+  }
+
+  .footer-desc {
+    font-size: 0.84375rem;                           /* 13.5px 정도 */
+    margin-top: 0.5rem;                              /* 8px */
+  }
+
+  .footer-bottom {
+    margin-top: 0.875rem;                            /* 14px */
+  }
+
+  .footer-copy {
+    font-size: 0.75rem;                              /* 12px */
+  }
+}
+
+/* 접근성: 애니메이션 최소화 환경 (안정성 유지용) */
+@media (prefers-reduced-motion: reduce) {
+  .footer a {
+    transition: none !important;
+  }
 }

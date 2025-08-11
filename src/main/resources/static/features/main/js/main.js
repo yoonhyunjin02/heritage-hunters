@@ -36,7 +36,7 @@ slides.forEach(s => { const img = new Image(); img.src = s.src; });
 /** 5) 표시/전환 로직 */
 let idx = 0;
 let timer = null;
-const INTERVAL = 2000;
+const INTERVAL = 3500;
 
 function show(i, userAction=false){
   idx = (i + slides.length) % slides.length;
