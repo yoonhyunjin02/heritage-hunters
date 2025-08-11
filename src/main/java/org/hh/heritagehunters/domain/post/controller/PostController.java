@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hh.heritagehunters.common.exception.BadRequestException;
+import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.common.security.CustomUserDetails;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.post.dto.PostCreateRequestDto;
@@ -15,8 +17,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -99,6 +103,27 @@ public class PostController {
     if (response.getPointsEarned() > 0) {
       redirectAttributes.addFlashAttribute("pointsEarned", response.getPointsEarned());
     }
+
+    return "redirect:/posts";
+  }
+
+  /**
+   * 게시글 삭제
+   */
+  @DeleteMapping("/{id}")
+  public String deletePost(
+      @PathVariable("id") Long postId,
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      RedirectAttributes redirectAttributes) {
+
+    if (userDetails == null || userDetails.getUser() == null) {
+      throw new BadRequestException(ErrorCode.LOGIN_REQUIRED);
+    }
+
+    postService.deletePost(postId, userDetails.getUser());
+
+    redirectAttributes.addFlashAttribute("toastType", "success");
+    redirectAttributes.addFlashAttribute("toastMessage", "게시글이 삭제되었습니다.");
 
     return "redirect:/posts";
   }
