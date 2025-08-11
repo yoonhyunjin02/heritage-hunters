@@ -14,6 +14,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hh.heritagehunters.domain.oauth.entity.User;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Data
 @NoArgsConstructor
@@ -39,6 +40,16 @@ public class Like {
   @JoinColumn(name = "user_id", insertable = false, updatable = false)
   private User user;
 
-  @Column(name="created_at", nullable = false)
+  @Column(name = "created_at", nullable = false)
+  @CreationTimestamp
   private LocalDateTime createdAt;
+
+  public static Like create(User user, Post post) {
+    Like like = new Like();
+    like.setUserId(user.getId());
+    like.setPostId(post.getId());
+    like.setPost(post);
+    like.setUser(user);
+    return like;
+  }
 }
