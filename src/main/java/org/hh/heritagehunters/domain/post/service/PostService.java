@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hh.heritagehunters.common.exception.BadRequestException;
 import org.hh.heritagehunters.common.exception.InternalServerErrorException;
+import org.hh.heritagehunters.common.exception.NotFoundException;
+import org.hh.heritagehunters.common.exception.UnauthorizedException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.post.dto.PostCreateRequestDto;
@@ -206,5 +208,26 @@ public class PostService {
         Math.cos(radLat1) * Math.cos(radLat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
     double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return earthRadius * c;
+  }
+
+  /**
+   * 게시글 삭제
+   * @param postId 게시글 ID
+   * @param user 삭제 요청한 사용자
+   */
+  @Transactional
+  public void deletePost(Long postId, User user) {
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
+
+    // 작성자 검증
+    if (!post.getUser().getId().equals(user.getId())) {
+      throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
+    }
+    
+    // 게시글 삭제
+    postRepository.delete(post);
+
+    log.info("게시글 삭제 완료 = postId: {}, userId: {}", postId, user.getId());
   }
 }
