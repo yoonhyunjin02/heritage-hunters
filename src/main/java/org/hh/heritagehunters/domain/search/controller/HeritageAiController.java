@@ -21,8 +21,7 @@ public class HeritageAiController {
   private final AiProxyService aiProxyService;
 
   /**
-   * 동일 출처로 AI 프록시 제공 (CORS 회피)
-   * 예: GET /heritage/15834/ai?type=recommends&code=1
+   * 동일 출처로 AI 프록시 제공 (CORS 회피) 예: GET /heritage/15834/ai?type=recommends&code=1
    */
   @GetMapping("/{id}/ai")
   public ResponseEntity<AiQuestionResponse> ask(

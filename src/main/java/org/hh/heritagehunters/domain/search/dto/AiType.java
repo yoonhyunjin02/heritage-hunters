@@ -5,7 +5,9 @@ public enum AiType {
 
   public static AiType from(String s) {
     for (AiType t : values()) {
-      if (t.name().equalsIgnoreCase(s)) return t;
+      if (t.name().equalsIgnoreCase(s)) {
+        return t;
+      }
     }
     throw new IllegalArgumentException("Unsupported ai type: " + s);
   }

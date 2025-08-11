@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AiQuestionResponse {
+
   private AiAction action;
   private String content;
 }

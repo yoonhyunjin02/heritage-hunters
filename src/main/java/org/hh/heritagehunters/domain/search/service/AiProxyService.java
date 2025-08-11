@@ -47,14 +47,17 @@ public class AiProxyService {
         .onStatus(HttpStatusCode::isError, res ->
             res.bodyToMono(String.class)
                 .defaultIfEmpty("AI upstream error")
-                .flatMap(body -> Mono.error(new IllegalStateException("Upstream error: " + res.statusCode() + " " + body)))
+                .flatMap(
+                    body -> Mono.error(new IllegalStateException("Upstream error: " + res.statusCode() + " " + body)))
         )
         .bodyToMono(AiQuestionResponse.class)
         .block(Duration.ofSeconds(15));
   }
 
   private int resolveClientCode(Integer code, Long heritageId) {
-    if (code != null && CLIENT_IDS.containsKey(code)) return code;
+    if (code != null && CLIENT_IDS.containsKey(code)) {
+      return code;
+    }
     // id 기반 로테이션: 1,2,3
     int rot = (int) ((heritageId % 3) + 1);
     return CLIENT_IDS.containsKey(rot) ? rot : 1;
@@ -79,5 +82,7 @@ public class AiProxyService {
     }
   }
 
-  private String nvl(String s) { return s == null ? "" : s.trim(); }
+  private String nvl(String s) {
+    return s == null ? "" : s.trim();
+  }
 }
