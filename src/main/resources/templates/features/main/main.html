@@ -1,19 +1,36 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <th:block th:insert="~{fragments/head :: common-head('Login')}"></th:block>
+  <th:block th:insert="~{fragments/head :: common-head('Main')}"></th:block>
+  <link rel="stylesheet" th:href="@{/features/main/css/main.css}">
 </head>
 <body>
 <!--header-->
 <div th:replace="~{fragments/header :: common-header}"></div>
 
 <!--main-->
-<main>
-<h1>메인 페이지</h1>
+<main class="main-container">
+  <div class="slideshow-container" id="slideshow" aria-label="메인 슬라이드">
+    <div class="slide fade">
+      <img id="slide-img" src="" alt="">
+      <div id="slide-label" class="location-tag"></div>
+    </div>
+
+    <div id="dots" class="dots" aria-label="슬라이드 인디케이터"></div>
+  </div>
+
+  <nav class="main-nav">
+    <a href="/map">MAP</a>
+    <a href="/search">SEARCH</a>
+    <a href="/post">POST</a>
+    <a href="/leaderboard">LEADERBOARD</a>
+  </nav>
 </main>
 
 <!--footer-->
 <div th:replace="~{fragments/footer :: common-footer}"></div>
 
+<!--js-->
+<script defer th:src="@{/features/main/js/main.js}"></script>
 </body>
 </html>
