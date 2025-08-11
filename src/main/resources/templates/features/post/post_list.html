@@ -76,10 +76,11 @@
         <div class="region-filter-container">
           <select name="region" class="region-filter-select" onchange="submitForm()">
             <option value="">🌍 전체 지역</option>
-            <option th:each="regionCode : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getAllRegionCodes()}"
-                    th:value="${regionCode}"
-                    th:selected="${param.region == regionCode}"
-                    th:text="${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getKoreanName(regionCode)}">
+            <option th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
+                    th:if="${entry.key != '00'}"
+                    th:value="${entry.key}"
+                    th:selected="${param.region == entry.key}"
+                    th:text="${entry.value}">
             </option>
           </select>
         </div>
