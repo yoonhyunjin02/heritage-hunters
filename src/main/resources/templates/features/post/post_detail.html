@@ -4,290 +4,224 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title th:text="${post.heritage.name + ' - ' + post.content}">게시글 상세 - Heritage Hunters</title>
-
-  <!-- CSS 파일들 -->
+  <title th:text="${post.heritageName + ' - ' + post.content}">게시글 상세 - Heritage Hunters</title>
   <link rel="stylesheet" th:href="@{/common/css/common.css}">
+  <link rel="stylesheet" th:href="@{/features/post/css/post_write_modal.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}">
 </head>
 <body>
 
-<!-- Header Fragment -->
-<div th:replace="~{fragments/header :: header}"></div>
+<div id="postDetailModal" class="modal show"
+     role="dialog" aria-modal="true" aria-labelledby="postDetailTitle"
+     th:data-post-id="${post.id}"
+     th:data-total-images="${post.images != null ? post.images.size() : 0}"
+     th:data-images="${post.images != null ? #strings.listJoin(#lists.toList(post.images.![url]), '|') : ''}">
+  <div class="modal-content">
 
-<main class="main-content">
-  
-  <!-- 뒤로가기 버튼 -->
-  <div class="back-navigation">
-    <button onclick="history.back()" class="back-btn">
-      ← 뒤로가기
-    </button>
-  </div>
-
-  <!-- 게시글 상세 컨테이너 -->
-  <article class="post-detail-container" th:data-post-id="${post.id}">
-    
-    <!-- 게시글 헤더 -->
-    <header class="post-header">
-      <!-- 작성자 정보 -->
-      <div class="author-section">
-        <div class="author-info">
-          <img th:if="${post.user.profile_image != null}"
-               th:src="${post.user.profile_image}"
-               th:alt="${post.user.nickname}"
-               class="author-avatar">
-          <div th:unless="${post.user.profile_image != null}"
-               class="author-avatar-placeholder">
-            <span th:text="${#strings.substring(post.user.nickname, 0, 1)}">H</span>
-          </div>
-          <div class="author-details">
-            <h3 class="author-name" th:text="${post.user.nickname}">사용자닉네임</h3>
-            <time class="post-date" 
-                  th:datetime="${post.createdAt}"
-                  th:text="${#temporals.format(post.createdAt, 'yyyy년 MM월 dd일 HH:mm')}">
-              2024년 01월 15일 14:30
-            </time>
-          </div>
-        </div>
-        
-        <!-- 게시글 메뉴 (작성자만) -->
-        <div class="post-menu" th:if="${#authentication.name == post.user.email}">
-          <button class="menu-btn" onclick="togglePostMenu()">⋮</button>
-          <div class="menu-dropdown" id="postMenuDropdown">
-            <a th:href="@{/posts/{id}/edit(id=${post.id})}" class="menu-item">✏️ 수정</a>
-            <button class="menu-item delete-btn" th:onclick="'deletePost(' + ${post.id} + ')'">🗑️ 삭제</button>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 문화유산 정보 -->
-      <div class="heritage-info">
-        <h1 class="heritage-name" th:text="${post.heritage.name}">서울 숭례문</h1>
-        <div class="heritage-meta">
-          <span class="designation-badge"
-                th:data-designation="${post.heritage.designation}"
-                th:text="${T(org.hh.heritagehunters.domain.search.util.DesignationCodeMapper).getKoreanName(post.heritage.designation)}">
-            국보
-          </span>
-        </div>
-      </div>
-    </header>
-
-    <!-- 게시글 이미지들 -->
-    <div class="post-images" th:if="${post.images != null and !post.images.empty}">
-      <div class="image-slider" th:if="${post.images.size() > 1}">
-        <div class="slider-container">
-          <div class="image-slides">
-            <div class="slide" 
-                 th:each="image, iterStat : ${post.images}" 
-                 th:class="'slide' + (${iterStat.index == 0} ? ' active' : '')">
-              <img th:src="${image.url}" 
-                   th:alt="${post.heritage.name + ' 이미지 ' + (iterStat.index + 1)}"
-                   class="post-image">
+    <!-- 헤더 -->
+    <div class="modal-header">
+      <h1 id="postDetailTitle" class="modal-title">게시글 상세</h1>
+      <div class="header-actions">
+        <div class="post-actions" th:if="${post.owner}">
+          <div class="dropdown">
+            <button class="icon-btn" aria-haspopup="menu" aria-expanded="false"
+                    onclick="toggleDropdown()">
+              ⋯
+            </button>
+            <div class="dropdown-menu" id="postDropdown" role="menu">
+              <a th:href="@{/posts/{id}/edit(id=${post.id})}" class="dropdown-item" role="menuitem">수정</a>
+              <button class="dropdown-item delete-item" role="menuitem" onclick="deletePost()">삭제
+              </button>
             </div>
           </div>
-          <button class="slider-btn prev-btn" onclick="changeSlide(-1)">‹</button>
-          <button class="slider-btn next-btn" onclick="changeSlide(1)">›</button>
-          <div class="slide-indicators">
-            <span class="indicator" 
-                  th:each="image, iterStat : ${post.images}"
-                  th:class="'indicator' + (${iterStat.index == 0} ? ' active' : '')"
-                  th:onclick="'goToSlide(' + ${iterStat.index} + ')'"></span>
-          </div>
         </div>
-      </div>
-      
-      <!-- 단일 이미지 -->
-      <div class="single-image" th:if="${post.images.size() == 1}">
-        <img th:src="${post.images[0].url}" 
-             th:alt="${post.heritage.name + ' 이미지'}"
-             class="post-image">
+        <button class="modal-close" onclick="closeModal()" aria-label="닫기">&times;</button>
       </div>
     </div>
 
-    <!-- 게시글 본문 -->
-    <div class="post-content">
-      <p class="post-text" th:text="${post.content}">
-        정말 아름다운 문화유산이에요! 직접 보니 더욱 감동적이었습니다. 역사의 깊이를 느낄 수 있었어요.
-      </p>
-    </div>
+    <!-- 본문 -->
+    <div class="modal-body">
+      <div class="composer-grid">
+        <!-- 왼쪽: 이미지 영역 -->
+        <div class="compose-left" aria-label="게시글 이미지">
+        <div class="gallery" th:if="${post.images != null and !post.images.empty}">
+          <div class="gallery-main" id="galleryMain">
+            <img id="mainImage"
+                 th:src="${post.images[0].url}"
+                 alt="게시글 이미지"
+                 draggable="false">
 
-    <!-- 위치 정보 -->
-    <div class="location-section">
-      <h3 class="section-title">📍 위치</h3>
-      <div class="location-info">
-        <p class="location-text" th:text="${post.location}">서울 중구 세종대로 40</p>
-      </div>
-    </div>
+            <!-- 네비게이션 버튼 (이미지가 2개 이상일 때만 표시) -->
+            <div th:if="${post.images.size() > 1}">
+              <button class="gallery-nav prev" onclick="prevImage()" aria-label="이전 이미지">‹</button>
+              <button class="gallery-nav next" onclick="nextImage()" aria-label="다음 이미지">›</button>
 
-    <!-- 게시글 통계 및 액션 -->
-    <div class="post-stats-actions">
-      <div class="stats-display">
-        <span class="stat-item">
-          👁️ 조회 <span class="stat-number" th:text="${post.viewCount}">127</span>
-        </span>
-        <span class="stat-item">
-          ❤️ 좋아요 <span class="stat-number like-count" th:text="${post.likeCount}">23</span>
-        </span>
-        <span class="stat-item">
-          💬 댓글 <span class="stat-number comment-count" th:text="${post.commentCount}">8</span>
-        </span>
-      </div>
-      
-      <div class="action-buttons" sec:authorize="isAuthenticated()">
-        <button class="action-btn like-btn" 
-                th:class="'action-btn like-btn' + (${isLikedByCurrentUser} ? ' active' : '')"
-                th:data-post-id="${post.id}"
-                onclick="toggleLike(this)">
-          <span class="btn-icon">❤️</span>
-          <span class="btn-text">좋아요</span>
-        </button>
-        
-        <button class="action-btn comment-btn" onclick="focusCommentInput()">
-          <span class="btn-icon">💬</span>
-          <span class="btn-text">댓글 달기</span>
-        </button>
-        
-        <button class="action-btn share-btn" th:onclick="'sharePost(' + ${post.id} + ')'">
-          <span class="btn-icon">📤</span>
-          <span class="btn-text">공유하기</span>
-        </button>
-      </div>
-    </div>
-  </article>
-
-  <!-- 댓글 섹션 -->
-  <section class="comments-section">
-    <h3 class="section-title">
-      💬 댓글 <span class="comment-count" th:text="${post.commentCount}">8</span>개
-    </h3>
-
-    <!-- 댓글 작성 (로그인한 사용자만) -->
-    <div class="comment-write-section" sec:authorize="isAuthenticated()">
-      <form class="comment-form" th:action="@{/posts/{id}/comments(id=${post.id})}" method="post">
-        <div class="comment-input-area">
-          <div class="commenter-info">
-            <img th:if="${#authentication.principal.profile_image != null}"
-                 th:src="${#authentication.principal.profile_image}"
-                 class="commenter-avatar"
-                 alt="내 프로필">
-            <div th:unless="${#authentication.principal.profile_image != null}"
-                 class="commenter-avatar-placeholder">
-              <span th:text="${#strings.substring(#authentication.principal.nickname, 0, 1)}">U</span>
-            </div>
-          </div>
-          
-          <div class="comment-input-wrapper">
-            <textarea name="content" 
-                      id="commentInput"
-                      class="comment-input"
-                      placeholder="댓글을 입력하세요..."
-                      maxlength="300"
-                      required></textarea>
-            <div class="comment-input-footer">
-              <div class="char-counter">
-                <span id="commentCharCount">0</span> / 300자
+              <!-- 인디케이터 -->
+              <div class="gallery-indicators">
+                  <span class="indicator"
+                        th:each="image, it : ${post.images}"
+                        th:class="'indicator' + (${it.index == 0} ? ' active' : '')"
+                        th:onclick="'showImage(' + ${it.index} + ')'"
+                        th:data-index="${it.index}"></span>
               </div>
-              <button type="submit" class="comment-submit-btn">등록</button>
             </div>
           </div>
-        </div>
-      </form>
-    </div>
 
-    <!-- 로그인 안내 (비로그인 사용자) -->
-    <div class="login-prompt" sec:authorize="!isAuthenticated()">
-      <p>댓글을 작성하려면 <a th:href="@{/login}">로그인</a>이 필요합니다.</p>
-    </div>
+          <!-- 썸네일 (선택사항 - 우하단에 작게) -->
+          <div class="gallery-thumbs" th:if="${post.images.size() > 1}">
+            <button class="thumb"
+                    th:each="image, it : ${post.images}"
+                    th:classappend="${it.index == 0} ? ' active'"
+                    th:data-index="${it.index}"
+                    th:onclick="'showImage(' + ${it.index} + ')'">
+              <img th:src="${image.url}" th:alt="'썸네일 ' + ${it.index + 1}">
+            </button>
+          </div>
+        </div>
 
-    <!-- 댓글 리스트 -->
-    <div class="comments-list">
-      <div class="comment-item" th:each="comment : ${comments}">
-        <div class="comment-author-info">
-          <img th:if="${comment.user.profile_image != null}"
-               th:src="${comment.user.profile_image}"
-               th:alt="${comment.user.nickname}"
-               class="comment-author-avatar">
-          <div th:unless="${comment.user.profile_image != null}"
-               class="comment-author-avatar-placeholder">
-            <span th:text="${#strings.substring(comment.user.nickname, 0, 1)}">U</span>
-          </div>
+        <!-- 이미지가 없을 때 -->
+        <div class="no-image" th:if="${post.images == null or post.images.empty}">
+          이미지를 준비 중입니다.
         </div>
-        
-        <div class="comment-content">
-          <div class="comment-header">
-            <span class="comment-author-name" th:text="${comment.user.nickname}">댓글작성자</span>
-            <time class="comment-date" 
-                  th:datetime="${comment.createdAt}"
-                  th:text="${#temporals.format(comment.createdAt, 'MM월 dd일 HH:mm')}">
-              01월 15일 14:35
-            </time>
-          </div>
-          
-          <p class="comment-text" th:text="${comment.content}">
-            정말 멋진 사진이네요! 저도 가보고 싶어졌어요.
-          </p>
         </div>
-        
-        <!-- 댓글 메뉴 (작성자만) -->
-        <div class="comment-menu" th:if="${#authentication.name == comment.user.email}">
-          <button class="comment-menu-btn" th:onclick="'toggleCommentMenu(' + ${comment.id} + ')'">⋮</button>
-          <div class="comment-menu-dropdown" th:id="'commentMenu' + ${comment.id}">
-            <button class="menu-item edit-comment-btn" th:onclick="'editComment(' + ${comment.id} + ')'">✏️ 수정</button>
-            <button class="menu-item delete-comment-btn" th:onclick="'deleteComment(' + ${comment.id} + ')'">🗑️ 삭제</button>
+
+        <!-- 오른쪽: 작성자/본문/액션/댓글 -->
+        <div class="compose-right">
+        <!-- 작성자 -->
+        <section class="author-box">
+          <div class="author-profile">
+            <div class="avatar">
+              <img th:if="${post.userProfileImage != null}"
+                   th:src="${post.userProfileImage}"
+                   th:alt="${post.userNickname}">
+              <div th:unless="${post.userProfileImage != null}" class="avatar-fallback"
+                   th:text="${#strings.substring(post.userNickname,0,1)}">U
+              </div>
+            </div>
+            <div class="author-meta">
+              <div class="name" th:text="${post.userNickname}">닉네임</div>
+              <time class="time"
+                    th:datetime="${post.createdAt}"
+                    th:text="${#temporals.format(post.createdAt, 'yyyy년 MM월 dd일 HH:mm')}">2025년 08월
+                08일
+                15:11
+              </time>
+            </div>
           </div>
+        </section>
+
+        <!-- 문화유산/위치 -->
+        <section class="meta-box">
+          <div class="heritage" th:if="${post.heritageName != null}">
+            <span class="meta-title">문화유산</span>
+            <div class="heritage-name" th:text="${post.heritageName}">경주 석굴암 석굴</div>
+          </div>
+          <div class="location" th:if="${post.location != null}">
+            <span class="meta-title">위치</span>
+            <div class="location-text" th:text="${post.location}">대한민국 …</div>
+          </div>
+        </section>
+
+        <!-- 본문 -->
+        <section class="content-box">
+          <p class="content-text" th:text="${post.content}">본문 내용</p>
+        </section>
+
+        <!-- 액션/통계 -->
+        <section class="actions-box" sec:authorize="isAuthenticated()">
+          <form th:action="@{/posts/{id}/like(id=${post.id})}" method="post" id="likeForm">
+            <button type="submit"
+                    id="likeBtn"
+                    class="icon-action"
+                    th:classappend="${post.liked} ? ' liked'"
+                    aria-pressed="false"
+                    title="좋아요">
+              <!-- 하트 -->
+              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12
+  21.23l8.84-8.84a5.5 5.5 0 0 0-0-7.78z"
+                      stroke="currentColor" stroke-width="2"
+                      th:fill="${post.liked} ? 'currentColor' : 'none'"></path>
+              </svg>
+              <span class="sr-only">좋아요</span>
+            </button>
+          </form>
+
+          <button class="icon-action" onclick="focusCommentInput()" title="댓글 달기"
+                  aria-label="댓글 달기">
+            <!-- 말풍선 -->
+            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                    stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+          </button>
+
+          <div class="stats">
+            <span class="stat"><b th:text="${post.viewCount}">0</b> 조회</span>
+            <span class="stat"><b th:text="${post.likeCount}">0</b> 좋아요</span>
+            <span class="stat"><b th:text="${post.commentCount}">0</b> 댓글</span>
+          </div>
+        </section>
+
+        <!-- 로그인 안내 -->
+        <section class="login-notice" sec:authorize="!isAuthenticated()">
+          댓글을 작성하려면 <a th:href="@{/login}">로그인</a>이 필요합니다.
+        </section>
+
+        <!-- 댓글 목록 -->
+        <section class="comments-list">
+          <div class="comment-item" th:each="comment : ${post.comments}">
+            <div class="c-avatar">
+              <img th:if="${comment.userProfileImage != null}"
+                   th:src="${comment.userProfileImage}"
+                   th:alt="${comment.userNickname}">
+              <div th:unless="${comment.userProfileImage != null}" class="avatar-fallback"
+                   th:text="${#strings.substring(comment.userNickname,0,1)}">U
+              </div>
+            </div>
+            <div class="c-body">
+              <div class="c-head">
+                <span class="c-name" th:text="${comment.userNickname}">작성자</span>
+                <time class="c-time"
+                      th:text="${#temporals.format(comment.createdAt, 'MM월 dd일 HH:mm')}">06월 01일
+                  12:00
+                </time>
+                <div class="c-menu"
+                     th:if="${currentUser != null and currentUser.id == comment.userId}">
+                  <button class="text-btn" th:onclick="'editComment(' + ${comment.id} + ')'">수정
+                  </button>
+                  <button class="text-btn danger" th:onclick="'deleteComment(' + ${comment.id} +
+  ')'">삭제
+                  </button>
+                </div>
+              </div>
+              <p class="c-text" th:text="${comment.content}">댓글 내용</p>
+            </div>
+          </div>
+
+          <div class="no-comments" th:if="${post.comments == null or post.comments.empty}">
+            아직 댓글이 없습니다. 첫 댓글을 남겨보세요!
+          </div>
+        </section>
+
+        <!-- 댓글 작성 -->
+        <section class="comment-write" sec:authorize="isAuthenticated()">
+          <form class="comment-form" th:action="@{/posts/{id}/comments(id=${post.id})}"
+                method="post">
+              <textarea id="commentTextarea" name="content" class="comment-input"
+                        placeholder="댓글을 입력하세요..." maxlength="200" required></textarea>
+            <div class="comment-tools">
+              <div class="count"><span id="commentCharCount">0</span> / 200자</div>
+              <button type="submit" class="btn-primary">등록</button>
+            </div>
+          </form>
+        </section>
         </div>
       </div>
-      
-      <!-- 댓글이 없을 때 -->
-      <div class="no-comments" th:if="${comments == null or comments.empty}">
-        <div class="no-comments-content">
-          <span class="no-comments-icon">💬</span>
-          <p class="no-comments-text">아직 댓글이 없습니다.</p>
-          <p class="no-comments-subtext" sec:authorize="isAuthenticated()">첫 번째 댓글을 작성해보세요!</p>
-        </div>
-      </div>
     </div>
-  </section>
-  
-  <!-- 관련 게시글 (같은 문화유산) -->
-  <section class="related-posts-section" th:if="${relatedPosts != null and !relatedPosts.empty}">
-    <h3 class="section-title">🏛️ 관련 게시글</h3>
-    <div class="related-posts-grid">
-      <a th:each="relatedPost : ${relatedPosts}" 
-         th:href="@{/posts/{id}(id=${relatedPost.id})}"
-         class="related-post-card">
-        <div class="related-post-image">
-          <img th:if="${relatedPost.mainImageUrl != null}"
-               th:src="${relatedPost.mainImageUrl}"
-               th:alt="${relatedPost.heritage.name}"
-               loading="lazy">
-          <div th:unless="${relatedPost.mainImageUrl != null}" class="related-post-placeholder">
-            🏛️
-          </div>
-        </div>
-        <div class="related-post-info">
-          <p class="related-post-author" th:text="${relatedPost.user.nickname}">작성자</p>
-          <p class="related-post-stats">
-            ❤️ <span th:text="${relatedPost.likeCount}">0</span>
-            💬 <span th:text="${relatedPost.commentCount}">0</span>
-          </p>
-        </div>
-      </a>
-    </div>
-  </section>
+  </div>
+</div>
 
-</main>
-
-<!-- Footer Fragment -->
-<div th:replace="~{fragments/footer :: footer}"></div>
-
-<!-- Toast 메시지 Fragment -->
-<div th:replace="~{fragments/toast :: toast}"></div>
-
-<!-- JavaScript 파일들 -->
-<script defer th:src="@{/common/js/toast_manager.js}"></script>
 <script defer th:src="@{/features/post/js/post_detail.js}"></script>
-
 </body>
 </html>
