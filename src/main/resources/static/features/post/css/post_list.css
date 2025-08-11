@@ -28,54 +28,6 @@
 }
 
 /* ========================================
-   페이지 헤더
-   ======================================== */
-
-.page-header {
-  text-align: center;
-  margin-bottom: 32px;
-  padding: 24px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: var(--border-radius);
-  color: white;
-  position: relative;
-}
-
-.header-content h1.page-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.page-description {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  margin: 0;
-  font-weight: 300;
-}
-
-.mobile-post-btn {
-  display: none;
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  padding: 8px 16px;
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 20px;
-  color: white;
-  font-size: 14px;
-  backdrop-filter: blur(10px);
-  transition: var(--transition);
-}
-
-.mobile-post-btn:hover {
-  background: rgba(255,255,255,0.3);
-  transform: translateY(-1px);
-}
-
-/* ========================================
    검색 및 필터 섹션
    ======================================== */
 
@@ -731,10 +683,6 @@
   .page-header {
     padding: 16px;
     margin-bottom: 20px;
-  }
-
-  .header-content h1.page-title {
-    font-size: 1.8rem;
   }
 
   .page-description {

@@ -19,22 +19,6 @@
 
 <main class="main-content">
 
-  <!-- 페이지 제목 섹션 -->
-  <section class="page-header">
-    <div class="header-content">
-      <h1 class="page-title">📸 게시글 페이지</h1>
-      <p class="page-description">문화유산 탐방 기록을 공유하고 소통해보세요</p>
-    </div>
-
-    <!-- 게시글 작성 버튼 (모바일용 상단) -->
-    <button type="button"
-            id="mobilePostBtn"
-            class="mobile-post-btn"
-            sec:authorize="isAuthenticated()">
-      ✏️ 게시글 작성
-    </button>
-  </section>
-
   <!-- 검색 및 필터 영역 -->
   <section class="search-filter-section">
     <form th:action="@{/posts}" method="get" class="search-form" id="searchForm">
