@@ -13,6 +13,7 @@ import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.post.dto.request.PostCreateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostCreateResponseDto;
+import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostListResponseDto;
 import org.hh.heritagehunters.domain.post.entity.Post;
 import org.hh.heritagehunters.domain.post.entity.PostImage;
@@ -132,7 +133,7 @@ public class PostService {
     if (user == null) {
       throw new BadRequestException(ErrorCode.LOGIN_REQUIRED);
     }
-    
+
     validatePostImages(images);
 
     // 프론트에서 위경도 검증 다 했으니, DB에서 가장 가까운 Heritage만 찾으면 됨
@@ -211,6 +212,34 @@ public class PostService {
   }
 
   /**
+   * 게시글 상세 조회 (조회수 증가 포함)
+   */
+  @Transactional
+  public PostDetailResponseDto getPostDetail(Long postId, User currentUser) {
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
+
+    // 조회수 증가
+    post.incrementViewCount();
+
+    // 현재 사용자의 좋아요 여부 확인
+    boolean isLiked = false;
+    if (currentUser != null) {
+      isLiked = postRepository.existsByUserIdAndPostId(currentUser.getId(), postId);
+    }
+
+    // 작성자 여부 확인
+    boolean isOwner = false;
+    if (currentUser != null) {
+      isOwner =  post.getUser().getId().equals(currentUser.getId());
+    }
+
+    return PostDetailResponseDto.from(post, isLiked, isOwner);
+  }
+
+
+
+  /**
    * 게시글 삭제
    * @param postId 게시글 ID
    * @param user 삭제 요청한 사용자
@@ -224,7 +253,7 @@ public class PostService {
     if (!post.getUser().getId().equals(user.getId())) {
       throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
     }
-    
+
     // 게시글 삭제
     postRepository.delete(post);
 
