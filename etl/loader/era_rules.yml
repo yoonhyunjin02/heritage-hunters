@@ -1,0 +1,135 @@
+# era_rules.yml
+# 주의: 위에서 아래 순서로 첫 매칭을 사용하세요.
+rules:
+  - key: ALL
+    label: "전체"
+    keywords: []
+
+  # 선사 및 지질 용어
+  - key: PREHISTORIC
+    label: "선사시대"
+    keywords: ["구석기", "선사", "원생대", "신생대", "중생대", "고생대", "백악기", "생성시대"]
+
+  - key: STONE_AGE
+    label: "석기시대"
+    keywords: ["석기시대", "석기", "신석기"]
+
+  - key: BRONZE_AGE
+    label: "청동기시대"
+    keywords: ["청동기", "청동시대"]
+
+  - key: IRON_AGE
+    label: "철기시대"
+    keywords: ["철기"]
+
+  # 삼한/원삼국/가야
+  - key: SAMHAN
+    label: "삼한시대"
+    keywords: ["삼한"]
+
+  - key: GAYA
+    label: "가야"
+    keywords: ["가야", "금관가야"]
+
+  - key: PROTO_THREE_KINGDOMS
+    label: "원삼국"
+    keywords: ["원삼국"]
+
+  # 삼국 및 개별 왕국
+  - key: UNIFIED_SILLA
+    label: "통일신라"
+    keywords: ["통일신라"]
+
+  - key: SILLA
+    label: "삼국:신라"
+    keywords: ["신라"]
+
+  - key: BAEKJE
+    label: "삼국:백제"
+    keywords: ["백제", "한성백제", "사비"]
+
+  - key: GOGURYO
+    label: "삼국:고구려"
+    keywords: ["고구려"]
+
+  - key: THREE_KINGDOMS
+    label: "삼국시대"
+    keywords: ["삼국시대", "삼국"]
+
+  # 남북국/탐라 통합 → 발해
+  - key: BALHAE
+    label: "발해"
+    keywords:
+      - "발해"
+      - "남북국"
+      - "남북국시대"
+      - "통일신라~발해"
+      - "통일신라·발해"
+      - "탐라"
+      - "탐라시대"
+
+  # 고려~조선
+  - key: GORYEO
+    label: "고려시대"
+    keywords: ["고려", "여말선초", "여말\\s*선초"]
+
+  - key: JOSEON
+    label: "조선시대"
+    keywords:
+      ["조선","태조","정종","태종","세종","문종","단종","세조","성종",
+       "연산군","중종","명종","선조","광해군","인조","효종",
+       "현종","숙종","경종","영조","정조","순조","헌종","철종","고종","순종"]
+
+  # 근현대(대한제국/일제는 근대보다 우선)
+  - key: EMPIRE
+    label: "대한제국시대"
+    keywords: ["대한제국", "광무", "융희"]
+
+  - key: COLONIAL
+    label: "일제강점기"
+    keywords: ["일제강점기", "일제시대", "일제"]
+
+  - key: MODERN_GENERIC
+    label: "근대"
+    keywords: ["근대", "개화기", "구한말", "한말", "근현대"]
+
+  - key: CONTEMPORARY
+    label: "현대/대한민국"
+    keywords: ["현대", "대한민국", "대한민국시대", "해방이후", "광복 이후", "광복 직후", "한국전쟁", "20세기", "21세기"]  # ← “광복 직후” 추가
+
+  # 범용 대분류(선택)
+  - key: ANCIENT
+    label: "고대"
+    keywords: ["고대"]
+
+  - key: MEDIEVAL
+    label: "중세"
+    keywords: ["중세"]
+
+  # 해외 왕조 등은 한 묶음으로
+  - key: FOREIGN_DYNASTIES
+    label: "기타:해외왕조"
+    keywords: ["중국", "명나라", "원나라", "한대", "명대", "원대", "중국 명대", "중국 한대"]
+
+  # 미상/공란/없음
+  - key: UNKNOWN
+    label: "시대미상"
+    keywords:
+      - "미정"
+      - "시대 미정"
+      - "미상"
+      - "시대미상"
+      - "시기미상"
+      - "연대미상"
+      - "해당 없음"
+      - "해당없음"
+      - "없음"
+      - "기타"
+      - "NULL"
+      - "^-$"
+      - "^[\\s　]*$"
+      - "^[.·]+$"
+      - "^[.~\\-]+$"
+      - "^\\d{1,2}$"
+      - "^\\d{1,2}\\s*년$"
+      - "^\\d+\\s*(권|책|폭|점|매)$"
