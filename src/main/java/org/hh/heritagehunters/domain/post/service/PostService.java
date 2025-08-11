@@ -11,12 +11,18 @@ import org.hh.heritagehunters.common.exception.NotFoundException;
 import org.hh.heritagehunters.common.exception.UnauthorizedException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.oauth.entity.User;
+import org.hh.heritagehunters.domain.post.dto.request.CommentCreateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.request.PostCreateRequestDto;
+import org.hh.heritagehunters.domain.post.dto.request.PostUpdateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostCreateResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostListResponseDto;
+import org.hh.heritagehunters.domain.post.entity.Comment;
+import org.hh.heritagehunters.domain.post.entity.Like;
 import org.hh.heritagehunters.domain.post.entity.Post;
 import org.hh.heritagehunters.domain.post.entity.PostImage;
+import org.hh.heritagehunters.domain.post.repository.CommentRepository;
+import org.hh.heritagehunters.domain.post.repository.LikeRepository;
 import org.hh.heritagehunters.domain.post.repository.PostRepository;
 import org.hh.heritagehunters.domain.post.util.ImageUploader;
 import org.hh.heritagehunters.domain.search.entity.Heritage;
@@ -36,6 +42,8 @@ public class PostService {
 
   private final PostRepository postRepository;
   private final HeritageRepository heritageRepository;
+  private final CommentRepository commentRepository;
+  private final LikeRepository likeRepository;
   private final ImageUploader imageUploader;
 
   public Page<PostListResponseDto> getPostResponses(
@@ -53,7 +61,8 @@ public class PostService {
       likedPostIds = Set.of(); // 비로그인 경우
     }
 
-    return postPage.map(post -> PostListResponseDto.from(post, likedPostIds.contains(post.getId())));
+    return postPage.map(
+        post -> PostListResponseDto.from(post, likedPostIds.contains(post.getId())));
   }
 
   public Page<Post> getPostsWithFilters(
@@ -231,18 +240,99 @@ public class PostService {
     // 작성자 여부 확인
     boolean isOwner = false;
     if (currentUser != null) {
-      isOwner =  post.getUser().getId().equals(currentUser.getId());
+      isOwner = post.getUser().getId().equals(currentUser.getId());
     }
 
     return PostDetailResponseDto.from(post, isLiked, isOwner);
   }
 
+  /**
+   * 댓글 작성
+   */
+  @Transactional
+  public void createComment(Long postId, User user,
+      CommentCreateRequestDto commentCreateRequestDto) {
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
 
+    Comment comment = Comment.create(user, post, commentCreateRequestDto.getContent());
+    commentRepository.save(comment);
+
+    // 댓글 수 동기화
+    post.syncCommentCount();
+
+    log.info("댓글 작성 완료 - postId: {}, userId: {} ", postId, user.getId());
+  }
+
+  /**
+   * 좋아요 토글
+   */
+  @Transactional
+  public boolean toggleLike(Long postId, User user) {
+
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
+
+    boolean isLiked = likeRepository.existsByUserIdAndPostId(user.getId(), postId);
+
+    if (isLiked) {
+      // 좋아요 취소
+      likeRepository.deleteByUserIdAndPostId(user.getId(), postId);
+      post.decrementLikeCount();
+      log.info("좋아요 취소 - postId: {}, userId: {}", postId, user.getId());
+      return false;
+    } else {
+      // 좋아요 등록
+      Like like = Like.create(user, post);
+      likeRepository.save(like);
+
+      post.incrementLikeCount();
+      log.info("좋아요 등록 - postId: {}, userId: {}", postId, user.getId());
+      return true;
+    }
+  }
+
+  /**
+   * 게시글 수정용 조회 (작성자 검증 포함)
+   */
+  public PostDetailResponseDto getPostForEdit(Long postId, User user) {
+    Post post = postRepository.findByIdWithDetails(postId)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
+
+    // 작성자 검증
+    if (!post.getUser().getId().equals(user.getId())) {
+      throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
+    }
+
+    return PostDetailResponseDto.from(post, false, true);
+  }
+
+  /**
+   * 게시글 수정
+   */
+  @Transactional
+  public void updatePost(Long postId, User user, PostUpdateRequestDto postUpdateRequestDto) {
+
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
+
+    // 작성자 검증
+    if (!post.getUser().getId().equals(user.getId())) {
+      throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
+    }
+
+    // 게시글 내용 수정
+    post.setContent(postUpdateRequestDto.getContent());
+    post.setLocation(postUpdateRequestDto.getLocation());
+
+    log.info("게시글 수정 완료 - postId: {}, userId: {}", postId, user.getId());
+  }
 
   /**
    * 게시글 삭제
+   *
    * @param postId 게시글 ID
-   * @param user 삭제 요청한 사용자
+   * @param user   삭제 요청한 사용자
    */
   @Transactional
   public void deletePost(Long postId, User user) {
