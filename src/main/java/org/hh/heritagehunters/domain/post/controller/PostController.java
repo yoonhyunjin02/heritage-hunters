@@ -5,9 +5,10 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hh.heritagehunters.common.security.CustomUserDetails;
-import org.hh.heritagehunters.domain.post.dto.PostCreateRequest;
-import org.hh.heritagehunters.domain.post.dto.PostCreateResponse;
-import org.hh.heritagehunters.domain.post.entity.Post;
+import org.hh.heritagehunters.domain.oauth.entity.User;
+import org.hh.heritagehunters.domain.post.dto.PostCreateRequestDto;
+import org.hh.heritagehunters.domain.post.dto.PostCreateResponseDto;
+import org.hh.heritagehunters.domain.post.dto.PostListResponseDto;
 import org.hh.heritagehunters.domain.post.service.PostService;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -38,43 +39,52 @@ public class PostController {
       @RequestParam(value = "direction", defaultValue = "desc") String direction,
       @RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "size", defaultValue = "16") int size,
+      @AuthenticationPrincipal CustomUserDetails customUserDetails,
       Model model) {
 
-    log.debug("게시글 리스트 요청 - keyword: {}, region: {}, sort: {}, direction: {}, page: {}, size: {}", 
-              keyword, region, sort, direction, page, size);
+    log.debug("게시글 리스트 요청 - keyword: {}, region: {}, sort: {}, direction: {}, page: {}, size: {}",
+        keyword, region, sort, direction, page, size);
 
-    // 게시글 조회 (예외는 PostService에서 처리하고 GlobalExceptionHandler로 전달)
-    Page<Post> posts = postService.getPostsWithFilters(keyword, region, sort, direction, page, size);
-    
-    // 모델에 데이터 추가
-    model.addAttribute("posts", posts);
-    model.addAttribute("keyword", keyword);
-    model.addAttribute("region", region);
-    model.addAttribute("sort", sort);
-    model.addAttribute("direction", direction);
-    
-    // 현재 필터 정보
-    model.addAttribute("currentPage", page);
-    model.addAttribute("totalPages", posts.getTotalPages());
-    model.addAttribute("totalElements", posts.getTotalElements());
-    
-    log.debug("게시글 리스트 조회 완료 - 총 {}개 게시글, {}페이지 중 {}페이지", 
-              posts.getTotalElements(), posts.getTotalPages(), page + 1);
-    
+    User currentUser = customUserDetails.getUser();
+    if (currentUser != null) {
+      Page<PostListResponseDto> posts = postService.getPostResponses(
+          currentUser, keyword, region, sort, direction, page, size
+      );
+
+      // 모델에 데이터 추가
+      model.addAttribute("posts", posts);
+      model.addAttribute("keyword", keyword);
+      model.addAttribute("region", region);
+      model.addAttribute("sort", sort);
+      model.addAttribute("direction", direction);
+
+      // 현재 필터 정보
+      model.addAttribute("currentPage", page);
+      model.addAttribute("totalPages", posts.getTotalPages());
+      model.addAttribute("totalElements", posts.getTotalElements());
+    }
+
     return "features/post/post_list";
   }
 
   /**
    * 게시글 작성
+   *
    * @return
    */
   @PostMapping
   public String createPost(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @Valid @ModelAttribute PostCreateRequest request,
+      @Valid @ModelAttribute PostCreateRequestDto request,
       BindingResult bindingResult,
-      @RequestParam(value = "images", required = false) List<MultipartFile> images,
+      @RequestParam(value = "images") List<MultipartFile> images,
       RedirectAttributes redirectAttributes) {
+
+    if (userDetails == null || userDetails.getUser() == null) {
+      redirectAttributes.addFlashAttribute("toastType", "error");
+      redirectAttributes.addFlashAttribute("toastMessage", "로그인 후 게시글을 작성할 수 있습니다.");
+      return "redirect:/login";
+    }
 
     if (bindingResult.hasErrors()) {
       redirectAttributes.addFlashAttribute("toastType", "error");
@@ -82,7 +92,7 @@ public class PostController {
       return "redirect:/posts";
     }
 
-    PostCreateResponse response = postService.createPost(userDetails.getUser(), request, images);
+    PostCreateResponseDto response = postService.createPost(userDetails.getUser(), request, images);
 
     redirectAttributes.addFlashAttribute("toastType", "success");
     redirectAttributes.addFlashAttribute("toastMessage", response.getMessage());
