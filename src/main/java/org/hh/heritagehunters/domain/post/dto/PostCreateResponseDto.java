@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class PostCreateResponse {
+public class PostCreateResponseDto {
   private Long postId;
   private String message;
   private int pointsEarned;
