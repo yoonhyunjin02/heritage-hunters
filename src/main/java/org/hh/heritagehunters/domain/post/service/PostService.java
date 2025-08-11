@@ -126,6 +126,11 @@ public class PostService {
   @Transactional
   public PostCreateResponseDto createPost(User user, PostCreateRequestDto request,
       List<MultipartFile> images) {
+
+    if (user == null) {
+      throw new BadRequestException(ErrorCode.LOGIN_REQUIRED);
+    }
+    
     validatePostImages(images);
 
     // 프론트에서 위경도 검증 다 했으니, DB에서 가장 가까운 Heritage만 찾으면 됨
