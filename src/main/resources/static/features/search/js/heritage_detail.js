@@ -63,36 +63,108 @@ document.addEventListener("DOMContentLoaded", () => {
   // Heritage ID 추출
   const id = Number(window.location.pathname.split("/").pop());
 
-  // AI 요청용 공통 URL 생성
-  function buildApiUrl(type, code) {
-    const url = new URL(`/heritage/${id}/ai`, window.location.origin);
-    url.searchParams.set("type", type);
-    if (code) url.searchParams.set("code", String(code));
-    return url.toString();
+  const data = window.HERITAGE_DETAIL || {};
+
+  if (!data.id) {
+    const $d = document.getElementById("heritage-data");
+    if ($d) {
+      data.id = Number($d.dataset.id);
+      data.name = $d.dataset.name || "";
+      data.address = $d.dataset.address || "";
+      data.content = $d.dataset.content || "";
+    }
   }
 
-  // AI 응답 가져오기 함수
+  function buildApiUrl() {
+    return `/heritage/${id}/ai`; // POST 엔드포인트
+  }
+
   async function fetchAiContent(selector, type, code) {
     const el = document.querySelector(selector);
-    if (!el) return;
-    el.textContent = "정보를 불러오는 중입니다...";
+    const btn = document.querySelector(`.ai-refresh[data-type="${type}"]`);
+    const start = new Date().getTime();
+
+    if (el) {
+      el.textContent = "정보를 불러오는 중입니다...";
+      el.classList.add("skeleton-text");
+    }
+    if (btn) {
+      btn.style.visibility = "hidden";
+      btn.style.opacity = "0";
+      btn.disabled = true;
+    }
+
     try {
-      const res = await fetch(buildApiUrl(type, code), { method: "GET" });
+      const payload = {
+        type,
+        code,
+        name: data.name || "",
+        address: data.address || "",
+        content: data.content || "",
+      };
+      console.group(`📦 AI 요청 - ${type}`);
+      console.log("▶ 페이로드:", payload);
+      console.groupEnd();
+
+      const token = document.querySelector('meta[name="_csrf"]').content;
+      const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+      const res = await fetch(buildApiUrl(), {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          [header]: token,
+        },
+        body: JSON.stringify(payload),
+      });
+
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      el.textContent = data?.content ?? "응답이 비어 있어요.";
+      const json = await res.json();
+      el.textContent = json?.content ?? "응답이 비어 있어요.";
     } catch (e) {
       console.error(e);
-      el.textContent = "AI 응답을 불러오지 못했어요.";
+      if (el) el.textContent = "AI 응답을 불러오지 못했어요.";
+    } finally {
+      if (el) el.classList.remove("skeleton-text");
+      if (btn) {
+        btn.style.visibility = "visible";
+        btn.style.opacity = "1";
+        btn.disabled = false;
+      }
     }
+    const end = new Date().getTime();
+    console.log(`type: ${type} ⏱ 응답 시간: ${end - start}ms`);
   }
 
   // 로테이션용 client code 계산 (1 ~ 3)
   const clientCode = (id % 3) + 1;
 
-  // AI 콘텐츠 요청
-  fetchAiContent(".heritage__summary__ai__recommends span", "recommends", 1);
-  fetchAiContent(".heritage__summary__ai__weather span", "weather", 2);
-  fetchAiContent(".heritage__summary__ai__news span", "news", 3);
-  fetchAiContent(".heritage__summary__ai__content-summary span", "summary", clientCode);
+  // 타입 → 타겟 span 선택자 맵
+  const selectorMap = {
+    recommends: ".heritage__summary__ai__recommends span",
+    weather: ".heritage__summary__ai__weather span",
+    news: ".heritage__summary__ai__news span",
+    summary: ".heritage__summary__ai__content-summary span",
+  };
+
+  // 초기 로드
+  fetchAiContent(selectorMap.recommends, "recommends", 1);
+  fetchAiContent(selectorMap.weather, "weather", 2);
+  fetchAiContent(selectorMap.news, "news", 3);
+  fetchAiContent(selectorMap.summary, "summary", clientCode);
+
+  // 새로고침 버튼 핸들러
+  document.querySelectorAll(".ai-refresh").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const type = btn.dataset.type;
+      if (!type || !selectorMap[type]) return;
+
+      // code가 지정된 버튼은 그 값 사용, 아니면 요약 규칙(로테이션)
+      const code = btn.dataset.code ? Number(btn.dataset.code) : clientCode;
+
+      // 버튼 상태는 fetchAiContent에서 관리
+      await fetchAiContent(selectorMap[type], type, code);
+    });
+  });
 });
