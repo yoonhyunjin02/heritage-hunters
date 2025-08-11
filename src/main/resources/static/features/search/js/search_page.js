@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   resetBtn.addEventListener("click", () => {
     filterGroups.forEach((group) => {
       const checkboxes = Array.from(group.querySelectorAll('input[type="checkbox"]'));
-      const allBox = checkboxes.find((cb) => cb.value === "전체");
+      const allBox = checkboxes.find((cb) => cb.value === "00" || cb.value === "ALL");
       checkboxes.forEach((cb) => (cb.checked = cb === allBox));
     });
   });
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (target.type !== "checkbox") return;
 
       const checkboxes = Array.from(group.querySelectorAll('input[type="checkbox"]'));
-      const allBox = checkboxes.find((cb) => cb.value === "전체");
+      const allBox = checkboxes.find((cb) => cb.value === "00" || cb.value === "ALL");
 
       // “전체” 박스를 클릭했을 때
       if (target === allBox) {

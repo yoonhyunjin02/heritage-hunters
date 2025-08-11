@@ -1,47 +1,92 @@
 package org.hh.heritagehunters.domain.search.controller;
 
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import lombok.RequiredArgsConstructor;
+import org.hh.heritagehunters.domain.search.dto.HeritageResponse;
+import org.hh.heritagehunters.domain.search.dto.HeritageSearchRequest;
+import org.hh.heritagehunters.domain.search.service.HeritageService;
+import org.hh.heritagehunters.domain.search.util.DesignationCodeMapper;
+import org.hh.heritagehunters.domain.search.util.EraCategory;
+import org.hh.heritagehunters.domain.search.util.RegionCodeMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/search")
+@RequiredArgsConstructor
 public class SearchViewController {
+
+  private final HeritageService heritageService;
+
+  @ModelAttribute("eraOptions")
+  public List<EraCategory> eraOptions() {
+    return Arrays.asList(EraCategory.values());
+  }
 
   @GetMapping
   public String searchForm(
-      @RequestParam Optional<String> keyword,
+      @ModelAttribute HeritageSearchRequest request,
+      @RequestParam(required = false) Boolean searchTriggered,
       Model model
   ) {
-    model.addAttribute("designationOptions", List.of(
-        "전체", "국보", "보물", "사적", "명승", "천연기념물",
-        "국가무형유산", "국가민속문화유산", "국가등록문화유산",
-        "시도유형문화유산", "시도무형유산", "시도자연유산",
-        "시도기념물", "시도민속문화유산", "시도등록문화유산",
-        "시도문화유산자료", "시도자연유산자료", "이북5도 무형유산"
-    ));
-    model.addAttribute("regionOptions", List.of(
-        "전체", "서울", "부산", "대구", "인천", "광주", "대전", "울산",
-        "세종", "경기", "강원", "충북", "충남", "전북", "전남",
-        "경북", "경남", "제주", "전국일원"
-    ));
-    model.addAttribute("eraOptions", List.of(
-        "전체", "선사시대", "석기시대", "청동기시대", "철기시대",
-        "삼한시대", "삼국시대", "삼국:고구려", "삼국:백제", "삼국:신라",
-        "발해", "통일신라", "고려시대", "조선시대", "대한제국시대",
-        "일제강점기", "시대미상"
-    ));
-    model.addAttribute("typeOptions", List.of(
-        "전체", "유적건조물", "기록유산", "유물", "무형유산", "자연유산", "등록문화유산"
-    ));
-    // 검색 결과, 페이징 정보 등도 model에 추가…
+
+    model.addAttribute("designationMap", DesignationCodeMapper.getCodeMap());
+    model.addAttribute("designationCodes", DesignationCodeMapper.getCodeMap().keySet().stream().sorted());
+    model.addAttribute("regionMap", RegionCodeMapper.getCodeMap());
+    model.addAttribute("regionCodes", RegionCodeMapper.getCodeMap().keySet().stream().sorted());
+
+    boolean hasAnyCriteria =
+        Boolean.TRUE.equals(searchTriggered)     // 검색 버튼 눌렀으면 무조건 조회
+            || request.hasSearchCondition();            // 기존 필터/키워드가 있으면 조회
+
+    Page<HeritageResponse> page;
+    if (hasAnyCriteria) {
+      page = heritageService.search(request);
+      model.addAttribute("results", page.getContent());
+      model.addAttribute("hasPrev", page.hasPrevious());
+      model.addAttribute("hasNext", page.hasNext());
+
+      // 페이지 번호 10개씩 그룹핑
+      int current = request.page();
+      int totalPages = page.getTotalPages();
+      int groupSize = 10;
+      int start = ((current - 1) / groupSize) * groupSize + 1;
+      int end = Math.min(start + groupSize - 1, totalPages);
+
+      List<Integer> pageNumbers = IntStream.rangeClosed(start, end)
+          .boxed()
+          .collect(Collectors.toList());
+
+      model.addAttribute("pageNumbers", pageNumbers);
+      model.addAttribute("currentPage", current);
+      model.addAttribute("totalPages", totalPages);
+
+    } else {
+      // 최초 진입: 빈 화면
+      model.addAttribute("results", List.<HeritageResponse>of());
+      model.addAttribute("hasPrev", false);
+      model.addAttribute("hasNext", false);
+      model.addAttribute("pageNumbers", List.<Integer>of());
+      model.addAttribute("currentPage", 1);
+      model.addAttribute("totalPages", 0);
+    }
+
+    // 현재 선택된 필터/키워드 유지
+    model.addAttribute("selectedDesignations", request.designation());
+    model.addAttribute("selectedRegions", request.region());
+    model.addAttribute("selectedEras", request.era());
+    model.addAttribute("keyword", request.keyword());
+
     return "features/search/search_page";
   }
-
 
 }

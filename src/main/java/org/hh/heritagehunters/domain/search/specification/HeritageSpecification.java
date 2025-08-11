@@ -1,9 +1,14 @@
 package org.hh.heritagehunters.domain.search.specification;
 
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.hh.heritagehunters.domain.search.dto.SearchCriteria;
 import org.hh.heritagehunters.domain.search.entity.Heritage;
+import org.hh.heritagehunters.domain.search.util.EraCategory;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
@@ -35,9 +40,8 @@ public class HeritageSpecification {
       String pattern = "%" + keyword.trim() + "%";
       Predicate nameLike = cb.like(root.get("name"), pattern);
       Predicate hanjaLike = cb.like(root.get("nameHanja"), pattern);
-      Predicate enLike = cb.like(root.get("nameEn"), pattern);
       Predicate descLike = cb.like(root.get("description"), pattern);
-      return cb.or(nameLike, hanjaLike, enLike, descLike);
+      return cb.or(nameLike, hanjaLike, descLike);
     };
   }
 
@@ -46,7 +50,7 @@ public class HeritageSpecification {
    */
   private static Specification<Heritage> byDesignation(List<String> designations) {
     return (root, query, cb) -> {
-      if (designations == null || designations.contains("전체")) {
+      if (designations == null || designations.contains("00")) {
         return cb.conjunction();
       }
       return root.get("designation").in(designations);
@@ -58,7 +62,7 @@ public class HeritageSpecification {
    */
   private static Specification<Heritage> byRegion(List<String> regions) {
     return (root, query, cb) -> {
-      if (regions == null || regions.contains("전체")) {
+      if (regions == null || regions.contains("00")) {
         return cb.conjunction();
       }
       return root.get("region").in(regions);
@@ -68,12 +72,21 @@ public class HeritageSpecification {
   /**
    * 시대 필터 (전체가 아닌 경우 필드 값이 리스트에 포함된 경우)
    */
-  private static Specification<Heritage> byEra(List<String> eras) {
+  public static Specification<Heritage> byEra(List<EraCategory> eras) {
     return (root, query, cb) -> {
-      if (eras == null || eras.contains("전체")) {
+      if (eras == null
+          || eras.isEmpty()
+          || eras.contains(EraCategory.ALL)) {
         return cb.conjunction();
       }
-      return root.get("era").in(eras);
+
+      Path<String> eraField = root.get("era");
+      List<Predicate> preds = eras.stream()
+          .map(cat -> cat.toPredicate(eraField, cb))
+          .toList();
+
+      return cb.or(preds.toArray(new Predicate[0]));
     };
   }
+
 }

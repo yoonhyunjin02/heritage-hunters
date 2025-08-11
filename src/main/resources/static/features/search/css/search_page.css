@@ -26,12 +26,9 @@
   Top Section & Form
 ----------------------------------------*/
 .search-top {
-  margin: calc(var(--spacing-unit) * 2) 0 var(--spacing-unit);
-}
-
-.search__form {
+  margin: calc(var(--spacing-unit) * 2);
   display: flex;
-  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
   gap: var(--spacing-unit);
 }
@@ -97,7 +94,7 @@
   background-color: var(--secondary-color);
   border: 1px solid var(--border-color);
   margin-top: -1px; /* overlap with button’s bottom edge */
-  border-radius: 0 0 4px 4px;
+  border-radius: 4px;
   padding: var(--spacing-unit);
   overflow: hidden;
   transition: max-height 0.3s ease, padding 0.3s ease;
@@ -178,8 +175,12 @@
 
 .search__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: var(--spacing-unit);
+}
+
+.search__card-link {
+  height: fit-content;
 }
 
 .search__card {
@@ -190,6 +191,7 @@
   display: flex;
   flex-direction: column;
   text-align: center;
+  align-items: center;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.3s, transform 0.3s;
@@ -200,10 +202,30 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.search__card-image {
+/* 1:1 square container */
+.search__card-image-wrapper {
+  position: relative;
   width: 100%;
-  height: auto;
+  padding-top: 100%; /* ← forces height = width */
+  overflow: hidden;
+}
+
+/* fill that square fully, cropping as needed */
+.search__card-image {
+  position: absolute;
+  inset: 0; /* shorthand for top/right/bottom/left = 0 */
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+.search__card p,
+.search__card h4 {
+  width: calc(100% - 1em);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .search__card-designation {
@@ -266,19 +288,19 @@
   Responsive Breakpoints
 ----------------------------------------*/
 @media (max-width: 1024px) {
-  .search__grid {
+  /* .search__grid {
     grid-template-columns: repeat(3, 1fr);
-  }
+  } */
 }
 
 @media (max-width: 768px) {
-  .search__grid {
+  /* .search__grid {
     grid-template-columns: repeat(2, 1fr);
-  }
+  } */
 }
 
 @media (max-width: 480px) {
-  .search__grid {
+  /* .search__grid {
     grid-template-columns: 1fr;
-  }
+  } */
 }

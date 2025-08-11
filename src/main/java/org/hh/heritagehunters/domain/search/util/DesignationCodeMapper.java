@@ -13,6 +13,7 @@ public class DesignationCodeMapper {
 
   // 종목코드 → 한글명 매핑
   private static final Map<String, String> CODE_TO_NAME = Map.ofEntries(
+      Map.entry("00", "전체"),
       Map.entry("11", "국보"),
       Map.entry("12", "보물"),
       Map.entry("13", "사적"),
@@ -38,5 +39,12 @@ public class DesignationCodeMapper {
    */
   public static String getKoreanName(String code) {
     return CODE_TO_NAME.getOrDefault(code, "미분류");
+  }
+
+  /**
+   * 전체 코드맵 출력
+   */
+  public static Map<String, String> getCodeMap() {
+    return CODE_TO_NAME;
   }
 }
