@@ -1,4 +1,4 @@
-package org.hh.heritagehunters.domain.post.dto;
+package org.hh.heritagehunters.domain.post.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.List;

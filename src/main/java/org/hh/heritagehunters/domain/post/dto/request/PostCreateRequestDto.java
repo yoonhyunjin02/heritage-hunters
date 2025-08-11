@@ -1,4 +1,4 @@
-package org.hh.heritagehunters.domain.post.dto;
+package org.hh.heritagehunters.domain.post.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
