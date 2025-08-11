@@ -1,0 +1,88 @@
+.main-container {
+  text-align: center;
+  padding-top: 16px;           /* 헤더와 슬라이드 사이 패딩 */
+}
+
+.slideshow-container {
+  max-width: 1000px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.slide {
+  position: relative;
+}
+
+.slide img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+}
+
+#slide-img {
+  transition: opacity .8s ease-in-out;  /* 더 부드러운 전환 */
+  opacity: 1;
+}
+
+.fade {
+  animation: fade 0.6s ease;
+}
+
+@keyframes fade {
+  from { opacity: 0.3; }
+  to   { opacity: 1; }
+}
+
+.location-tag {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 2;                  /* 라벨도 사진 위로 */
+}
+
+.dots {
+  position: absolute;          /* 사진 위에 겹치기 */
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  text-align: center;
+  z-index: 3;                  /* z축 최상위로 */
+  margin: 0;                   /* 기존 margin 제거 */
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  margin: 0 5px;
+  background: rgba(255,255,255,.75); /* 어두운 사진에서도 보이게 */
+  border: 1px solid rgba(0,0,0,.25);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform .2s, background .2s, border-color .2s;
+}
+
+.dot.active {
+  background: #fff;
+  border-color: rgba(0,0,0,.4);
+  transform: scale(1.15);
+}
+
+.main-nav {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-top: 10px;
+}
+
+.main-nav a {
+  text-decoration: none;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: 0.08em;
+}
