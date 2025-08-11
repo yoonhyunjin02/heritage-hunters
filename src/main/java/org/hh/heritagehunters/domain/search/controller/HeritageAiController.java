@@ -3,14 +3,15 @@ package org.hh.heritagehunters.domain.search.controller;
 import lombok.RequiredArgsConstructor;
 import org.hh.heritagehunters.common.exception.NotFoundException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
+import org.hh.heritagehunters.domain.search.dto.AiAskRequest;
 import org.hh.heritagehunters.domain.search.dto.AiQuestionResponse;
 import org.hh.heritagehunters.domain.search.service.AiProxyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -21,16 +22,16 @@ public class HeritageAiController {
   private final AiProxyService aiProxyService;
 
   /**
-   * 동일 출처로 AI 프록시 제공 (CORS 회피) 예: GET /heritage/15834/ai?type=recommends&code=1
+   * 유산 상세 페이지에서 전달한 정보로 AI 프록시 호출 (DB 재조회 없음)
    */
-  @GetMapping("/{id}/ai")
+  @PostMapping("/{id}/ai")
   public ResponseEntity<AiQuestionResponse> ask(
       @PathVariable Long id,
-      @RequestParam String type,
-      @RequestParam(required = false) Integer code
+      @RequestBody AiAskRequest req
   ) {
+
     try {
-      AiQuestionResponse resp = aiProxyService.ask(id, type, code);
+      AiQuestionResponse resp = aiProxyService.ask(id, req);
       return ResponseEntity.ok(resp);
     } catch (NotFoundException e) {
       return ResponseEntity.status(ErrorCode.RESOURCE_NOT_FOUND.getStatus())
