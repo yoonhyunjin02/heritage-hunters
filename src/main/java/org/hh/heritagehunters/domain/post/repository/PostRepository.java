@@ -1,5 +1,7 @@
 package org.hh.heritagehunters.domain.post.repository;
 
+import java.util.List;
+import java.util.Set;
 import org.hh.heritagehunters.domain.post.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,4 +24,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   Page<Post> findPostsWithFilters(@Param("keyword") String keyword,
                                   @Param("region") String region,
                                   Pageable pageable);
+
+  @Query("SELECT l.post.id FROM Like l WHERE l.user.id = :userId AND l.post IN :posts")
+  Set<Long> findLikedPostIds(@Param("userId") Long userId, @Param("posts") List<Post> posts);
 }
