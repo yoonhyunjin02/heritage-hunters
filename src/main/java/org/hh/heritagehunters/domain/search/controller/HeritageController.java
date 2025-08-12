@@ -18,19 +18,19 @@ public class HeritageController {
 
   private final HeritageService service;
 
-  @GetMapping
-  public ResponseEntity<Page<HeritageResponse>> getHeritages(
-      HeritageSearchRequest request
-  ) {
-    Page<HeritageResponse> result = service.search(request);
-    return ResponseEntity.ok(result);
-  }
-
-  @GetMapping("/{id}")
-  public ResponseEntity<HeritageResponse> getHeritageDetail(
-      @PathVariable Long id
-  ) {
-    HeritageResponse detail = service.getDetail(id);
-    return ResponseEntity.ok(detail);
-  }
+//  @GetMapping
+//  public ResponseEntity<Page<HeritageResponse>> getHeritages(
+//      HeritageSearchRequest request
+//  ) {
+//    Page<HeritageResponse> result = service.search(request);
+//    return ResponseEntity.ok(result);
+//  }
+//
+//  @GetMapping("/{id}")
+//  public ResponseEntity<HeritageResponse> getHeritageDetail(
+//      @PathVariable Long id
+//  ) {
+//    HeritageResponse detail = service.getDetail(id);
+//    return ResponseEntity.ok(detail);
+//  }
 }

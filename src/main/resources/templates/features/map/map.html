@@ -5,17 +5,61 @@
   <link rel="stylesheet" th:href="@{/features/map/css/map.css}">
 </head>
 <body>
-<!--header-->
+<!-- 사이트 공통 헤더 -->
 <div th:replace="~{fragments/header :: common-header}"></div>
 
+<!-- 지도 전용 헤더(툴바) -->
 <!--main-->
-<main class="main-container">
+<main class="map-root"
+      th:attr="data-endpoint=@{/map},data-maps-key=${mapsApiKey}">  <!-- 상단 툴바 -->
+  <div class="map-toolbar">
+    <h2 class="map-title">전국 박물관·미술관 지도</h2>
+
+    <div class="toolbar-right">
+      <div class="toolbar-search">
+        <input id="search" type="text" placeholder="이름, 지역 검색" autocomplete="off" />
+        <span class="search-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23C15.99 6.01 13.48 3.5 10.5 3.5S5.01 6.01 5.01 9s2.51 5.5 5.49 5.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0s.41-1.08 0-1.49L15.5 14zm-5 0C8.01 14 6 11.99 6 9.5S8.01 5 10.5 5 15 7.01 15 9.5 12.99 14 10.5 14z"></path>
+          </svg>
+        </span>
+      </div>
+
+      <!-- 필터 토글 -->
+      <div class="filter-wrap" id="filterWrap">
+        <button id="filterBtn" class="filter-btn" aria-expanded="false" aria-controls="filterPanel">
+          필터
+          <svg class="chev" viewBox="0 0 24 24" width="16" height="16"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+
+        <div id="filterPanel" class="filter-panel" hidden>
+          <div class="filter-section">
+            <div class="filter-label">데이터 종류</div>
+            <div class="chip-row">
+              <button class="type-chip" data-type="all" aria-pressed="true">전국 박물관·미술관</button>
+              <button class="type-chip" data-type="heritage" aria-pressed="false">문화재</button>
+            </div>
+          </div>
+          <!-- 필요하면 여기에 추가 필터들(시대/지역/종별 등) 붙이면 됨 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 좌측 패널 & 지도 -->
+<!--  <aside class="side-panel">-->
+<!--    <div id="list" class="list"></div>-->
+<!--  </aside>-->
+
+  <section class="map-area">
+    <div id="map"></div>
+  </section>
 </main>
 
-<!--footer-->
+<!-- 공통 푸터 -->
 <div th:replace="~{fragments/footer :: common-footer}"></div>
 
-<!--js-->
-<script defer th:src="@{/features/main/js/map.js}"></script>
+<!-- JS -->
+<script defer th:src="@{/features/map/js/map.js}"></script>
 </body>
 </html>
