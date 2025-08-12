@@ -159,8 +159,26 @@ main {
   margin-right: 0.5rem;
 }
 
-.heritage__summary__ai > div span {
+.heritage__summary__ai > div .ai-text {
   flex: 1;
+}
+
+.ai-text {
+  line-height: 1.5;
+}
+
+.ai-text p {
+  margin: 0.3em 0;
+}
+
+.ai-text ul {
+  padding-left: 1.2em;
+  margin: 0.3em 0;
+}
+
+.ai-text a {
+  color: var(--primary-color);
+  text-decoration: underline;
 }
 
 .heritage__summary__ai__recommends {
@@ -278,6 +296,7 @@ main {
   margin-top: var(--spacing-unit);
 }
 .heritage__content {
+  white-space: pre-line;
   line-height: 1.6;
   color: var(--text-color);
   word-break: keep-all;
@@ -286,7 +305,7 @@ main {
 /*----------------------------------------
   Responsive
 ----------------------------------------*/
-@media (max-width: 768px) {
+@media (max-width: var(--bp-mobile)) {
   .heritage__summary {
     flex-direction: column;
   }

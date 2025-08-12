@@ -11,10 +11,10 @@ const C = {
     refreshBtns: ".ai-refresh",
   },
   AI_TARGET: {
-    recommends: ".heritage__summary__ai__recommends span",
-    weather: ".heritage__summary__ai__weather span",
-    news: ".heritage__summary__ai__news span",
-    summary: ".heritage__summary__ai__content-summary span",
+    recommends: "#ai-recommends",
+    weather: "#ai-weather",
+    news: "#ai-news",
+    summary: "#ai-summary",
   },
   CLASS: {
     toast: "toast-message",
@@ -277,7 +277,10 @@ const AI = {
     const start = performance.now();
     try {
       const json = await AI.ask(heritageId, { type, code, ...base });
-      UI.setText(selector, json?.content ?? C.MSG.empty);
+      const markdown = json?.content ?? C.MSG.empty;
+      const html = window.marked.parse(markdown); // ✅ Markdown → HTML
+      const target = U.qs(selector);
+      if (target) target.innerHTML = html;
     } catch (e) {
       console.error(e);
       UI.setText(selector, C.MSG.aiFail);
