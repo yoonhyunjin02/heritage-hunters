@@ -6,8 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hh.heritagehunters.domain.search.dto.AiAskRequest;
 import org.hh.heritagehunters.domain.search.dto.AiQuestionResponse;
+import org.hh.heritagehunters.domain.search.dto.AiResetRequest;
 import org.hh.heritagehunters.domain.search.dto.AiType;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -78,7 +81,7 @@ public class AiProxyService {
       case news -> name + "에 대해 최근 1~2년 내에 발생한 **문화재 지정 변경, 복원 사업, 훼손 사건, 보존 정책 등 행정적 변화나 논란**이 있다면, 해당 내용을 두 줄 이내로 요약해서 알려줘. 단순한 지역 뉴스나 다른 문화유산 관련 내용은 제외해.";
       case summary -> {
         String sliced = content.length() > 960 ? content.substring(0, 960) : content;
-        yield "큰 따옴표 세 개로 표시된 내용을 두 줄 이내로 요약해. \"\"\"" + sliced + "\"\"\"";
+        yield "다음 내용을 2줄 이내로 요약해: " + sliced;
       }
       default -> throw new IllegalArgumentException("지원하지 않는 요청 타입입니다.");
     };
@@ -87,4 +90,19 @@ public class AiProxyService {
   private String nvl(String s) {
     return s == null ? "" : s.trim();
   }
+
+  public void resetState(Long heritageId, AiResetRequest req) {
+    int selectedCode = resolveClientCode(req.getCode(), heritageId);
+    String clientId = CLIENT_IDS.getOrDefault(selectedCode, CLIENT_IDS.get(1));
+
+    aiWebClient
+        .method(HttpMethod.DELETE)
+        .uri("/api/v1/reset-state")
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(Map.of("client_id", clientId))
+        .retrieve()
+        .toBodilessEntity()
+        .block(Duration.ofSeconds(10)); // 적절한 타임아웃
+  }
+
 }

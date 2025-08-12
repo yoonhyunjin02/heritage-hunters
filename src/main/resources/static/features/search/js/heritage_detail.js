@@ -137,6 +137,50 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log(`type: ${type} ⏱ 응답 시간: ${end - start}ms`);
   }
 
+  function buildResetUrl() {
+    return `/heritage/${id}/ai/reset`; // POST 엔드포인트
+  }
+
+  async function resetAiState(type, code) {
+    try {
+      if (el) {
+        el.textContent = "정보를 불러오는 중입니다...";
+        el.classList.add("skeleton-text");
+      }
+      if (btn) {
+        btn.style.visibility = "hidden";
+        btn.style.opacity = "0";
+        btn.disabled = true;
+      }
+      const payload = {
+        type,
+        code,
+      };
+
+      console.group(`🧹 AI 상태 초기화 - ${type}`);
+      console.log("▶ 페이로드:", payload);
+      console.groupEnd();
+
+      const token = document.querySelector('meta[name="_csrf"]').content;
+      const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+      const res = await fetch(buildResetUrl(), {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          [header]: token,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error(`reset HTTP ${res.status}`);
+      console.log(`✅ reset 성공 - ${type}`);
+    } catch (e) {
+      console.warn("⚠️ reset 실패(계속 진행):", e.message);
+    }
+  }
+
   // 로테이션용 client code 계산 (1 ~ 3)
   const clientCode = (id % 3) + 1;
 
@@ -163,7 +207,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // code가 지정된 버튼은 그 값 사용, 아니면 요약 규칙(로테이션)
       const code = btn.dataset.code ? Number(btn.dataset.code) : clientCode;
 
-      // 버튼 상태는 fetchAiContent에서 관리
+      // 1) reset 호출 (버튼 상태는 fetchAiContent에서 처리)
+      await resetAiState(type, code);
+
+      // 2) 실제 AI 요청
       await fetchAiContent(selectorMap[type], type, code);
     });
   });

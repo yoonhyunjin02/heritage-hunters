@@ -5,6 +5,7 @@ import org.hh.heritagehunters.common.exception.NotFoundException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.search.dto.AiAskRequest;
 import org.hh.heritagehunters.domain.search.dto.AiQuestionResponse;
+import org.hh.heritagehunters.domain.search.dto.AiResetRequest;
 import org.hh.heritagehunters.domain.search.service.AiProxyService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class HeritageAiController {
   private final AiProxyService aiProxyService;
 
   /**
-   * 유산 상세 페이지에서 전달한 정보로 AI 프록시 호출 (DB 재조회 없음)
+   * 유산 상세 페이지에서 전달한 정보로 AI 프록시 호출
    */
   @PostMapping("/{id}/ai")
   public ResponseEntity<AiQuestionResponse> ask(
@@ -44,4 +45,21 @@ public class HeritageAiController {
           .body(new AiQuestionResponse(null, "AI 응답을 불러오지 못했어요."));
     }
   }
+
+  /**
+   * 새로고침 버튼 클릭시 호출할 reset 프록시
+   */
+  @PostMapping("/{id}/ai/reset")
+  public ResponseEntity<Void> resetState(
+      @PathVariable Long id,
+      @RequestBody AiResetRequest req
+  ) {
+    try {
+      aiProxyService.resetState(id, req);
+      return ResponseEntity.noContent().build();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+    }
+  }
+
 }
