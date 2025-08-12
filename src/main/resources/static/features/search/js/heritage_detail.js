@@ -141,17 +141,19 @@ document.addEventListener("DOMContentLoaded", () => {
     return `/heritage/${id}/ai/reset`; // POST 엔드포인트
   }
 
-  async function resetAiState(type, code) {
+  async function resetAiState(selector, type, code) {
+    const el = document.querySelector(selector);
+    const btn = document.querySelector(`.ai-refresh[data-type="${type}"]`);
+    if (el) {
+      el.textContent = "정보를 불러오는 중입니다...";
+      el.classList.add("skeleton-text");
+    }
+    if (btn) {
+      btn.style.visibility = "hidden";
+      btn.style.opacity = "0";
+      btn.disabled = true;
+    }
     try {
-      if (el) {
-        el.textContent = "정보를 불러오는 중입니다...";
-        el.classList.add("skeleton-text");
-      }
-      if (btn) {
-        btn.style.visibility = "hidden";
-        btn.style.opacity = "0";
-        btn.disabled = true;
-      }
       const payload = {
         type,
         code,
@@ -208,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const code = btn.dataset.code ? Number(btn.dataset.code) : clientCode;
 
       // 1) reset 호출 (버튼 상태는 fetchAiContent에서 처리)
-      await resetAiState(type, code);
+      await resetAiState(selectorMap[type], type, code);
 
       // 2) 실제 AI 요청
       await fetchAiContent(selectorMap[type], type, code);
