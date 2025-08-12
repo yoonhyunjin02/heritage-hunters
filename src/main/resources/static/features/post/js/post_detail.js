@@ -352,43 +352,44 @@ function focusCommentInput() {
 }
 
 // 게시글 삭제
-function deletePost() {
+async function deletePost() {
   const modalElement = document.getElementById('postDetailModal');
-  const postIdToDelete = modalElement ? modalElement.dataset.postId : null;
+  const postId = modalElement ? modalElement.dataset.postId : null;
 
-  if (!postIdToDelete) {
+  if (!postId) {
     console.error('게시글 ID가 없습니다.');
     return;
   }
 
-  // 사용자 확인
-  const confirmDelete = confirm(
-      '정말로 이 게시글을 삭제하시겠습니까?\n\n삭제된 게시글은 복구할 수 없습니다.'
-  );
+  if (!confirm('정말로 이 게시글을 삭제하시겠습니까?\n\n삭제된 게시글은 복구할 수 없습니다.')) {
+    return;
+  }
 
-  if (confirmDelete) {
-    // 삭제 중 표시
-    const deleteBtn = document.querySelector('.delete-item');
-    if (deleteBtn) {
-      deleteBtn.textContent = '삭제 중...';
-      deleteBtn.disabled = true;
+  // CSRF 값 읽기
+  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+  try {
+    const response = await fetch(`/posts/${postId}`, {
+      method: 'DELETE',
+      headers: {
+        [csrfHeader]: csrfToken
+      }
+    });
+
+    if (response.ok) {
+      alert('게시글이 삭제되었습니다.');
+      window.location.href = '/posts';
+    } else if (response.status === 403) {
+      alert('삭제 권한이 없습니다.');
+    } else {
+      const text = await response.text();
+      console.error('삭제 실패:', text);
+      alert('삭제 중 오류가 발생했습니다.');
     }
-
-    // DELETE 요청을 위한 폼 생성 및 제출
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = `/posts/${postIdToDelete}`;
-    form.style.display = 'none';
-
-    // HTTP 메소드 오버라이드
-    const methodInput = document.createElement('input');
-    methodInput.type = 'hidden';
-    methodInput.name = '_method';
-    methodInput.value = 'DELETE';
-
-    form.appendChild(methodInput);
-    document.body.appendChild(form);
-    form.submit();
+  } catch (err) {
+    console.error('네트워크 오류:', err);
+    alert('서버와 통신 중 문제가 발생했습니다.');
   }
 }
 
