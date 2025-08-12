@@ -13,6 +13,7 @@ let dragThreshold = 50; // 드래그 최소 거리
 // DOM 로드 완료 후 초기화
 document.addEventListener('DOMContentLoaded', function () {
   initializePostDetail();
+  initializeRelativeTime();
 });
 
 // 게시글 상세 초기화
@@ -393,20 +394,6 @@ async function deletePost() {
   }
 }
 
-// 댓글 수정 (미구현)
-function editComment(commentId) {
-  console.log('댓글 수정:', commentId);
-  alert('댓글 수정 기능은 준비 중입니다.');
-}
-
-// 댓글 삭제 (미구현)
-function deleteComment(commentId) {
-  if (confirm('댓글을 삭제하시겠습니까?')) {
-    console.log('댓글 삭제:', commentId);
-    alert('댓글 삭제 기능은 준비 중입니다.');
-  }
-}
-
 // 이미지 로드 에러 처리
 function handleImageError(img) {
   img.style.display = 'none';
@@ -441,6 +428,53 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+// 상대시간 초기화
+function initializeRelativeTime() {
+  // time_util.js 모듈 import
+  import('/common/js/utils/time_util.js').then(module => {
+    const { formatRelativeTime } = module;
+    
+    // 모든 relative-time 클래스를 가진 요소들 찾기
+    const timeElements = document.querySelectorAll('.relative-time[data-time]');
+    
+    timeElements.forEach(element => {
+      const datetime = element.getAttribute('data-time');
+      if (datetime) {
+        try {
+          const date = new Date(datetime);
+          element.textContent = formatRelativeTime(date);
+        } catch (error) {
+          console.error('날짜 변환 오류:', error);
+        }
+      }
+    });
+    
+    // 1분마다 상대시간 업데이트
+    setInterval(() => {
+      updateRelativeTimes(formatRelativeTime);
+    }, 60000);
+  }).catch(error => {
+    console.error('time_util.js 로드 실패:', error);
+  });
+}
+
+// 상대시간 업데이트
+function updateRelativeTimes(formatRelativeTime) {
+  const timeElements = document.querySelectorAll('.relative-time[data-time]');
+  
+  timeElements.forEach(element => {
+    const datetime = element.getAttribute('data-time');
+    if (datetime) {
+      try {
+        const date = new Date(datetime);
+        element.textContent = formatRelativeTime(date);
+      } catch (error) {
+        console.error('날짜 변환 오류:', error);
+      }
+    }
+  });
+}
 
 // 전역 함수로 내보내기 (HTML에서 직접 호출하는 함수들)
 window.closeModal = closeModal;
