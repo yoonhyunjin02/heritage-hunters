@@ -31,7 +31,7 @@ const C = {
     copyFail: "복사에 실패했습니다",
   },
   UI: {
-    maxContentHeight: 300,
+    maxContentHeight: 100,
   },
 };
 
@@ -88,12 +88,13 @@ const U = {
   },
 
   /**
-   * 로테이션 client code(1~3)
-   * @param {number} id
+   * 현재 시각 초 기반 로테이션 client code(1~3)
    * @returns {number}
    */
-  clientCodeOf(id) {
-    return (id % 3) + 1;
+  clientCodeOf() {
+    const now = new Date();
+    const sec = now.getSeconds();
+    return (sec % 3) + 1;
   },
 
   /**
@@ -214,7 +215,7 @@ const UI = {
 
   /**
    * 본문 컨텐츠 토글 버튼 초기화
-   * @param {number} [maxHeight=300]
+   * @param {number} [maxHeight=100]
    * @returns {void}
    */
   initContentToggle(maxHeight = C.UI.maxContentHeight) {
@@ -282,7 +283,7 @@ const AI = {
       UI.setText(selector, C.MSG.aiFail);
     } finally {
       UI.unsetLoading(selector, btnSelector);
-      console.log(`type: ${type} ⏱ ${Math.round(performance.now() - start)}ms`);
+      console.log(`type: ${type}, code: ${code}, ⏱ ${Math.round(performance.now() - start)}ms`);
     }
   },
 };
@@ -324,7 +325,7 @@ const App = {
   initAi() {
     const heritageId = U.getHeritageId();
     const base = U.getHeritagePayloadBase();
-    const cc = U.clientCodeOf(heritageId);
+    const cc = U.clientCodeOf();
 
     // 초기 로드
     AI.fetchContent(heritageId, C.AI_TARGET.recommends, "recommends", 1, base);

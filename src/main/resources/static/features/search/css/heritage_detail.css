@@ -72,14 +72,13 @@ main {
 ----------------------------------------*/
 .heritage__summary {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--spacing-unit);
   flex-wrap: wrap;
   margin-top: calc(var(--spacing-unit) * 2);
 }
 
 .heritage__summary__info {
-  flex: 1 1 60%;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -134,15 +133,15 @@ main {
   AI Curator Block
 ----------------------------------------*/
 .heritage__summary__ai {
-  flex: 1 1 35%;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-unit);
-  max-width: 360px; /* 넓이 확대 */
   width: 100%;
 }
 
 .heritage__summary__ai > div {
+  display: flex;
+  align-items: center;
   background: #ffffff;
   border-radius: 4px;
   padding: var(--spacing-unit);
@@ -150,12 +149,18 @@ main {
   font-size: 0.9rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  gap: var(--spacing-unit);
 }
 
 .heritage__summary__ai > div strong {
   display: inline-block;
+  white-space: nowrap;
   font-weight: 700;
   margin-right: 0.5rem;
+}
+
+.heritage__summary__ai > div span {
+  flex: 1;
 }
 
 .heritage__summary__ai__recommends {
@@ -205,9 +210,6 @@ main {
 
 /* AI 새로고침 버튼 위치 및 스타일 */
 .ai-refresh {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
   width: 28px;
   height: 28px;
   font-size: 0.9rem;
@@ -267,13 +269,15 @@ main {
 /*----------------------------------------
   Main Content
 ----------------------------------------*/
-.heritage__content {
+#contentSection {
   background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   padding: calc(var(--spacing-unit) * 2);
   margin-top: var(--spacing-unit);
+}
+.heritage__content {
   line-height: 1.6;
   color: var(--text-color);
   word-break: keep-all;
@@ -341,7 +345,7 @@ main {
   Content Toggle
 ----------------------------------------*/
 .heritage__content.collapsed {
-  max-height: 300px;
+  max-height: 100px;
   overflow: hidden;
 }
 
