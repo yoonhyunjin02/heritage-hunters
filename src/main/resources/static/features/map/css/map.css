@@ -1,78 +1,71 @@
-/* ================= Map Page ================= */
+/* ================= Map Page (Full-bleed) ================= */
 
 :root {
-  --panel-w: 22.5rem;                 /* 360px */
+  /* 사이드 패널 폭(사용 시) */
+  --panel-w: 22.5rem;
+
+  /* 라운드/그림자/보더 */
   --radius-lg: 16px;
   --radius-full: 999px;
   --shadow-md: 0 8px 24px rgba(0,0,0,.06);
   --border: 1px solid var(--gray-200);
 
-  /* 사이트 공통 헤더 높이(필요시 조정) */
+  /* 사이트 공통 헤더 높이 */
   --site-header-h: 64px;
+
+  /* 지도 전용 툴바(헤더 밑) 높이 - 필요시 숫자만 조정 */
+  --toolbar-h: 56px;
 }
 
-/* ---------- 지도 전용 상단 툴바 ---------- */
+/* ---------- 지도 전용 상단 툴바(헤더 바로 밑) ---------- */
 .map-toolbar{
-  position: sticky;
-  top: var(--site-header-h);
-  z-index: 10;
-  background: var(--gray-000);
-  border-bottom: 1px solid var(--gray-200);
-}
-.toolbar-inner{
-  max-width: var(--section-max);
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: .75rem 1rem;
-}
-.toolbar-title{
-  font-size: 1.125rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.toolbar-actions{
-  margin-left: auto;
+  height: var(--toolbar-h);
   display: flex;
   align-items: center;
   gap: .75rem;
+  padding: 0 1rem;
+  background: var(--gray-000);
+  border-bottom: 1px solid var(--gray-200);
+  backdrop-filter: saturate(150%) blur(6px);
 }
 
-/* 검색 상자 (툴바 우측) */
-.toolbar-search{
-  position: relative;
-  width: min(28rem, 50vw);
+.map-title{
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  white-space: nowrap;
 }
+.toolbar-right{
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+/* 검색 */
+.toolbar-search{ position: relative; width: min(32rem, 60vw); }
 .toolbar-search input{
-  width: 100%;
-  height: 2.5rem;
+  width: 100%; height: 2.5rem;
   border-radius: var(--radius-full);
   border: var(--border);
   background: var(--gray-100);
   padding: 0 2.5rem 0 1rem;
-  font-size: .9375rem;
-  color: var(--gray-900);
-  outline: none;
+  font-size: .9375rem; color: var(--gray-900); outline: none;
 }
 .toolbar-search input::placeholder{ color: var(--gray-600); }
 .toolbar-search input:focus{ border-color: var(--purple-400); }
 .toolbar-search .search-icon{
-  position: absolute;
-  right: .75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: .7;
+  position: absolute; right: .75rem; top: 50%;
+  transform: translateY(-50%); opacity: .7;
 }
 
-/* 필터 버튼 & 드롭다운 패널 */
+/* 필터 버튼 & 드롭다운 */
+.filter-wrap{ position: relative; }
 .filter-btn{
-  display:flex; align-items:center; gap:.4rem;
-  height:2.5rem; padding:0 .9rem;
-  border: var(--border);
-  border-radius: var(--radius-full);
-  background: var(--gray-000);
-  cursor: pointer;
+  display:flex; align-items:center; gap:.375rem;
+  height:2.5rem; padding:0 .875rem;
+  border: var(--border); border-radius: var(--radius-full);
+  background: var(--gray-000); cursor:pointer;
 }
 .filter-btn .chev{ transition: transform .15s ease; }
 .filter-btn[aria-expanded="true"] .chev{ transform: rotate(180deg); }
@@ -80,93 +73,70 @@
 .filter-panel{
   position:absolute; right:0; top:calc(100% + .5rem);
   width:22rem; padding:.75rem;
-  border: var(--border);
-  border-radius: 12px;
-  background: var(--gray-000);
-  box-shadow: var(--shadow-md);
+  border: var(--border); border-radius: 12px;
+  background: var(--gray-000); box-shadow: var(--shadow-md);
   z-index: 20;
 }
 .filter-section + .filter-section{ margin-top:.5rem; }
 .filter-label{ font-size:.8125rem; color:var(--gray-700); margin-bottom:.375rem; }
 .chip-row{ display:flex; flex-wrap:wrap; gap:.5rem; }
 .type-chip{
-  border: var(--border);
-  border-radius: var(--radius-full);
-  padding:.375rem .75rem;
-  background: var(--gray-000);
-  font-size:.875rem;
-  color: var(--gray-800);
-  cursor: pointer;
+  border: var(--border); border-radius: var(--radius-full);
+  padding:.375rem .75rem; background: var(--gray-000);
+  font-size:.875rem; color: var(--gray-800); cursor:pointer;
 }
-.type-chip[aria-pressed="true"]{
-  background: var(--gray-100);
-  color: var(--gray-900);
-}
+.type-chip[aria-pressed="true"]{ background: var(--gray-100); color: var(--gray-900); }
 
-/* -------------- 본문 레이아웃 -------------- */
+/* ---------- 본문 레이아웃 (풀 너비/풀 높이) ---------- */
+
+/* 툴바 아래의 전체 영역 */
 .map-root{
-  max-width: var(--section-max);
-  margin: .75rem auto 0;
+  width: 100%;
+  padding: .75rem 1rem 1rem;
   display: grid;
-  grid-template-columns: var(--panel-w) 1fr;
-  gap: 1rem;
-  padding: 0 1rem 1rem;
-  min-height: calc(100dvh - (var(--site-header-h) + 56px));
+  grid-template-columns: 1fr;
+  gap: .75rem;
+  min-height: calc(100dvh - (var(--site-header-h) + var(--toolbar-h)));
   background: var(--gray-050);
 }
 
-/* 좌측 목록 패널 */
+/* 사이드 패널이 있을 때만 2열 그리드 (Chrome/Edge/Safari 지원) */
+.map-root:has(.side-panel){
+  grid-template-columns: var(--panel-w) 1fr;
+  gap: 1rem;
+}
+
+/* 좌측 패널(선택 사항) */
 .side-panel{
   background: var(--gray-000);
   border: var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: 1rem;
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   min-height: 0; /* 내부 스크롤 확보 */
 }
-
-/* 결과 리스트 */
 .list{
-  margin-top: .25rem;
-  border-top: var(--border);
-  overflow: auto;
-  padding-right: .25rem;
+  margin-top: .25rem; border-top: var(--border);
+  overflow: auto; padding-right: .25rem;
 }
 .card{
-  display: block;
-  width: 100%;
-  text-align: left;
-  border: 0;
-  border-bottom: var(--border);
-  background: transparent;
-  padding: .875rem .25rem;
-  cursor: pointer;
+  display:block; width:100%; text-align:left;
+  border:0; border-bottom: var(--border);
+  background:transparent; padding:.875rem .25rem; cursor:pointer;
 }
 .card:hover{ background: var(--gray-050); }
-.card .name{
-  font-weight: 700;
-  margin-bottom: .25rem;
-  color: var(--gray-900);
-}
-.card .addr{
-  font-size: .8125rem;
-  color: var(--gray-700);
-  margin-bottom: .375rem;
-}
-.card .desc{
-  font-size: .8125rem;
-  color: var(--gray-800);
-  line-height: 1.45;
-  white-space: pre-line;
-}
+.card .name{ font-weight:700; margin-bottom:.25rem; color:var(--gray-900); }
+.card .addr{ font-size:.8125rem; color:var(--gray-700); margin-bottom:.375rem; }
+.card .desc{ font-size:.8125rem; color:var(--gray-800); line-height:1.45; white-space:pre-line; }
 
 /* 지도 영역 */
 .map-area{ position: relative; }
+
+/* 지도가 화면을 ‘남은 높이 전부’ 차지하도록 */
 #map{
   width: 100%;
-  height: 100%;
+  height: calc(100dvh - (var(--site-header-h) + var(--toolbar-h)) - 1.5rem);
   min-height: 24rem;
   border-radius: var(--radius-lg);
   border: var(--border);
@@ -174,17 +144,22 @@
   background: var(--gray-100);
 }
 
-/* -------------- 반응형 -------------- */
-@media (max-width: 900px){
-  .toolbar-search{ width: min(20rem, 70vw); }
-  .map-root{ grid-template-columns: 1fr; }
-  .side-panel{ order: 2; }
-  .map-area{ order: 1; }
-  #map{ height: 60dvh; }
+/* ---------- 반응형 ---------- */
+@media (max-width: 1100px){
+  .toolbar-search{ width: min(24rem, 60vw); }
 }
-
+@media (max-width: 900px){
+  .map-root{ grid-template-columns: 1fr; }
+  .side-panel{ order:2; }
+  .map-area{ order:1; }
+  #map{
+    /* 모바일/태블릿에서 좀 더 높이 확보 */
+    height: calc(100dvh - (var(--site-header-h) + var(--toolbar-h)) - .75rem);
+  }
+}
 @media (max-width: var(--bp-mobile)){
-  .toolbar-inner{ padding: .6rem .75rem; }
-  .map-root{ padding: 0 .75rem .75rem; gap: .75rem; }
+  .map-toolbar{ padding: 0 .75rem; }
+  .toolbar-search{ width: min(18rem, 70vw); }
+  .map-root{ padding: .5rem .75rem 1rem; gap: .5rem; }
   .side-panel{ padding: .75rem; }
 }
