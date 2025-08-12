@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <th:block th:insert="~{fragments/head :: common-head('Map')}"></th:block>
+  <link rel="stylesheet" th:href="@{/features/map/css/map.css}">
+</head>
+<body>
+<!--header-->
+<div th:replace="~{fragments/header :: common-header}"></div>
+
+<!--main-->
+<main class="main-container">
+</main>
+
+<!--footer-->
+<div th:replace="~{fragments/footer :: common-footer}"></div>
+
+<!--js-->
+<script defer th:src="@{/features/main/js/map.js}"></script>
+</body>
+</html>
