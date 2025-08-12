@@ -1,33 +1,27 @@
 // ===== Globals =====
 let map;
-let currentType = 'heritage'; // 기본값: 문화재
+let currentType = 'heritage';
 const gMarkers = [];
 const gInfoWindows = [];
 let allData = [];
 
-// Google Maps 클래스 캐시
 const GMap = { Map: null, Marker: null, InfoWindow: null, AdvancedMarkerElement: null };
 
 // ===== Utils =====
-function closeAllInfo() { gInfoWindows.forEach(iw => iw.close()); }
-function clearMarkers() {
-  gMarkers.forEach(m => {
-    if (m && typeof m.setMap === 'function') m.setMap(null);  // 구 Marker
-    else if (m) m.map = null;                                  // AdvancedMarkerElement
-  });
-  gMarkers.length = 0;
-  gInfoWindows.length = 0;
+function closeAllInfo(){ gInfoWindows.forEach(iw => iw.close()); }
+function clearMarkers(){
+  gMarkers.forEach(m => { if (m?.setMap) m.setMap(null); else if (m) m.map = null; });
+  gMarkers.length = 0; gInfoWindows.length = 0;
 }
-
-function isFiniteLatLng(lat, lng) { return Number.isFinite(lat) && Number.isFinite(lng); }
-function toLatLngLiteral(item) {
+function isFiniteLatLng(lat,lng){ return Number.isFinite(lat) && Number.isFinite(lng); }
+function toLatLngLiteral(item){
   const lat = Number(item.latitude), lng = Number(item.longitude);
-  return isFiniteLatLng(lat, lng) ? { lat, lng } : null;
+  return isFiniteLatLng(lat,lng) ? { lat, lng } : null;
 }
-function getMarkerPosition(mk) { return mk?.position ?? mk?.getPosition?.(); }
+function getMarkerPosition(mk){ return mk?.position ?? mk?.getPosition?.(); }
 
 // ------- Data load -------
-async function loadMarkers(params = {}) {
+async function loadMarkers(params = {}){
   const endpoint = document.querySelector('.map-root').dataset.endpoint || '/map';
   const url = new URL(endpoint, window.location.origin);
   url.searchParams.set('type', params.type || currentType);
@@ -36,7 +30,7 @@ async function loadMarkers(params = {}) {
   if (params.era)         url.searchParams.set('era', params.era);
 
   const res = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
-  if (!res.ok) { console.error('마커 로드 실패', res.status); return; }
+  if (!res.ok){ console.error('마커 로드 실패', res.status); return; }
 
   allData = await res.json();
   renderMarkers(allData);
@@ -44,21 +38,20 @@ async function loadMarkers(params = {}) {
 }
 
 // ------- Markers / List -------
-function renderMarkers(list) {
+function renderMarkers(list){
   clearMarkers();
   const bounds = new google.maps.LatLngBounds();
 
-  const AdvancedCtor =
-    GMap.AdvancedMarkerElement ||
-    (google.maps.marker && google.maps.marker.AdvancedMarkerElement);
+  const AdvancedCtor = GMap.AdvancedMarkerElement
+    || (google.maps.marker && google.maps.marker.AdvancedMarkerElement);
   const MarkerCtor = GMap.Marker || google.maps.Marker;
 
   list.forEach(item => {
     const pos = toLatLngLiteral(item);
-    if (!pos) { console.warn('잘못된 좌표 스킵:', item?.name, item?.latitude, item?.longitude); return; }
+    if (!pos){ console.warn('잘못된 좌표 스킵:', item?.name, item?.latitude, item?.longitude); return; }
 
     let marker;
-    if (AdvancedCtor) {
+    if (AdvancedCtor){
       marker = new AdvancedCtor({ position: pos, map, title: item.name ?? '' });
       marker.addListener('gmp-click', () => {
         const info = new (GMap.InfoWindow || google.maps.InfoWindow)({
@@ -69,9 +62,7 @@ function renderMarkers(list) {
               <div style="font-size:12px">${item.category ?? ''}</div>
             </div>`
         });
-        closeAllInfo();
-        info.open({ anchor: marker, map });
-        gInfoWindows.push(info);
+        closeAllInfo(); info.open({ anchor: marker, map }); gInfoWindows.push(info);
       });
     } else {
       const InfoWindowCtor = GMap.InfoWindow || google.maps.InfoWindow;
@@ -95,7 +86,7 @@ function renderMarkers(list) {
   if (!bounds.isEmpty()) map.fitBounds(bounds);
 }
 
-function renderList(list) {
+function renderList(list){
   const $list = document.getElementById('list'); if (!$list) return;
   $list.innerHTML = '';
   list.forEach((item, idx) => {
@@ -127,55 +118,52 @@ function renderList(list) {
 }
 
 // ------- Search -------
-function applySearch(raw) {
+function applySearch(raw){
   const q = raw.trim().toLowerCase();
-  if (!q) { renderMarkers(allData); renderList(allData); return; }
+  if (!q){ renderMarkers(allData); renderList(allData); return; }
   const filtered = allData.filter(d => {
     const hay = `${d.name ?? ''} ${d.region ?? ''} ${d.category ?? ''}`.toLowerCase();
     return hay.includes(q);
   });
   renderMarkers(filtered); renderList(filtered);
 }
-function wireSearch() {
+function wireSearch(){
   const $q = document.getElementById('search'); if (!$q) return;
-  let t = null;
-  $q.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => applySearch($q.value), 150); });
+  let t=null;
+  $q.addEventListener('input', () => { clearTimeout(t); t=setTimeout(() => applySearch($q.value),150); });
 }
 
 // ------- 세그먼트 토글 -------
-function setType(type) {
+function setType(type){
   currentType = type;
   document.querySelectorAll('#typeSegment .seg-btn')
     .forEach(b => b.setAttribute('aria-pressed', String(b.dataset.type === type)));
-  const $title = document.getElementById('mapTitle');
-  if ($title) $title.textContent = (type === 'heritage' ? '문화재' : '전국 박물관·미술관') + ' 지도';
   loadMarkers({ type: currentType });
 }
 function wireTypeSegment(){
   const seg = document.getElementById('typeSegment'); if(!seg) return;
   seg.addEventListener('click', (e)=>{
     const btn = e.target.closest('.seg-btn'); if(!btn) return;
-    if (btn.getAttribute('aria-pressed') === 'true') return; // 같은 값이면 무시
+    if (btn.getAttribute('aria-pressed') === 'true') return;
     setType(btn.dataset.type);
   });
 }
 
 // ------- Google loader & init -------
-function loadGoogleMaps(apiKey) {
+function loadGoogleMaps(apiKey){
   return new Promise((resolve, reject) => {
     if (window.google?.maps) return resolve();
-    const cbName = '__gm_cb_' + Math.random().toString(36).slice(2);
-    window[cbName] = () => resolve();
+    const cb = '__gm_cb_' + Math.random().toString(36).slice(2);
+    window[cb] = () => resolve();
     const s = document.createElement('script');
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly&loading=async&callback=${cbName}`;
-    s.async = true; s.defer = true;
-    s.onerror = () => reject(new Error('Google Maps JS 로드 실패'));
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=weekly&loading=async&callback=${cb}`;
+    s.async = true; s.defer = true; s.onerror = () => reject(new Error('Google Maps JS 로드 실패'));
     document.head.appendChild(s);
   });
 }
 
-async function initMap() {
-  if (google.maps.importLibrary) {
+async function initMap(){
+  if (google.maps.importLibrary){
     const { Map, InfoWindow } = await google.maps.importLibrary('maps');
     const markerLib = await google.maps.importLibrary('marker');
     GMap.Map = Map; GMap.InfoWindow = InfoWindow;
@@ -183,39 +171,32 @@ async function initMap() {
     else if (markerLib.Marker) GMap.Marker = markerLib.Marker;
 
     map = new GMap.Map(document.getElementById('map'), {
-      center: { lat: 37.5665, lng: 126.9780 },
-      zoom: 12,
-      mapTypeControl: false, streetViewControl: false, fullscreenControl: true
+      center:{ lat:37.5665, lng:126.9780 }, zoom:12,
+      mapTypeControl:false, streetViewControl:false, fullscreenControl:true
     });
   } else {
     map = new google.maps.Map(document.getElementById('map'), {
-      center: { lat: 37.5665, lng: 126.9780 },
-      zoom: 12,
-      mapTypeControl: false, streetViewControl: false, fullscreenControl: true
+      center:{ lat:37.5665, lng:126.9780 }, zoom:12,
+      mapTypeControl:false, streetViewControl:false, fullscreenControl:true
     });
   }
 
   wireSearch();
   wireTypeSegment();
 
-  // 초기 UI 동기화(데이터는 아래 loadMarkers가 담당)
+  // 초기 UI 동기화 후 데이터 로드
   document.querySelectorAll('#typeSegment .seg-btn')
     .forEach(b => b.setAttribute('aria-pressed', String(b.dataset.type === currentType)));
-  const $title = document.getElementById('mapTitle');
-  if ($title) $title.textContent = (currentType === 'heritage' ? '문화재' : '전국 박물관·미술관') + ' 지도';
-
   await loadMarkers({ type: currentType });
 }
 
 // ------- Boot -------
 document.addEventListener('DOMContentLoaded', async () => {
-  try {
+  try{
     const root = document.querySelector('.map-root');
     const apiKey = root?.dataset.mapsKey;
     if (!apiKey) return console.error('maps api key 누락');
     await loadGoogleMaps(apiKey);
     await initMap();
-  } catch (e) {
-    console.error(e);
-  }
+  }catch(e){ console.error(e); }
 });
