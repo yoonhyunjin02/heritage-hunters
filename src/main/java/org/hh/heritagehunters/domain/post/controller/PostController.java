@@ -9,13 +9,13 @@ import org.hh.heritagehunters.common.exception.UnauthorizedException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.common.security.CustomUserDetails;
 import org.hh.heritagehunters.domain.oauth.entity.User;
+import org.hh.heritagehunters.domain.post.application.PostFacade;
 import org.hh.heritagehunters.domain.post.dto.request.CommentCreateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.request.PostCreateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.request.PostUpdateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostCreateResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostListResponseDto;
-import org.hh.heritagehunters.domain.post.service.PostService;
 import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -38,8 +38,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Slf4j
 public class PostController {
 
-  private final PostService postService;
+  private final PostFacade postFacade;
 
+  /**
+   * 게시글 리스트
+   */
   @GetMapping
   public String getPosts(
       @RequestParam(value = "keyword", required = false) String keyword,
@@ -51,27 +54,24 @@ public class PostController {
       @AuthenticationPrincipal CustomUserDetails customUserDetails,
       Model model) {
 
+    User currentUser = (customUserDetails != null) ? customUserDetails.getUser() : null;
+
     log.debug("게시글 리스트 요청 - keyword: {}, region: {}, sort: {}, direction: {}, page: {}, size: {}",
         keyword, region, sort, direction, page, size);
 
-    User currentUser = customUserDetails.getUser();
-    if (currentUser != null) {
-      Page<PostListResponseDto> posts = postService.getPostResponses(
-          currentUser, keyword, region, sort, direction, page, size
-      );
+    // 로그인 여부와 무관하게 목록 조회 (익명 사용자도 OK, 좋아요표시는 파사드가 처리)
+    Page<PostListResponseDto> posts = postFacade.list(
+        currentUser, keyword, region, sort, direction, page, size
+    );
 
-      // 모델에 데이터 추가
-      model.addAttribute("posts", posts);
-      model.addAttribute("keyword", keyword);
-      model.addAttribute("region", region);
-      model.addAttribute("sort", sort);
-      model.addAttribute("direction", direction);
-
-      // 현재 필터 정보
-      model.addAttribute("currentPage", page);
-      model.addAttribute("totalPages", posts.getTotalPages());
-      model.addAttribute("totalElements", posts.getTotalElements());
-    }
+    model.addAttribute("posts", posts);
+    model.addAttribute("keyword", keyword);
+    model.addAttribute("region", region);
+    model.addAttribute("sort", sort);
+    model.addAttribute("direction", direction);
+    model.addAttribute("currentPage", page);
+    model.addAttribute("totalPages", posts.getTotalPages());
+    model.addAttribute("totalElements", posts.getTotalElements());
 
     return "features/post/post_list";
   }
@@ -87,6 +87,7 @@ public class PostController {
       @RequestParam(value = "images") List<MultipartFile> images,
       RedirectAttributes redirectAttributes) {
 
+    // 인증 보호: 미인증 → 로그인 페이지로
     if (userDetails == null || userDetails.getUser() == null) {
       redirectAttributes.addFlashAttribute("toastType", "error");
       redirectAttributes.addFlashAttribute("toastMessage", "로그인 후 게시글을 작성할 수 있습니다.");
@@ -99,7 +100,8 @@ public class PostController {
       return "redirect:/posts";
     }
 
-    PostCreateResponseDto response = postService.createPost(userDetails.getUser(), request, images);
+    // 생성은 파사드가 오케스트레이션 (유물 매핑/이미지 업로드 포함)
+    PostCreateResponseDto response = postFacade.create(userDetails.getUser(), request, images);
 
     redirectAttributes.addFlashAttribute("toastType", "success");
     redirectAttributes.addFlashAttribute("toastMessage", response.getMessage());
@@ -123,9 +125,9 @@ public class PostController {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
 
-    PostDetailResponseDto post = postService.getPostForEdit(postId, userDetails.getUser());
+    // images만 fetch-join된 안전 조회 + 작성자 검증은 파사드/서비스에서 한 번 더 체크
+    PostDetailResponseDto post = postFacade.forEdit(postId, userDetails.getUser());
 
-    // 수정용 폼 객체 생성
     PostUpdateRequestDto updateForm = new PostUpdateRequestDto();
     updateForm.setContent(post.getContent());
     updateForm.setLocation(post.getLocation());
@@ -157,7 +159,8 @@ public class PostController {
       return "redirect:/posts/" + postId;
     }
 
-    postService.updatePost(postId, userDetails.getUser(), postUpdateRequestDto);
+    // 작성자 검증 포함
+    postFacade.update(postId, userDetails.getUser(), postUpdateRequestDto);
 
     redirectAttributes.addFlashAttribute("toastType", "success");
     redirectAttributes.addFlashAttribute("toastMessage", "게시글이 수정되었습니다.");
@@ -167,18 +170,20 @@ public class PostController {
 
 
   /**
-   * 게시글 상세 조회
+   * 게시글 상세
    */
   @GetMapping("/{id}")
   public String getPostDetail(@PathVariable("id") Long postId,
       @AuthenticationPrincipal CustomUserDetails userDetails,
       Model model) {
 
-    User currentuser = userDetails != null ? userDetails.getUser() : null;
-    PostDetailResponseDto post = postService.getPostDetail(postId, currentuser);
+    User currentUser = (userDetails != null) ? userDetails.getUser() : null;
+
+    // images fetch-join + 좋아요 여부/작성자 여부 조립
+    PostDetailResponseDto post = postFacade.detail(postId, currentUser);
 
     model.addAttribute("post", post);
-    model.addAttribute("currentUser", currentuser);
+    model.addAttribute("currentUser", currentUser);
     model.addAttribute("commentForm", new CommentCreateRequestDto());
 
     return "features/post/post_detail";
@@ -205,7 +210,8 @@ public class PostController {
       return "redirect:/posts/" + postId;
     }
 
-    postService.createComment(postId, userDetails.getUser(), commentForm);
+    // 댓글 작성 및 카운트
+    postFacade.addComment(postId, userDetails.getUser(), commentForm);
 
     redirectAttributes.addFlashAttribute("toastType", "success");
     redirectAttributes.addFlashAttribute("toastMessage", "댓글이 등록되었습니다.");
@@ -226,7 +232,7 @@ public class PostController {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
 
-    boolean isLiked = postService.toggleLike(postId, userDetails.getUser());
+    boolean isLiked = postFacade.toggleLike(postId, userDetails.getUser());
 
     String message = isLiked ? "좋아요를 눌렀습니다." : "좋아요를 취소했습니다.";
     redirectAttributes.addFlashAttribute("toastType", "success");
@@ -248,7 +254,8 @@ public class PostController {
       throw new BadRequestException(ErrorCode.LOGIN_REQUIRED);
     }
 
-    postService.deletePost(postId, userDetails.getUser());
+    // 작성자 검증 + 삭제
+    postFacade.delete(postId, userDetails.getUser());
 
     redirectAttributes.addFlashAttribute("toastType", "success");
     redirectAttributes.addFlashAttribute("toastMessage", "게시글이 삭제되었습니다.");
