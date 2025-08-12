@@ -343,6 +343,9 @@ const App = {
         if (!type || !C.AI_TARGET[type]) return;
         const code = btn.dataset.code ? Number(btn.dataset.code) : cc;
         const selector = C.AI_TARGET[type];
+        const btnSelector = `.ai-refresh[data-type="${type}"]`;
+
+        UI.setLoading(selector, btnSelector);
 
         try {
           await AI.reset(heritageId, { type, code });
