@@ -2,16 +2,16 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <th:block th:insert="~{fragments/head :: common-head(${post.heritageName + ' 수정'})}"></th:block>
   <meta name="_csrf" th:content="${_csrf.token}" />
   <meta name="_csrf_header" th:content="${_csrf.headerName}" />
-  <title th:text="${post.heritageName + ' 수정 - Heritage Hunters'}">게시글 수정 - Heritage Hunters</title>
-  <link rel="stylesheet" th:href="@{/common/css/common.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_write_modal.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}">
 </head>
 <body>
+
+<!-- Header Fragment -->
+<div th:replace="~{fragments/header :: common-header}"></div>
 
 <div id="postEditModal" class="modal show"
      role="dialog" aria-modal="true" aria-labelledby="postEditTitle"
@@ -102,6 +102,12 @@
     </div>
   </div>
 </div>
+
+<!-- Footer Fragment -->
+<div th:replace="~{fragments/footer :: common-footer}"></div>
+
+<!-- Toast 메시지 Fragment -->
+<div th:replace="~{fragments/toast :: toast}"></div>
 
 <script defer th:src="@{/features/post/js/post_edit.js}"></script>
 </body>

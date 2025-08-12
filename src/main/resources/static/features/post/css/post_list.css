@@ -3,16 +3,19 @@
    ======================================== */
 
 :root {
-  --primary-color: #007bff;
-  --primary-hover: #0056b3;
+  /* OAuth 색상 테마 적용 */
+  --primary-color: #2b3f33;
+  --primary-hover: #1e2b25;
   --secondary-color: #6c757d;
   --success-color: #28a745;
-  --danger-color: #dc3545;
+  --danger-color: #d14343;
   --warning-color: #ffc107;
   --info-color: #17a2b8;
   --light-color: #f8f9fa;
   --dark-color: #343a40;
-  --border-color: #dee2e6;
+  --border-color: #e5e7eb;
+  --accent-color: #d16a4b;
+  --focus-color: #a7b1a7;
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
   --shadow-lg: 0 8px 25px rgba(0,0,0,0.15);
@@ -63,8 +66,8 @@
 
 .search-input:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+  border-color: var(--focus-color);
+  box-shadow: 0 0 0 3px rgba(33, 81, 57, 0.12);
 }
 
 .search-btn {
@@ -126,7 +129,7 @@
 }
 
 .sort-tab:hover {
-  background: rgba(0,123,255,0.1);
+  background: rgba(43, 63, 51, 0.1);
 }
 
 .sort-filter-tabs input[type="radio"]:checked + .sort-tab:hover {
@@ -151,8 +154,8 @@
 
 .region-filter-select:focus {
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+  border-color: var(--focus-color);
+  box-shadow: 0 0 0 3px rgba(33, 81, 57, 0.12);
 }
 
 /* 컨트롤 버튼들 */
@@ -182,9 +185,9 @@
 }
 
 .reset-btn:hover {
-  background: var(--warning-color);
+  background: var(--accent-color);
   color: white;
-  border-color: var(--warning-color);
+  border-color: var(--accent-color);
 }
 
 .new-post-btn {
@@ -311,25 +314,6 @@
   text-transform: uppercase;
 }
 
-/* 호버 오버레이 */
-.post-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  display: flex;
-  align-items: flex-end;
-  padding: 16px;
-}
-
-.post-card:hover .post-overlay {
-  opacity: 1;
-}
-
 .overlay-content {
   color: white;
 }
@@ -376,9 +360,9 @@
 /* 게시글 메타 정보 */
 .post-meta {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  margin-bottom: 12px;
+  margin: 0 12px 12px 0;
 }
 
 .author-info {
@@ -433,48 +417,6 @@
   gap: 2px;
   font-size: 11px;
   color: var(--secondary-color);
-}
-
-/* 빠른 액션 버튼들 */
-.quick-actions {
-  position: absolute;
-  top: 50%;
-  right: -50px;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: right 0.3s ease;
-}
-
-.post-card:hover .quick-actions {
-  right: 12px;
-}
-
-.quick-action-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(255,255,255,0.9);
-  cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition);
-  box-shadow: var(--shadow-sm);
-}
-
-.quick-action-btn:hover {
-  background: white;
-  transform: scale(1.1);
-  box-shadow: var(--shadow-md);
-}
-
-.quick-action-btn.like-btn.active {
-  background: var(--danger-color);
-  color: white;
 }
 
 /* ========================================
@@ -646,6 +588,68 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* ===== Compact 카드 레이아웃 ===== */
+.post-info.compact {
+  padding: 12px 14px;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  row-gap: 8px;
+}
+
+.designation-row {
+  display: flex;
+  align-items: center;
+}
+
+.designation-pill {
+  display: inline-block;
+  padding: 0.25rem 0.6rem; /* 4px 10px */
+  border-radius: 999px;
+  font-size: 0.75rem;      /* 12px */
+  font-weight: 600;
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.icons-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1rem; /* 16px */
+  color: var(--dark-color);
+  opacity: .9;
+}
+
+.likes-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.875rem; /* 14px */
+  color: var(--dark-color);
+}
+
+.likes-count {
+  font-weight: 700;
+}
+
+/* 기존 상세 정보들은 숨김(혹시 남아 있어도 보이지 않게) */
+.post-info:not(.compact) .heritage-name,
+.post-info:not(.compact) .location-info,
+.post-info:not(.compact) .post-meta,
+.post-info:not(.compact) .post-stats {
+  display: none !important;
+}
+
+/* 모바일 약간 키우기 */
+@media (max-width: 767px) {
+  .post-info.compact { padding: 10px 12px; }
+  .designation-pill { font-size: 0.75rem; }
+  .icons-row { font-size: 1.1rem; }
+  .likes-row { font-size: 0.9rem; }
 }
 
 /* ========================================

@@ -2,16 +2,16 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <th:block th:insert="~{fragments/head :: common-head(${post.heritageName + ' - 게시글 상세'})}"></th:block>
   <meta name="_csrf" th:content="${_csrf.token}" />
   <meta name="_csrf_header" th:content="${_csrf.headerName}" />
-  <title th:text="${post.heritageName + ' - ' + post.content}">게시글 상세 - Heritage Hunters</title>
-  <link rel="stylesheet" th:href="@{/common/css/common.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_write_modal.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}">
 </head>
 <body>
+
+<!-- Header Fragment -->
+<div th:replace="~{fragments/header :: common-header}"></div>
 
 <div id="postDetailModal" class="modal show"
      role="dialog" aria-modal="true" aria-labelledby="postDetailTitle"
@@ -104,8 +104,7 @@
               <div class="name" th:text="${post.userNickname}">닉네임</div>
               <time class="time"
                     th:datetime="${post.createdAt}"
-                    th:text="${#temporals.format(post.createdAt, 'yyyy년 MM월 dd일 HH:mm')}">2025년 08월
-                08일
+                    th:text="${#temporals.format(post.createdAt, 'yy/MM/dd HH:mm')}">25/08/08
                 15:11
               </time>
             </div>
@@ -184,18 +183,12 @@
             <div class="c-body">
               <div class="c-head">
                 <span class="c-name" th:text="${comment.userNickname}">작성자</span>
-                <time class="c-time"
+                <time class="c-time relative-time"
+                      th:datetime="${comment.createdAt}"
+                      th:data-time="${comment.createdAt}"
                       th:text="${#temporals.format(comment.createdAt, 'MM월 dd일 HH:mm')}">06월 01일
                   12:00
                 </time>
-                <div class="c-menu"
-                     th:if="${currentUser != null and currentUser.id == comment.userId}">
-                  <button class="text-btn" th:onclick="'editComment(' + ${comment.id} + ')'">수정
-                  </button>
-                  <button class="text-btn danger" th:onclick="'deleteComment(' + ${comment.id} +
-  ')'">삭제
-                  </button>
-                </div>
               </div>
               <p class="c-text" th:text="${comment.content}">댓글 내용</p>
             </div>
@@ -223,6 +216,12 @@
     </div>
   </div>
 </div>
+
+<!-- Footer Fragment -->
+<div th:replace="~{fragments/footer :: common-footer}"></div>
+
+<!-- Toast 메시지 Fragment -->
+<div th:replace="~{fragments/toast :: toast}"></div>
 
 <script defer th:src="@{/features/post/js/post_detail.js}"></script>
 </body>

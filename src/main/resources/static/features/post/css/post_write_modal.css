@@ -82,9 +82,9 @@
 }
 .thumb-item { width:64px; height:64px; border-radius:6px; overflow:hidden; border:2px solid transparent; flex:0 0 auto; }
 .thumb-item img { width:100%; height:100%; object-fit:cover; }
-.thumb-item.active { border-color:#4da3ff; }
+.thumb-item.active { border-color:#2b3f33; }
 .image-upload-section.drag-over .upload-placeholder { color:#fff; }
-.image-upload-section.drag-over { outline:2px dashed #4da3ff; outline-offset:-8px; }
+.image-upload-section.drag-over { outline:2px dashed #2b3f33; outline-offset:-8px; }
 
 /* ============ Right: Compose Panel ============ */
 .compose-right {
@@ -96,7 +96,7 @@
 }
 .author-avatar, .author-avatar-placeholder { width:40px; height:40px; border-radius:50%; }
 .author-avatar { object-fit:cover; border:1px solid #e5e5e5; }
-.author-avatar-placeholder { display:grid; place-items:center; background:#007bff; color:#fff; font-weight:700; }
+.author-avatar-placeholder { display:grid; place-items:center; background:#2b3f33; color:#fff; font-weight:700; }
 .author-name { font-weight:600; color:#333; }
 
 .form-group { padding:14px 16px; border-bottom:1px solid #f6f6f6; }
@@ -107,7 +107,7 @@
   border:1px solid #e2e2e2; border-radius:8px; resize:vertical; font:inherit; line-height:1.5;
 }
 .content-textarea:focus {
-  outline:none; border-color:#4da3ff; box-shadow:0 0 0 3px rgba(77,163,255,.15);
+  outline:none; border-color:#a7b1a7; box-shadow:0 0 0 3px rgba(33, 81, 57, 0.12);
 }
 .char-counter { text-align:right; font-size:12px; color:#777; margin-top:6px; }
 
@@ -115,7 +115,7 @@
   width:100%; padding:10px 12px; border:1px solid #e2e2e2; border-radius:8px; font:inherit;
 }
 .location-input:focus {
-  outline:none; border-color:#4da3ff; box-shadow:0 0 0 3px rgba(77,163,255,.15);
+  outline:none; border-color:#a7b1a7; box-shadow:0 0 0 3px rgba(33, 81, 57, 0.12);
 }
 .field-help { font-size:12px; color:#888; margin-top:6px; }
 
@@ -128,8 +128,8 @@
   position:relative; padding:10px 18px; border-radius:8px;
   border:1px solid transparent; font-weight:600; cursor:pointer;
 }
-.btn-primary { background:#007bff; color:#fff; border-color:#007bff; }
-.btn-primary:hover { background:#0066d6; border-color:#0066d6; }
+.btn-primary { background:#2b3f33; color:#fff; border-color:#2b3f33; }
+.btn-primary:hover { background:#1e2b25; border-color:#1e2b25; }
 .btn-secondary { background:#f3f3f3; color:#333; border-color:#e5e5e5; }
 .btn-secondary:hover { background:#e9e9e9; }
 .btn:disabled { opacity:.6; cursor:not-allowed; }
