@@ -61,7 +61,7 @@ public class AiProxyService {
     long end = System.currentTimeMillis(); // 응답 시각 측정
     long elapsedMs = end - start;
 
-    log.info("🧠 AI 요청 완료 ({}ms)\n📤 content: {}\n📥 응답: {}", elapsedMs, prompt, response);
+    log.info("🧠 AI 요청 완료:{} ({}ms)\n📤 content: {}\n📥 응답: {}", selectedCode, elapsedMs, prompt, response);
     return response;
   }
 
@@ -69,7 +69,7 @@ public class AiProxyService {
     if (code != null && CLIENT_IDS.containsKey(code)) {
       return code;
     }
-    int rot = (int) ((heritageId % 3) + 1);
+    int rot = (int) ((System.currentTimeMillis() % 3) + 1);
     return CLIENT_IDS.containsKey(rot) ? rot : 1;
   }
 
