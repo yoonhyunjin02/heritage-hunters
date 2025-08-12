@@ -13,7 +13,7 @@
   <div class="toolbar-left">
     <!-- 햄버거 버튼 -->
     <button id="navToggle" class="hamburger-btn" aria-label="메뉴 열기" aria-expanded="false">
-      <img src="/images/icons/hamburger.svg" alt="메뉴" width="24" height="24" />
+      <img src="/images/icons/hamburger.svg" alt="메뉴"/>
     </button>
 
     <!-- 세그먼트 토글 -->
@@ -33,19 +33,20 @@
   </div>
 </div>
 
-<!-- 왼쪽 사이드 네비게이션 -->
-<nav id="sideNav" class="side-nav" hidden>
-  <ul>
-    <li><a href="#">홈</a></li>
-    <li><a href="#">문화재</a></li>
-    <li><a href="#">박물관</a></li>
-    <li><a href="#">설정</a></li>
-  </ul>
-</nav>
-
 <!--main-->
 <main class="map-root"
       th:attr="data-endpoint=@{/map},data-maps-key=${mapsApiKey}">
+
+  <!-- 왼쪽 사이드 네비게이션 -->
+  <nav id="sideNav" class="side-nav">
+    <ul>
+      <li><a href="#">홈</a></li>
+      <li><a href="#">문화재</a></li>
+      <li><a href="#">박물관</a></li>
+      <li><a href="#">설정</a></li>
+    </ul>
+  </nav>
+
   <section class="map-area">
     <div id="map"></div>
   </section>
