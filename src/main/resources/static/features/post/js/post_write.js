@@ -1,5 +1,5 @@
 /* ===================================================================
- *  /features/post/js/post_write_modal.js
+ *  /features/post/js/post_write.js
  *  게시글 작성 모달  —  이미지 · GPS · Google Places · 200 m 검증
  * =================================================================== */
 const PostModal = {

@@ -14,6 +14,7 @@ import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostListResponseDto;
 import org.hh.heritagehunters.domain.post.entity.Comment;
 import org.hh.heritagehunters.domain.post.entity.Post;
+import org.hh.heritagehunters.domain.post.repository.PostRepository;
 import org.hh.heritagehunters.domain.post.service.CommentService;
 import org.hh.heritagehunters.domain.post.service.ImageService;
 import org.hh.heritagehunters.domain.post.service.LikeService;
@@ -33,6 +34,7 @@ public class PostFacade {
   private final ImageService imageService;
   private final LikeService likeService;
   private final CommentService commentService;
+  private final PostRepository postRepository;
 
   @Transactional(readOnly = true)
   public Page<PostListResponseDto> list(User currentUser,
@@ -55,11 +57,16 @@ public class PostFacade {
         post.getHeritage() != null ? 1 : 0);
   }
 
-  @Transactional(readOnly = true)
+  @Transactional
   public PostDetailResponseDto detail(Long postId, User currentUser) {
     Post post = postReader.getDetailWithImages(postId);
+
+    // 조회수 증가
+    post.incrementViewCount();
+
     boolean isLiked = currentUser != null && likeService.isLiked(postId, currentUser.getId());
     boolean isOwner = currentUser != null && post.getUser().getId().equals(currentUser.getId());
+
     return PostDetailResponseDto.from(post, isLiked, isOwner);
   }
 
