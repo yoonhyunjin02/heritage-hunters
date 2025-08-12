@@ -10,23 +10,40 @@
 
 <!--main-->
 <main class="auth-container">
-  <section class="image-section" id="auth-bg-image" aria-hidden="true"></section>
+  <!-- 좌: 이미지 -->
+  <section class="image-section" id="auth-bg-image"
+           style="--auth-image:url('/images/main/main3.jpg');" aria-hidden="true"></section>
 
+  <!-- 우: 폼 카드 -->
   <section class="form-section">
     <h1>로그인</h1>
 
-    <form th:action="@{/login}" method="post">
-      <div>
-        <label for="email">이메일</label>
-        <input type="email" id="email" name="email" required>
-      </div>
+    <!-- 소셜 로그인: 3개 가로 정렬 -->
+    <div class="social-row">
+      <a href="/oauth2/authorization/google" class="btn-social btn-google">
+        <img src="/images/logo/google.svg" alt="">
+        <span>Google</span>
+      </a>
+      <a href="/oauth2/authorization/github" class="btn-social btn-github">
+        <img src="/images/logo/github.svg" alt="">
+        <span>GitHub</span>
+      </a>
+      <a href="/oauth2/authorization/naver" class="btn-social btn-naver">
+        <img src="/images/logo/naver.svg" alt="">
+        <span>Naver</span>
+      </a>
+    </div>
 
-      <div>
-        <label for="password">비밀번호</label>
-        <input type="password" id="password" name="password" required>
-      </div>
+    <!-- 구분선 OR -->
+    <div class="divider"><span>OR</span></div>
 
-      <!-- 예외 메시지 -->
+    <form th:action="@{/login}" method="post" class="auth-form">
+      <label for="email">아이디</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="password">비밀번호</label>
+      <input type="password" id="password" name="password" required>
+
       <div th:if="${loginError}" class="error-message">
         <span th:text="${loginError}"></span>
       </div>
@@ -34,37 +51,7 @@
       <button type="submit" class="btn-submit">로그인</button>
     </form>
 
-    <!-- 소셜 로그인 -->
-    <div class="social-login">
-      <p>SNS 계정으로 로그인</p>
-
-      <!-- Google 로그인 버튼 -->
-      <a href="/oauth2/authorization/google" class="btn-social btn-google">
-        <img src="/images/logo/google.svg" alt="Google 로고" style="height: 20px; vertical-align: middle;">
-        <span>Google로 로그인</span>
-      </a>
-
-      <!-- GitHub 로그인 버튼 -->
-      <a href="/oauth2/authorization/github" class="btn-social btn-github" style="margin-top: 10px;">
-        <img src="/images/logo/github.svg" alt="GitHub 로고" style="height: 20px; vertical-align: middle;">
-        <span>GitHub로 로그인</span>
-      </a>
-
-      <!-- Naver 로그인 버튼 -->
-      <a href="/oauth2/authorization/naver" class="btn-social btn-naver" style="margin-top: 10px;">
-        <img src="/images/logo/naver.svg" alt="Naver 로고" style="height: 20px; vertical-align: middle;">
-        <span>Naver로 로그인</span>
-      </a>
-
-      <!-- 소셜 로그인 에러 메시지 -->
-      <div th:if="${param.error}" class="error-message">
-        <span th:text="${param.error}"></span>
-      </div>
-    </div>
-
-    <p class="signin-text">
-      회원이 아니신가요? <a th:href="@{/register}">회원가입</a>
-    </p>
+    <p class="signin-text">회원이 아니신가요? <a th:href="@{/register}">회원가입</a></p>
   </section>
 </main>
 

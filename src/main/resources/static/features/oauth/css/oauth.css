@@ -1,86 +1,185 @@
+/* 전체 레이아웃 */
 .auth-container {
-  display: flex;
-  min-height: 100vh;
+  max-width: var(--section-max);       /* ★ 공통 폭: 메인 사진과 동일 */
+  margin: 2.5rem auto;                 /* 40px */
+  padding: 1.5rem;                     /* 24px */
+  border-radius: 1.75rem;              /* 28px */
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 0.75rem 1.875rem rgba(0,0,0,0.08);
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 1.75rem;
   font-family: sans-serif;
 }
 
+/* 좌측 이미지 */
 .image-section {
-  flex: 1;
+  border-radius: 1.25rem; /* 20px */
   background-size: cover;
   background-position: center;
+  background-image: var(--auth-image);
+  min-height: 43.75rem; /* 700px */
 }
 
+/* 우측 폼 영역 */
 .form-section {
-  flex: 1;
-  padding: 3rem;
+  background: rgba(255,255,255,0.9);
+  border-radius: 1.25rem; /* 20px */
+  padding: 1.75rem;       /* 28px */
   display: flex;
   flex-direction: column;
   justify-content: center;
-  background-color: #fff;
 }
 
-form > div {
-  margin-bottom: 1rem;
+.form-section h1 {
+  font-size: 2.25rem;       /* 36px */
+  font-weight: 800;
+  margin: 0.375rem 0 1.125rem; /* 6px 0 18px */
 }
 
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
-input {
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
-}
-
-.error-message {
-  color: red;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.btn-submit {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  margin-top: 1rem;
-}
-
-.signin-text {
-  margin-top: 1rem;
-  text-align: center;
-}
-.social-login {
-  margin-top: 2rem;
-  text-align: center;
+/* 소셜 버튼 행 (3개 가로) */
+.social-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;         /* 12px */
+  margin-bottom: 1.125rem; /* 18px */
 }
 
 .btn-social {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0.65rem 1rem;
-  width: 100%;
-  font-size: 1rem;
-  font-weight: bold;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: white;
-  color: #444;
+  gap: 0.5rem;              /* 8px */
+  height: 2.625rem;         /* 42px */
+  border-radius: 0.625rem;  /* 10px */
+  background: #fff;
+  border: 0.0625rem solid #e5e7eb; /* 1px */
+  font-weight: 600;
   text-decoration: none;
+  color: #444;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.btn-social:hover {
-  background-color: #f0f0f0;
-}
+.btn-social:hover { background-color: #f0f0f0; }
 
 .btn-social img {
-  height: 20px;
+  width: 1.125rem;  /* 18px */
+  height: 1.125rem; /* 18px */
+}
+
+/* OR 구분선 */
+.divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;               /* 12px */
+  color: #8f8f8f;
+  margin: 0.625rem 0 0.875rem; /* 10px 0 14px */
+}
+.divider::before,
+.divider::after {
+  content: "";
+  height: 0.0625rem; /* 1px */
+  background: #d1d5db;
+}
+
+/* 입력폼 */
+.auth-form label {
+  display: block;
+  font-size: 0.875rem;      /* 14px */
+  margin: 1rem 0 0.5rem;    /* 16px 0 8px */
+  color: #333;
+}
+
+.auth-form .form-group {
+  margin-bottom: 0.875rem;  /* 14px */
+}
+
+input {
+  width: 100%;
+  height: 2.75rem;          /* 44px */
+  padding: 0.625rem 0.875rem; /* 10px 14px */
+  font-size: 0.875rem;      /* 14px */
+  border: 0.0625rem solid #e5e7eb; /* 1px */
+  border-radius: 0.75rem;   /* 12px */
+  background: #fff;
+  outline: none;
+  transition: box-shadow .15s, border-color .15s;
+}
+
+input:focus {
+  border-color: #a7b1a7;
+  box-shadow: 0 0 0 0.1875rem rgba(33, 81, 57, 0.12); /* 3px */
+}
+
+/* 에러 메시지 */
+.error-message {
+  margin-top: 0.5rem;   /* 8px */
+  color: #d14343;
+  font-size: 0.8125rem; /* 13px */
+}
+
+/* 버튼 */
+.btn-submit {
+  margin-top: 1rem;     /* 16px */
+  width: 100%;
+  height: 2.875rem;     /* 46px */
+  border-radius: 0.75rem; /* 12px */
+  background: #2b3f33;
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: transform .06s ease, filter .15s;
+}
+.btn-submit:hover { filter: brightness(1.04); }
+.btn-submit:active { transform: translateY(0.0625rem); } /* 1px */
+
+/* 하단 링크 */
+.signin-text {
+  text-align: right;
+  margin-top: 1rem;     /* 16px */
+  color: #7a7a7a;
+  font-size: 0.875rem;  /* 14px */
+}
+.signin-text a {
+  color: #d16a4b;
+  font-weight: 700;
+}
+
+/* ===== 반응형 ===== */
+
+/* ===== Tablet (≤ bp-tablet) ===== */
+@media (max-width: var(--bp-tablet)) {
+  /* 컨테이너: 한 열 레이아웃으로 변경 */
+  .auth-container {
+    grid-template-columns: 1fr;
+    padding: 1.125rem; /* 18px */
+  }
+
+  /* 이미지 섹션: 높이 축소 */
+  .image-section {
+    min-height: 16.25rem; /* 260px */
+  }
+}
+
+/* ===== Mobile (≤ bp-mobile) ===== */
+@media (max-width: var(--bp-mobile)) {
+  /* 컨테이너: 블록 레이아웃 + 패딩 축소 */
+  .auth-container {
+    display: block;
+    padding: 1rem; /* 16px */
+  }
+
+  /* 이미지 섹션: 모바일에서 제거 */
+  .image-section {
+    display: none;
+  }
+
+  /* 폼 섹션: 패딩/라운드 축소 */
+  .form-section {
+    padding: 1.25rem;    /* 20px */
+    border-radius: 1rem; /* 16px */
+  }
 }
