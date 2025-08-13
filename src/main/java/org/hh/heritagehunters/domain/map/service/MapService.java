@@ -1,5 +1,7 @@
 package org.hh.heritagehunters.domain.map.service;
 
+import static org.hh.heritagehunters.common.util.HtmlSanitizer.sanitize;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,11 +45,11 @@ public class MapService {
     return new MapMarkerDto(
         m.getId(),
         "museum",
-        m.getName(),
+        sanitize(m.getName()),
         m.getLatitude().doubleValue(),
         m.getLongitude().doubleValue(),
-        m.getAddress(),
-        m.getCategory()
+        sanitize(m.getAddress()),
+        sanitize(m.getCategory())
     );
   }
 
@@ -55,12 +57,11 @@ public class MapService {
     return new MapMarkerDto(
         h.getId(),
         "heritage",
-        h.getName(),
+        sanitize(h.getName()),
         h.getLatitude().doubleValue(),
         h.getLongitude().doubleValue(),
-        h.getAddress(),
-        // heritage는 category 자리에 designation(또는 era 등) 중 하나를 노출
-        h.getDesignation()
+        sanitize(h.getAddress()),
+        sanitize(h.getDesignation()) // 필요시 era 등 다른 노출값도 sanitize
     );
   }
 

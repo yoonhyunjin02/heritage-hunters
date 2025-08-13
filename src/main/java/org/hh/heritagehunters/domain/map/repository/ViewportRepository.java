@@ -1,5 +1,7 @@
 package org.hh.heritagehunters.domain.map.repository;
 
+import static org.hh.heritagehunters.common.util.HtmlSanitizer.sanitize;
+
 import org.hh.heritagehunters.domain.map.dto.MapMarkerDto;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -20,12 +22,12 @@ public class ViewportRepository {
   // MapMarkerDto(id, type, name, lat, lng, address, category)
   private static final RowMapper<MapMarkerDto> MAPPER = (rs, i) -> new MapMarkerDto(
       rs.getLong("id"),
-      rs.getString("type"), // "museum" 또는 "heritage"
-      rs.getString("name"),
+      rs.getString("type"),
+      sanitize(rs.getString("name")),
       rs.getDouble("lat"),
       rs.getDouble("lng"),
-      rs.getString("address"),
-      rs.getString("category")
+      sanitize(rs.getString("address")),
+      sanitize(rs.getString("category"))
   );
 
   /**

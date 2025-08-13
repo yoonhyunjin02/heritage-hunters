@@ -238,3 +238,66 @@
   .map-root { padding: .5rem .75rem 1rem; gap: .5rem; }
   .side-panel { padding: .75rem; }
 }
+
+/* Google Maps InfoWindow 커스텀 */
+.gm-style .gm-style-iw {
+  font-family: 'Noto Sans KR', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  max-width: 240px;
+}
+.gm-style .gm-style-iw h3, .gm-style .gm-style-iw .iw-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+.gm-style .gm-style-iw p, .gm-style .gm-style-iw .iw-sub {
+  margin: 0;
+  color: #6b7280;
+  font-size: 12px;
+}
+.gm-style-iw button.gm-ui-hover-effect {
+  top: 6px !important;
+  right: 6px !important;
+}
+
+/* =========================================================
+   Keyboard focus ring (접근성) — 디자인 변화 없이 추가
+   - 마우스 사용 시엔 보이지 않도록 :focus-visible만 사용
+   - outline은 레이아웃에 영향 없음
+   ========================================================= */
+.card:focus { outline: none; } /* 기존 스타일 보장 */
+.card:focus-visible {
+  outline: 2px solid var(--purple-400);
+  outline-offset: 2px;
+}
+
+.seg-btn:focus { outline: none; }
+.seg-btn:focus-visible {
+  outline: 2px solid var(--purple-400);
+  outline-offset: 2px;
+  border-radius: 999px; /* 기존 pill 형태 유지 */
+}
+
+.hamburger-btn:focus { outline: none; }
+.hamburger-btn:focus-visible {
+  outline: 2px solid var(--purple-400);
+  outline-offset: 2px;
+  border-radius: 8px; /* 버튼 모양 유지 */
+}
+
+.side-nav a:focus { outline: none; }
+.side-nav a:focus-visible {
+  outline: 2px solid var(--purple-400);
+  outline-offset: 2px;
+  border-radius: 6px; /* 링크 주변만 강조 */
+}
+
+/* (옵션) 범례 아이템 키보드 포커스 */
+.legend-item:focus { outline: none; }
+.legend-item:focus-visible {
+  outline: 2px solid var(--purple-400);
+  outline-offset: 2px;
+  border-radius: 8px;
+}

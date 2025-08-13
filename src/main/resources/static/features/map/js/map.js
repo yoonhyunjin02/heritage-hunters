@@ -18,6 +18,51 @@ const GMap = {
 };
 
 // ===== Utils =====
+
+// 안전한 텍스트 전용 DOM 빌더들
+function buildIwContent(item){
+  const wrap = document.createElement('div'); wrap.className = 'iw';
+
+  const title = document.createElement('div');
+  title.className = 'iw-title';
+  title.textContent = item.name ?? '';
+  wrap.appendChild(title);
+
+  const addr = document.createElement('div');
+  addr.className = 'iw-addr';
+  addr.textContent = (item.address ?? item.region ?? '') || '';
+  wrap.appendChild(addr);
+
+  if (item.category) {
+    const meta = document.createElement('div');
+    meta.className = 'iw-meta';
+    meta.textContent = item.category;
+    wrap.appendChild(meta);
+  }
+  return wrap;
+}
+
+function buildListCard(item){
+  const el = document.createElement('button');
+  el.type = 'button';
+  el.className = 'card';
+
+  const name = document.createElement('div');
+  name.className = 'name';
+  name.textContent = item.name ?? '';
+
+  const addr = document.createElement('div');
+  addr.className = 'addr';
+  addr.textContent = `주소: ${(item.address ?? item.region ?? '')}`;
+
+  const desc = document.createElement('div');
+  desc.className = 'desc';
+  desc.textContent = item.category ?? '';
+
+  el.append(name, addr, desc);
+  return el;
+}
+
 function closeAllInfo(){ gInfoWindows.forEach(iw => iw.close()); }
 
 function clearMarkers(){
@@ -43,7 +88,7 @@ function toLatLngLiteral(item){
 function getMarkerPosition(mk){ return mk?.position ?? mk?.getPosition?.(); }
 
 function getTypeColor(type){
-  // 박물관/미술관: 파랑, 문화재: 빨강 (필요시 여기서 색 바꾸면 전체 반영)
+  // 박물관/미술관: 파랑, 문화재: 빨강
   return (type === 'museum') ? '#2563eb' : '#dc2626';
 }
 
@@ -86,8 +131,11 @@ function renderMarkers(list){
   const MarkerCtor = GMap.Marker || google.maps.Marker;
   const InfoWindowCtor = GMap.InfoWindow || google.maps.InfoWindow;
 
-  // 클러스터러 사용 가능 여부
-  const useClusterer = Boolean(window.markerClusterer?.MarkerClusterer);
+  // (1) 튜닝: 포인트 50개 이하이면 클러스터러 비활성화
+  const useClusterer = Boolean(window.markerClusterer?.MarkerClusterer) && list.length > 50;
+
+  // 터치 디바이스 여부(모바일 보조용)
+  const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
   list.forEach(item => {
     const pos = toLatLngLiteral(item);
@@ -96,16 +144,8 @@ function renderMarkers(list){
       return;
     }
 
-    const info = new InfoWindowCtor({
-      content: `
-        <div style="min-width:220px">
-          <div style="font-weight:700;margin-bottom:4px">${item.name ?? ''}</div>
-          <div style="font-size:12px;color:#6b7280;margin-bottom:4px">
-            ${item.address ?? item.region ?? ''}
-          </div>
-          <div style="font-size:12px">${item.category ?? ''}</div>
-        </div>`
-    });
+    // 클래스 기반 InfoWindow 콘텐츠 (DOM API 사용)
+    const info = new InfoWindowCtor({ content: buildIwContent(item) });
 
     const color = getTypeColor(item.type);
     let mk;
@@ -118,7 +158,7 @@ function renderMarkers(list){
           background: color,
           borderColor: '#ffffff',
           glyphColor: '#ffffff',
-          scale: 1.0,
+          scale: 0.7, // 핀 크기
         });
         content = pin.element;
       }
@@ -126,28 +166,41 @@ function renderMarkers(list){
       mk = new AdvancedCtor({
         position: pos,
         ...(useClusterer ? {} : { map }), // 클러스터 사용 시 map은 생략
-        title: item.name ?? '',
+        // (4) 튜닝: 마커 타이틀 null 가드
+        title: item.name || '',
         ...(content ? { content } : {}),
       });
 
-      mk.addListener('gmp-click',       () => { closeAllInfo(); info.open({ anchor: mk, map }); });
-      mk.addListener?.('gmp-mouseover', () => { closeAllInfo(); info.open({ anchor: mk, map }); });
-      mk.addListener?.('gmp-mouseout',  () => { info.close(); });
+      mk.addListener?.('gmp-mouseover', () => {
+        closeAllInfo();
+        info.open({ anchor: mk, map });
+      });
+      mk.addListener?.('gmp-mouseout', () => {
+        info.close();
+      });
+
+      // 터치(모바일) 보조: 탭으로 열기
+      if (IS_TOUCH) mk.addListener('click', () => { closeAllInfo(); info.open({ anchor: mk, map }); });
+
     } else {
       // Basic Marker + SVG 아이콘으로 색상 지정
       mk = new MarkerCtor({
         position: pos,
         ...(useClusterer ? {} : { map }),
-        title: item.name ?? '',
+        title: item.name || '',
         icon: makeSvgIcon(color),
         optimized: true,
       });
 
-      mk.addListener('click',      () => { closeAllInfo(); info.open({ anchor: mk, map }); });
-      mk.addListener?.('mouseover',() => { closeAllInfo(); info.open({ anchor: mk, map }); });
-      mk.addListener?.('mouseout', () => { info.close(); });
+      mk.addListener('mouseover', () => {
+        closeAllInfo();
+        info.open({ anchor: mk, map });
+      });
+      mk.addListener('mouseout', () => {
+        info.close();
+      });
+      if (IS_TOUCH) mk.addListener('click', () => { closeAllInfo(); info.open({ anchor: mk, map }); });
     }
-
     mk._info = info;
     mk._item = item;
 
@@ -155,16 +208,71 @@ function renderMarkers(list){
     gInfoWindows.push(info);
   });
 
-  // 클러스터링 적용 (+ 클러스터 클릭 시 1회 재조회 스킵 콜백)
-  if (window.markerClusterer?.MarkerClusterer){
+  // (1) 튜닝 적용: 조건부로만 클러스터링
+  if (useClusterer) {
+    const renderer = {
+      render({ count, position }) {
+        const isRed  = count > 10;              // 10개 초과면 빨강
+        const size   = count <= 10 ? 22 : 26;   // 22~26px
+        const bg     = isRed ? '#dc2626' : '#2563eb';
+        const border = isRed ? '#b91c1c' : '#1d4ed8';
+
+        // AdvancedMarkerElement 우선
+        if (window.allowAdvanced && google.maps.marker?.AdvancedMarkerElement) {
+          const el = document.createElement('div');
+          el.textContent = String(count);
+          el.style.cssText = `
+            display:grid;place-items:center;
+            width:${size}px;height:${size}px;border-radius:9999px;
+            background:radial-gradient(closest-side, ${hex2rgba(bg,.15)}, ${hex2rgba(bg,.55)});
+            color:#fff;border:2px solid ${border};
+            font:700 11px/1 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+            box-shadow:0 1px 2px rgba(0,0,0,.15);
+          `;
+          return new google.maps.marker.AdvancedMarkerElement({
+            position, content: el, zIndex: Number(count)
+          });
+        }
+
+        // 기본 Marker 아이콘(SVG 원)로 폴백
+        const scale = size / 2; // SymbolPath.CIRCLE은 반지름처럼 동작
+        return new google.maps.Marker({
+          position,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale,
+            fillColor: bg,
+            fillOpacity: 0.9,
+            strokeColor: border,
+            strokeWeight: 2,
+          },
+          label: {
+            text: String(count),
+            color: '#fff',
+            fontSize: '11px',
+            fontWeight: '700',
+          },
+          zIndex: Number(count)
+        });
+      }
+    };
+
     clusterer = new markerClusterer.MarkerClusterer({
       map,
       markers: gMarkers,
-      // 라이브러리 버전에 따라 onClusterClick 미지원일 수 있으니 보호적 접근
-      ...(typeof markerClusterer.MarkerClusterer === 'function' ? {
-        onClusterClick: () => { skipNextFetchOnce = true; }
-      } : {})
+      renderer,
+      // gridSize: 50,  // 클러스터링 민감도 조절 가능
+      onClusterClick: () => { skipNextFetchOnce = true; }
     });
+  }
+
+  // 작은 유틸: HEX → rgba
+  function hex2rgba(hex, alpha=1) {
+    const v = hex.replace('#','');
+    const n = v.length === 3
+      ? v.split('').map(c => parseInt(c+c,16))
+      : [v.slice(0,2),v.slice(2,4),v.slice(4,6)].map(h=>parseInt(h,16));
+    return `rgba(${n[0]},${n[1]},${n[2]},${alpha})`;
   }
 }
 
@@ -175,14 +283,7 @@ function renderList(list){
   list.forEach((item, idx) => {
     const pos = toLatLngLiteral(item); if (!pos) return;
 
-    const el = document.createElement('button');
-    el.type = 'button';
-    el.className = 'card';
-    el.innerHTML = `
-      <div class="name">${item.name ?? ''}</div>
-      <div class="addr">주소: ${item.address ?? item.region ?? ''}</div>
-      <div class="desc">${item.category ?? ''}</div>
-    `;
+    const el = buildListCard(item);
 
     el.addEventListener('click', () => {
       const mk = gMarkers[idx];
@@ -202,13 +303,18 @@ function renderList(list){
 }
 
 // ------- Search -------
+// (3) 튜닝: toLowerCase 호출 최소화
 function applySearch(raw){
   const q = raw.trim().toLowerCase();
   if (!q){ renderMarkers(allData); renderList(allData); return; }
+
   const filtered = allData.filter(d => {
-    const hay = `${d.name ?? ''} ${d.region ?? ''} ${d.address ?? ''} ${d.category ?? ''}`.toLowerCase();
-    return hay.includes(q);
+    const name = (d.name || '').toLowerCase();
+    const addr = ((d.address || d.region || '')).toLowerCase();
+    const cat  = (d.category || '').toLowerCase();
+    return (name.includes(q) || addr.includes(q) || cat.includes(q));
   });
+
   renderMarkers(filtered);
   renderList(filtered);
 }
@@ -389,3 +495,8 @@ function wireViewportLoading(){
     t = setTimeout(fetchByViewport, 250);
   });
 }
+
+/*
+(2) 접근성 포커스 링은 CSS에서 추가하세요 (map.css 예시):
+.card:focus { outline: 2px solid var(--purple-400); outline-offset: 2px; }
+*/
