@@ -2,108 +2,98 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <!-- POST 요청을 위한 CSRF 헤더 -->
     <meta name="_csrf" th:content="${_csrf.token}" />
     <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 
-    <title th:text="${heritage.name} + ' | Heritage Hunters'">유산 이름 | Heritage Hunters</title>
+    <!-- <title th:text="${heritage.name} + ' | Heritage Hunters'">유산 이름 | Heritage Hunters</title> -->
 
+    <th:block th:insert="~{fragments/head :: common-head(${heritage.name})}"></th:block>
     <!-- CSS -->
-    <link rel="stylesheet" th:href="@{/common/css/style.css}" />
     <link rel="stylesheet" th:href="@{/features/search/css/heritage_detail.css}" />
   </head>
 
   <body>
-    <div id="root">
-      <!-- 헤더 -->
-      <header></header>
+    <!--header-->
+    <div th:replace="~{fragments/header :: common-header}"></div>
 
-      <!-- 메인 컨텐트 -->
-      <main class="container">
-        <!-- Heritage Title -->
-        <div class="heritage__title">
-          <p class="heritage__subtitle" th:text="${heritage.designation}">유산 종목</p>
-          <h1 th:text="|${heritage.name} (${heritage.nameHanja})|">유산 이름 (유산 한자 이름)</h1>
+    <!--main-->
+    <main class="main-container">
+      <!-- Heritage Title -->
+      <div class="heritage__title">
+        <p class="heritage__subtitle" th:text="${heritage.designation}">유산 종목</p>
+        <h1 th:text="|${heritage.name} (${heritage.nameHanja})|">유산 이름 (유산 한자 이름)</h1>
+      </div>
+
+      <!-- 요약 섹션 -->
+      <section class="heritage__summary">
+        <div class="heritage__summary__info">
+          <figure>
+            <img th:src="@{${heritage.thumbnailUrl}}" alt="대표 이미지" loading="lazy" />
+            <figcaption th:text="${heritage.name}">유산 이름</figcaption>
+          </figure>
+
+          <dl>
+            <dt>소재지</dt>
+            <dd>
+              <address id="region" th:text="${heritage.region}">유산 소재지</address>
+            </dd>
+
+            <dt>상세주소</dt>
+            <dd>
+              <address id="address_detail" th:text="${heritage.address}">유산 상세 주소</address>
+            </dd>
+
+            <dt>시대 (상세)</dt>
+            <dd>
+              <time th:text="|${heritage.era} (${heritage.eraDetail})|">유산 시대</time>
+            </dd>
+          </dl>
         </div>
 
-        <!-- 요약 섹션 -->
-        <section class="heritage__summary">
-          <div class="heritage__summary__info">
-            <figure>
-              <img th:src="@{${heritage.thumbnailUrl}}" alt="대표 이미지" loading="lazy" />
-              <figcaption th:text="${heritage.name}">유산 이름</figcaption>
-            </figure>
-
-            <dl>
-              <dt>소재지</dt>
-              <dd>
-                <address id="region" th:text="${heritage.region}">유산 소재지</address>
-              </dd>
-
-              <dt>상세주소</dt>
-              <dd>
-                <address id="address_detail" th:text="${heritage.address}">유산 상세 주소</address>
-              </dd>
-
-              <dt>시대 (상세)</dt>
-              <dd>
-                <time th:text="|${heritage.era} (${heritage.eraDetail})|">유산 시대</time>
-              </dd>
-            </dl>
+        <aside class="heritage__summary__ai">
+          <div class="heritage__summary__ai__recommends ai-card ai-recommends">
+            <strong>AI추천: </strong>
+            <div class="ai-text" id="ai-recommends">AI의 유산 주변 추천 방문지</div>
+            <button type="button" class="ai-refresh ai-color-recommends" data-type="recommends" aria-label="AI추천 새로고침" title="새로고침">↻</button>
           </div>
+          <div class="heritage__summary__ai__weather ai-card ai-weather">
+            <strong>AI날씨: </strong>
+            <div class="ai-text" id="ai-weather">AI의 유산 주변 날씨</div>
+            <button type="button" class="ai-refresh ai-color-weather" data-type="weather" aria-label="AI날씨 새로고침" title="새로고침">↻</button>
+          </div>
+          <div class="heritage__summary__ai__news ai-card ai-news">
+            <strong>AI뉴스: </strong>
+            <div class="ai-text" id="ai-news">AI의 유산 주변 최근 문화유산 뉴스</div>
+            <button type="button" class="ai-refresh ai-color-news" data-type="news" aria-label="AI뉴스 새로고침" title="새로고침">↻</button>
+          </div>
+          <div class="heritage__summary__ai__content-summary ai-card ai-summary">
+            <strong>AI요약: </strong>
+            <div class="ai-text" id="ai-summary">AI의 유산 내용 요약</div>
+            <button type="button" class="ai-refresh ai-color-summary" data-type="summary" aria-label="AI요약 새로고침" title="새로고침">↻</button>
+          </div>
+        </aside>
+      </section>
 
-          <aside class="heritage__summary__ai">
-            <div class="heritage__summary__ai__recommends ai-card ai-recommends">
-              <strong>AI추천: </strong>
-              <div class="ai-text" id="ai-recommends">AI의 유산 주변 추천 방문지</div>
-              <button type="button" class="ai-refresh ai-color-recommends" data-type="recommends" data-code="1" aria-label="AI추천 새로고침" title="새로고침">
-                ↻
-              </button>
-            </div>
-            <div class="heritage__summary__ai__weather ai-card ai-weather">
-              <strong>AI날씨: </strong>
-              <div class="ai-text" id="ai-weather">AI의 유산 주변 날씨</div>
-              <button type="button" class="ai-refresh ai-color-weather" data-type="weather" data-code="2" aria-label="AI날씨 새로고침" title="새로고침">
-                ↻
-              </button>
-            </div>
-            <div class="heritage__summary__ai__news ai-card ai-news">
-              <strong>AI뉴스: </strong>
-              <div class="ai-text" id="ai-news">AI의 유산 주변 최근 문화유산 뉴스</div>
-              <button type="button" class="ai-refresh ai-color-news" data-type="news" data-code="3" aria-label="AI뉴스 새로고침" title="새로고침">↻</button>
-            </div>
-            <div class="heritage__summary__ai__content-summary ai-card ai-summary">
-              <strong>AI요약: </strong>
-              <div class="ai-text" id="ai-summary">AI의 유산 내용 요약</div>
-              <button type="button" class="ai-refresh ai-color-summary" data-type="summary" aria-label="AI요약 새로고침" title="새로고침">↻</button>
-            </div>
-          </aside>
-        </section>
+      <!-- 본문 내용 -->
+      <section id="contentSection">
+        <div class="heritage__content" th:text="${heritage.description}"></div>
+      </section>
 
-        <!-- 본문 내용 -->
-        <section id="contentSection">
-          <div class="heritage__content" th:text="${heritage.description}"></div>
-        </section>
-
-        <!-- 데이터 객체 전달용 inline script -->
-        <script th:inline="javascript">
-          /*<![CDATA[*/
-          window.HERITAGE_DETAIL = {
-            id: [[${heritage.id}]],
-            name: '[[${heritage.name}]]',
-            address: '[[${heritage.address}]]',
-            content: '[[${heritage.description}]]'
-          };
-          /*]]>*/
-        </script>
-      </main>
-
-      <!-- 푸터 -->
-      <footer></footer>
-    </div>
+      <!-- 데이터 객체 전달용 inline script -->
+      <script th:inline="javascript">
+        /*<![CDATA[*/
+        window.HERITAGE_DETAIL = {
+          id: [[${heritage.id}]],
+          name: '[[${heritage.name}]]',
+          address: '[[${heritage.address}]]',
+          content: '[[${heritage.description}]]'
+        };
+        /*]]>*/
+      </script>
+    </main>
+    <!--footer-->
+    <div th:replace="~{fragments/footer :: common-footer}"></div>
 
     <!-- markdown parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
