@@ -64,27 +64,25 @@ function initModal() {
 
 // 모달 닫기
 function closeModal() {
-  // 게시글 리스트에서 열린 모달인 경우
-  if (window.closePostDetail) {
-    window.closePostDetail();
+  // 게시글 리스트에서 열린 모달인 경우 (AJAX 모달)
+  if (typeof window.closePostDetail === 'function') {
+    return window.closePostDetail();
+  }
+
+  // 상세 페이지로 직접 진입(SSR)한 경우
+  const modal = document.getElementById('postDetailModal');
+  if (!modal) {
+    // 혹시 모달 요소가 없으면 목록으로 복귀
+    window.location.href = '/posts';
     return;
   }
-  
-  // 직접 게시글 상세 페이지에서 온 경우
-  const modal = document.getElementById('postDetailModal');
-  const modalContent = modal?.querySelector('.modal-content');
-  
-  if (modalContent) {
-    modalContent.style.transform = 'scale(0.9)';
-    modalContent.style.opacity = '0';
-    modal.style.opacity = '0';
 
-    setTimeout(() => {
-      window.location.href = '/posts';
-    }, 200);
-  } else {
+  // 인라인 transform/opacity 조작 대신 CSS 애니메이션으로 처리
+  modal.classList.add('closing');
+  modal.addEventListener('animationend', () => {
+    // 애니메이션 끝난 뒤에 목록으로 이동
     window.location.href = '/posts';
-  }
+  }, {once: true});
 }
 
 // 댓글 글자 수 카운터 초기화
@@ -367,7 +365,8 @@ async function deletePost() {
 
   // CSRF 값 읽기
   const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+  const csrfHeader = document.querySelector(
+      'meta[name="_csrf_header"]').content;
 
   try {
     const response = await fetch(`/posts/${postId}`, {
@@ -420,8 +419,8 @@ function handleImageError(img) {
 
 // 이미지에 에러 핸들러 추가
 document.addEventListener('DOMContentLoaded', function () {
-  const images = document.querySelectorAll('img');
-  images.forEach(img => {
+  const allImages = document.querySelectorAll('img'); // 이름 충돌 방지
+  allImages.forEach(img => {
     img.addEventListener('error', function () {
       handleImageError(this);
     });
@@ -432,11 +431,11 @@ document.addEventListener('DOMContentLoaded', function () {
 function initializeRelativeTime() {
   // time_util.js 모듈 import
   import('/common/js/utils/time_util.js').then(module => {
-    const { formatRelativeTime } = module;
-    
+    const {formatRelativeTime} = module;
+
     // 모든 relative-time 클래스를 가진 요소들 찾기
     const timeElements = document.querySelectorAll('.relative-time[data-time]');
-    
+
     timeElements.forEach(element => {
       const datetime = element.getAttribute('data-time');
       if (datetime) {
@@ -448,7 +447,7 @@ function initializeRelativeTime() {
         }
       }
     });
-    
+
     // 1분마다 상대시간 업데이트
     setInterval(() => {
       updateRelativeTimes(formatRelativeTime);
@@ -461,7 +460,7 @@ function initializeRelativeTime() {
 // 상대시간 업데이트
 function updateRelativeTimes(formatRelativeTime) {
   const timeElements = document.querySelectorAll('.relative-time[data-time]');
-  
+
   timeElements.forEach(element => {
     const datetime = element.getAttribute('data-time');
     if (datetime) {
