@@ -1,6 +1,8 @@
 package org.hh.heritagehunters.domain.post.service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hh.heritagehunters.common.exception.BadRequestException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
@@ -30,6 +32,40 @@ public class ImageService {
       }
       String url = imageUploader.upload(image);
       post.getImages().add(new PostImage(null, post, url, i));
+    }
+  }
+
+  /**
+   * 게시글 이미지 수정 - 기존 이미지 중 유지할 것과 새로 추가할 것 처리
+   */
+  public void updateImages(Post post, List<MultipartFile> newImages, List<Long> keepImageIds) {
+    // 1. 기존 이미지 중 삭제할 것들 제거
+    if (keepImageIds != null) {
+      Set<Long> keepIds = Set.copyOf(keepImageIds);
+      post.getImages().removeIf(image -> !keepIds.contains(image.getId()));
+    } else {
+      // keepImageIds가 null이면 모든 기존 이미지 삭제
+      post.getImages().clear();
+    }
+
+    // 2. 새 이미지 추가
+    if (newImages != null && !newImages.isEmpty()) {
+      int startIndex = post.getImages().size(); // 기존 이미지 개수부터 시작
+      for (int i = 0; i < newImages.size(); i++) {
+        MultipartFile image = newImages.get(i);
+        if (!image.isEmpty() && image.getContentType() != null && 
+            image.getContentType().startsWith("image/")) {
+          if (image.getSize() <= 50L * 1024 * 1024) { // 50MB 제한
+            String url = imageUploader.upload(image);
+            post.getImages().add(new PostImage(null, post, url, startIndex + i));
+          }
+        }
+      }
+    }
+
+    // 3. 이미지 순서 재정렬
+    for (int i = 0; i < post.getImages().size(); i++) {
+      post.getImages().get(i).updateOrder(i);
     }
   }
 }
