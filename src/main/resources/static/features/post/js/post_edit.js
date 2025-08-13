@@ -1,193 +1,130 @@
-document.addEventListener('DOMContentLoaded', function() {
-    initializeEditForm();
-});
+// 게시글 수정 모듈 (필요 부분만 발췌/정리)
+(function () {
+  const $ = (id) => document.getElementById(id);
 
-function initializeEditForm() {
-    setupImageHandling();
-    setupCharCounters();
-    setupFormValidation();
-}
+  // 이미지 갤러리 상태
+  let images = [];
+  let current = 0;
 
-// 이미지 관련 기능
-function setupImageHandling() {
-    const imageInput = document.getElementById('imageInput');
-    const uploadZone = document.querySelector('.upload-zone');
-    const newImagePreview = document.getElementById('newImagePreview');
+  document.addEventListener('DOMContentLoaded', () => {
+    initializeImageGallery();
+  });
 
-    if (!imageInput || !uploadZone || !newImagePreview) return;
+  function initializeImageGallery() {
+    const thumbs = document.querySelectorAll('.thumb img');
+    const main = document.getElementById('mainImage');
 
-    // 파일 선택 이벤트
-    imageInput.addEventListener('change', function(e) {
-        handleFileSelect(e.target.files);
-    });
-
-    // 드래그 앤 드롭
-    uploadZone.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadZone.classList.add('dragover');
-    });
-
-    uploadZone.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadZone.classList.remove('dragover');
-    });
-
-    uploadZone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        uploadZone.classList.remove('dragover');
-        
-        const files = e.dataTransfer.files;
-        handleFileSelect(files);
-    });
-}
-
-function handleFileSelect(files) {
-    const newImagePreview = document.getElementById('newImagePreview');
-    const maxFiles = 5;
-    
-    if (files.length > maxFiles) {
-        alert(`최대 ${maxFiles}개의 이미지만 업로드할 수 있습니다.`);
-        return;
-    }
-
-    newImagePreview.style.display = 'block';
-    newImagePreview.innerHTML = '';
-
-    Array.from(files).forEach((file, index) => {
-        if (!file.type.startsWith('image/')) {
-            alert('이미지 파일만 업로드할 수 있습니다.');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const previewItem = createImagePreviewItem(e.target.result, index);
-            newImagePreview.appendChild(previewItem);
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-function createImagePreviewItem(src, index) {
-    const div = document.createElement('div');
-    div.className = 'image-preview-item';
-    div.innerHTML = `
-        <img src="${src}" alt="새 이미지 ${index + 1}">
-        <button type="button" class="remove-image-btn" onclick="removeNewImage(${index})" aria-label="이미지 삭제">×</button>
-    `;
-    return div;
-}
-
-function removeNewImage(index) {
-    const newImagePreview = document.getElementById('newImagePreview');
-    const items = newImagePreview.querySelectorAll('.image-preview-item');
-    if (items[index]) {
-        items[index].remove();
-    }
-    
-    // 모든 이미지가 제거되면 미리보기 숨기기
-    if (newImagePreview.children.length === 0) {
-        newImagePreview.style.display = 'none';
-    }
-}
-
-function removeExistingImage(imageId) {
-    if (!confirm('이 이미지를 삭제하시겠습니까?')) {
-        return;
-    }
-
-    const imageItem = event.target.closest('.image-preview-item');
-    const keepInput = imageItem.querySelector('.keep-image-input');
-    
-    if (imageItem && keepInput) {
-        imageItem.style.display = 'none';
-        keepInput.remove(); // hidden input 제거하여 서버에서 삭제 처리
-    }
-}
-
-// 글자 수 카운터
-function setupCharCounters() {
-    const contentTextarea = document.getElementById('content');
-    const contentCharCount = document.getElementById('contentCharCount');
-
-    if (contentTextarea && contentCharCount) {
-        // 초기 글자 수 설정
-        updateCharCount(contentTextarea, contentCharCount);
-        
-        contentTextarea.addEventListener('input', function() {
-            updateCharCount(this, contentCharCount);
-        });
-    }
-}
-
-function updateCharCount(textarea, counter) {
-    const currentLength = textarea.value.length;
-    const maxLength = parseInt(textarea.getAttribute('maxlength'));
-    
-    counter.textContent = currentLength;
-    
-    // 글자 수가 90% 이상이면 경고 색상
-    if (currentLength >= maxLength * 0.9) {
-        counter.style.color = '#dc3545';
+    if (thumbs.length) {
+      images = Array.from(thumbs).map((img, i) => ({
+        url: img.src,
+        alt: img.alt || `이미지 ${i + 1}`
+      }));
+    } else if (main?.src) {
+      images = [{url: main.src, alt: '이미지 1'}];
     } else {
-        counter.style.color = '#777';
+      images = [];
     }
-}
+    current = 0;
+    updateGallery();
+    bindGalleryEvents();
+  }
 
-// 폼 검증
-function setupFormValidation() {
-    const editForm = document.querySelector('.edit-form');
+  function bindGalleryEvents() {
+    // 썸네일 클릭 이벤트
+    document.querySelectorAll('.thumb').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const index = parseInt(btn.dataset.index);
+        if (!isNaN(index)) {
+          showImage(index);
+        }
+      });
+    });
+
+    // 화살표 버튼 이벤트
+    document.querySelector('.gallery-nav.prev')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      prevImage();
+    });
+    document.querySelector('.gallery-nav.next')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      nextImage();
+    });
+  }
+
+  function updateGallery() {
+    const main = document.getElementById('mainImage');
+    if (main && images[current]) {
+      main.style.opacity = '0.5';
+      setTimeout(() => {
+        main.src = images[current].url;
+        main.alt = images[current].alt;
+        main.style.opacity = '1';
+      }, 120);
+    }
     
-    if (editForm) {
-        editForm.addEventListener('submit', function(e) {
-            if (!validateForm()) {
-                e.preventDefault();
-            }
-        });
-    }
-}
-
-function validateForm() {
-    const content = document.getElementById('content').value.trim();
+    // 썸네일 활성화 상태 업데이트
+    document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === current));
     
-    if (content.length === 0) {
-        alert('내용을 입력해주세요.');
-        document.getElementById('content').focus();
-        return false;
+    // 화살표 버튼 표시/숨김
+    const prev = document.querySelector('.gallery-nav.prev');
+    const next = document.querySelector('.gallery-nav.next');
+    if (prev && next) {
+      const multi = images.length > 1;
+      prev.style.display = multi ? 'flex' : 'none';
+      next.style.display = multi ? 'flex' : 'none';
     }
+  }
 
-    if (content.length > 1000) {
-        alert('내용은 1000자 이하로 입력해주세요.');
-        document.getElementById('content').focus();
-        return false;
+  function prevImage() {
+    if (images.length > 1) {
+      current = (current - 1 + images.length) % images.length;
+      updateGallery();
     }
+  }
 
-    return true;
-}
-
-// 모달 관련 함수들
-function closeModal() {
-    if (confirm('수정을 취소하시겠습니까? 작성된 내용이 사라집니다.')) {
-        window.history.back();
+  function nextImage() {
+    if (images.length > 1) {
+      current = (current + 1) % images.length;
+      updateGallery();
     }
-}
+  }
 
-function cancelEdit() {
-    closeModal();
-}
+  function showImage(i) {
+    if (i >= 0 && i < images.length) {
+      current = i;
+      updateGallery();
+    }
+  }
 
-// CSRF 토큰 설정
-function setupCSRF() {
-    const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-    
-    // fetch 요청시 사용할 수 있도록 전역 설정
-    window.csrfToken = token;
-    window.csrfHeader = header;
-}
+  // 필요한 최소 전역만 유지 (기존 기능은 그대로)
+  function closePostEdit() {
+    const modal = $('postEditModal');
+    if (modal) {
+      modal.classList.remove('show');
+      setTimeout(() => {
+        window.location.href = '/posts';
+      }, 200);
+    } else {
+      window.history.back?.() || (window.location.href = '/posts');
+    }
+  }
 
-// 초기화 시 CSRF 설정
-setupCSRF();
+  function cancel() {
+    closePostEdit();
+  }
+
+  // 전역 노출 (인라인 onclick 호환)
+  window.closePostEdit = closePostEdit;
+  window.PostEdit = {cancel};
+  window.prevImage = prevImage;
+  window.nextImage = nextImage;
+  window.showImage = showImage;
+
+  // (안전장치) 이 페이지는 post_detail.js를 포함하지 않을 수 있으므로
+  // closeModal이 비어있을 때만 연결
+  if (typeof window.closeModal !== 'function' && document.getElementById(
+      'postEditModal')) {
+    window.closeModal = closePostEdit;
+  }
+})();

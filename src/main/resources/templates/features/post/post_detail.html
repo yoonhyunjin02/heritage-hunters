@@ -6,6 +6,7 @@
       th:insert="~{fragments/head :: common-head(${post.heritageName + ' - 게시글 상세'})}"></th:block>
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <link rel="stylesheet" th:href="@{/features/post/css/modal-common.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_write.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}">
 </head>
@@ -18,28 +19,30 @@
      role="dialog" aria-modal="true" aria-labelledby="postDetailTitle"
      th:data-post-id="${post.id}"
      th:data-total-images="${post.images != null ? post.images.size() : 0}"
-     th:data-images="${post.images != null ? #strings.listJoin(#lists.toList(post.images.![url]), '|') : ''}">
+     th:data-images="${post.images != null and !post.images.empty ? #strings.listJoin(post.images.![url], '|') : ''}">
   <div class="modal-content">
 
     <!-- 헤더 -->
     <div class="modal-header">
       <h1 id="postDetailTitle" class="modal-title">게시글 상세</h1>
       <div class="header-actions">
-        <div class="post-actions" th:if="${post.owner}">
+        <!-- 디버그용: 조건 없이 항상 표시 -->
+        <div class="post-actions">
           <div class="dropdown">
             <button class="icon-btn" aria-haspopup="menu" aria-expanded="false"
-                    onclick="toggleDropdown()">
+                    onclick="togglePostDropdown()">
               ⋯
             </button>
             <div class="dropdown-menu" id="postDropdown" role="menu">
-              <button type="button" class="dropdown-item" role="menuitem" 
-                      th:onclick="'openPostEdit(' + ${post.id} + ')'">수정</button>
+              <button type="button" class="dropdown-item" role="menuitem"
+                      th:onclick="'openPostEdit(' + ${post.id} + ')'">수정
+              </button>
               <button class="dropdown-item delete-item" role="menuitem" onclick="deletePost()">삭제
               </button>
             </div>
           </div>
         </div>
-        <button class="modal-close" onclick="closeModal()" aria-label="닫기">&times;</button>
+        <button class="modal-close" onclick="closePostDetail()" aria-label="닫기">&times;</button>
       </div>
     </div>
 
@@ -57,19 +60,10 @@
 
               <!-- 네비게이션 버튼 (이미지가 2개 이상일 때만 표시) -->
               <div th:if="${post.images.size() > 1}">
-                <button class="gallery-nav prev" onclick="prevImage()" aria-label="이전 이미지">‹
+                <button class="gallery-nav prev" aria-label="이전 이미지">‹
                 </button>
-                <button class="gallery-nav next" onclick="nextImage()" aria-label="다음 이미지">›
+                <button class="gallery-nav next" aria-label="다음 이미지">›
                 </button>
-
-                <!-- 인디케이터 -->
-                <div class="gallery-indicators">
-                  <span class="indicator"
-                        th:each="image, it : ${post.images}"
-                        th:class="'indicator' + (${it.index == 0} ? ' active' : '')"
-                        th:onclick="'showImage(' + ${it.index} + ')'"
-                        th:data-index="${it.index}"></span>
-                </div>
               </div>
             </div>
 
@@ -78,9 +72,10 @@
               <button class="thumb"
                       th:each="image, it : ${post.images}"
                       th:classappend="${it.index == 0} ? ' active'"
-                      th:data-index="${it.index}"
-                      th:onclick="'showImage(' + ${it.index} + ')'">
-                <img th:src="${image.url}" th:alt="'썸네일 ' + ${it.index + 1}">
+                      th:data-index="${it.index}">
+                <img th:src="${image.url}"
+                     th:attr="data-full=${image.url}"
+                     th:alt="'썸네일 ' + ${it.index + 1}">
               </button>
             </div>
           </div>
@@ -227,7 +222,8 @@
 <!-- Toast 메시지 Fragment -->
 <div th:replace="~{fragments/toast :: toast}"></div>
 
-<script defer th:src="@{/common/js/like-manager.js}"></script>
+<script defer th:src="@{/features/post/js/modal_manager.js}"></script>
+<script defer th:src="@{/features/post/js/like_manager.js}"></script>
 <script defer th:src="@{/features/post/js/post_detail.js}"></script>
 </body>
 </html>

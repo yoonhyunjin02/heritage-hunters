@@ -3,9 +3,10 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <th:block th:insert="~{fragments/head :: common-head('게시글 페이지')}"></th:block>
-  <meta name="_csrf" th:content="${_csrf.token}" />
-  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <meta name="gmaps-api-key" th:content="${@environment.getProperty('google.maps.api-key')}"/>
+  <link rel="stylesheet" th:href="@{/features/post/css/modal-common.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_write.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_list.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}">
@@ -83,7 +84,8 @@
                th:data-index="${stat.index}">
 
         <!-- 클릭 이동: 이미지 + 유물 종류 -->
-        <div class="post-link" th:data-post-id="${post.id}" data-action="open-detail" style="cursor: pointer;">
+        <div class="post-link" th:data-post-id="${post.id}" data-action="open-detail"
+             style="cursor: pointer;">
 
           <!-- ① 이미지 -->
           <div class="post-image-container">
@@ -117,13 +119,14 @@
                   title="좋아요">
             <!-- 하트 -->
             <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0-0-7.78z"
-                    stroke="currentColor" stroke-width="2"
-                    th:fill="${post.likedByCurrentUser} ? 'currentColor' : 'none'"></path>
+              <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0-0-7.78z"
+                  stroke="currentColor" stroke-width="2"
+                  th:fill="${post.likedByCurrentUser} ? 'currentColor' : 'none'"></path>
             </svg>
             <span class="sr-only">좋아요</span>
           </button>
-          
+
           <button class="icon-action comment-btn"
                   th:data-post-id="${post.id}" data-action="open-detail-comment" title="댓글 달기">
             <!-- 말풍선 -->
@@ -132,7 +135,7 @@
                     stroke="currentColor" stroke-width="2" fill="none"/>
             </svg>
           </button>
-          
+
           <!-- 통계 표시 -->
           <div class="stats">
             <span class="stat"><b th:text="${post.likeCount}">0</b> 좋아요</span>
@@ -198,14 +201,16 @@
 <div th:replace="~{fragments/toast :: toast}"></div>
 
 <!-- JS 파일들 -->
+<script th:src="@{/common/js/header.js}"></script>
 <script defer th:src="@{/common/js/toast_manager.js}"></script>
-<script defer th:src="@{/common/js/like-manager.js}"></script>
+<script defer th:src="@{/features/post/js/like-manager.js}"></script>
+<script defer th:src="@{/common/js/modal-manager.js}"></script>
 <script defer th:src="@{/features/post/js/post_detail.js}"></script>
 <script type="module" th:src="@{/features/post/js/post_write.js}"></script>
 <script defer th:src="@{/features/post/js/post_list.js}"></script>
 <!-- 사진메타데이터 추출 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
 <!-- 구글 지도 자동완성 -->
-<script defer src="/features/post/js/location-autocomplete.js"></script>
+<script defer src="/features/post/js/location_autocomplete.js"></script>
 </body>
 </html>

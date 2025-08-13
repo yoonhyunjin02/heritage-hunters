@@ -52,8 +52,14 @@ body {
 
 /* 기본 폰트 & 본문 색상 */
 body {
-  font-family: 'Pretendard Variable', sans-serif;
+  font-family: "Pretendard Variable", sans-serif;
   color: var(--gray-900);
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
 }
 
 /* 링크: 밑줄 제거 + 색상 상속 */

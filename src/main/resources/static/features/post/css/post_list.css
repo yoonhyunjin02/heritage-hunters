@@ -103,8 +103,32 @@
 }
 
 .sort-filter-tabs input[type="radio"]:checked + .sort-tab {
-  background: var(--primary-color);
-  color: #fff;
+  background: #2b3f33 !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(43, 63, 51, 0.3);
+  transform: translateY(-1px);
+  border: 2px solid #1e2b25;
+}
+
+.sort-tab:hover {
+  background: rgba(43, 63, 51, 0.1);
+  color: #2b3f33;
+}
+
+.sort-filter-tabs input[type="radio"]:checked + .sort-tab:hover {
+  background: #2b3f33 !important;
+  color: #fff !important;
+}
+
+/* JavaScript에서 추가하는 활성 클래스 */
+.sort-tab.active-filter {
+  background: #2b3f33 !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(43, 63, 51, 0.3);
+  transform: translateY(-1px);
+  border: 2px solid #1e2b25;
 }
 
 .region-filter-select {
@@ -332,6 +356,31 @@
   background: var(--primary-color);
   color: #fff;
   border-color: var(--primary-color);
+}
+
+/* =========================
+   정렬 탭: 선택(체크) 하이라이트
+   ========================= */
+/* 라디오 숨김(접근성 유지) */
+.sort-filter-tabs input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* 기본 라벨 전환 부드럽게 */
+.sort-filter-tabs .sort-tab {
+  transition: var(--transition);
+}
+
+/* 핵심: 체크된 라디오의 바로 다음 라벨을 강하게 표시
+   (뒤에서 로드된 CSS가 덮어쓰지 못하도록 !important 사용) */
+.sort-filter-tabs input[type="radio"]:checked + label.sort-tab {
+  background: var(--primary-color) !important;
+  color: #fff !important;
+  border-color: var(--primary-color) !important;
+  box-shadow: var(--shadow-sm) !important;
 }
 
 /* 반응형 */

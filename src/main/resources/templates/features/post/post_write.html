@@ -3,6 +3,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <th:block th:insert="~{fragments/head :: common-head('게시글 작성')}"></th:block>
+  <link rel="stylesheet" th:href="@{/features/post/css/modal-common.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_write.css}">
 </head>
 <body>
@@ -15,7 +16,7 @@
     <!-- 헤더 -->
     <div class="modal-header">
       <h2 class="modal-title">새 게시글 작성</h2>
-      <button type="button" class="modal-close" id="closePostModal">&times;</button>
+      <button type="button" class="modal-close" onclick="closePostWrite()" aria-label="닫기">&times;</button>
     </div>
 
     <!-- 본문 -->

@@ -1,485 +1,238 @@
-// 전역 변수
-let currentImageIndex = 0;
-let totalImages = 0;
-let images = [];
-let postId = null;
+// 상세 보기 전역 함수들
+(function () {
+  // 상태
+  let images = [];
+  let current = 0;
 
-// 드래그 관련 변수
-let isDragging = false;
-let startX = 0;
-let currentX = 0;
-let dragThreshold = 50; // 드래그 최소 거리
-
-// DOM 로드 완료 후 초기화
-document.addEventListener('DOMContentLoaded', function () {
-  initializePostDetail();
-  initializeRelativeTime();
-});
-
-// 게시글 상세 초기화
-function initializePostDetail() {
-  // HTML의 data 속성에서 데이터 가져오기
-  const modalElement = document.getElementById('postDetailModal');
-  if (modalElement) {
-    postId = modalElement.dataset.postId;
-    totalImages = parseInt(modalElement.dataset.totalImages) || 0;
-
-    // 이미지 URL들을 파싱
-    const imageUrls = modalElement.dataset.images
-        ? modalElement.dataset.images.split('|') : [];
-
-    images = imageUrls.map((url, index) => ({
-      url: url,
-      alt: `이미지 ${index + 1}`
-    }));
-  }
-
-  initModal();
-  initCommentCounter();
-  initImageGallery();
-  initDropdowns();
-}
-
-// 모달 초기화
-function initModal() {
-  // ESC 키로 모달 닫기
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      closeModal();
-    }
+  document.addEventListener('DOMContentLoaded', () => {
+    initializePostDetail();
+    initializeRelativeTime();
   });
 
-  // 모달 배경 클릭시 닫기
-  const modal = document.getElementById('postDetailModal');
-  if (modal) {
-    modal.addEventListener('click', function (e) {
-      if (e.target === modal) {
-        closeModal();
-      }
-    });
-  }
+  function initializePostDetail() {
+    const thumbs = document.querySelectorAll('.thumb img');
+    const main = document.getElementById('mainImage');
 
-  // 모달이 열릴 때 애니메이션 효과는 CSS에서 처리됨
-}
-
-// 모달 닫기
-function closeModal() {
-  // 게시글 리스트에서 열린 모달인 경우 (AJAX 모달)
-  if (typeof window.closePostDetail === 'function') {
-    return window.closePostDetail();
-  }
-
-  // 상세 페이지로 직접 진입(SSR)한 경우
-  const modal = document.getElementById('postDetailModal');
-  if (!modal) {
-    // 혹시 모달 요소가 없으면 목록으로 복귀
-    window.location.href = '/posts';
-    return;
-  }
-
-  // 인라인 transform/opacity 조작 대신 CSS 애니메이션으로 처리
-  modal.classList.add('closing');
-  modal.addEventListener('animationend', () => {
-    // 애니메이션 끝난 뒤에 목록으로 이동
-    window.location.href = '/posts';
-  }, {once: true});
-}
-
-// 댓글 글자 수 카운터 초기화
-function initCommentCounter() {
-  const textarea = document.getElementById('commentTextarea');
-  const counter = document.getElementById('commentCharCount');
-
-  if (textarea && counter) {
-    function updateCounter() {
-      const length = textarea.value.length;
-      counter.textContent = length;
-
-      // 글자 수에 따른 색상 변경
-      if (length >= 180) {
-        counter.style.color = '#e74c3c';
-        counter.style.fontWeight = 'bold';
-      } else if (length >= 150) {
-        counter.style.color = '#f39c12';
-        counter.style.fontWeight = '600';
-      } else {
-        counter.style.color = '#6c757d';
-        counter.style.fontWeight = '500';
-      }
-    }
-
-    // 이벤트 리스너 등록
-    textarea.addEventListener('input', updateCounter);
-    textarea.addEventListener('paste', () => setTimeout(updateCounter, 10));
-
-    // 초기 카운터 설정
-    updateCounter();
-
-    // 텍스트 영역 자동 크기 조절
-    textarea.addEventListener('input', function () {
-      this.style.height = 'auto';
-      this.style.height = this.scrollHeight + 'px';
-    });
-  }
-}
-
-// 이미지 갤러리 초기화
-function initImageGallery() {
-  if (totalImages <= 1) {
-    return;
-  }
-
-  currentImageIndex = 0;
-  updateGalleryDisplay();
-  initDragHandlers();
-
-  // 키보드 네비게이션
-  document.addEventListener('keydown', function (e) {
-    if (totalImages > 1) {
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        prevImage();
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        nextImage();
-      }
-    }
-  });
-}
-
-// 드래그 핸들러 초기화
-function initDragHandlers() {
-  const galleryMain = document.getElementById('galleryMain');
-  if (!galleryMain) {
-    return;
-  }
-
-  // 마우스 이벤트
-  galleryMain.addEventListener('mousedown', handleDragStart);
-  galleryMain.addEventListener('mousemove', handleDragMove);
-  galleryMain.addEventListener('mouseup', handleDragEnd);
-  galleryMain.addEventListener('mouseleave', handleDragEnd);
-
-  // 터치 이벤트
-  galleryMain.addEventListener('touchstart', handleDragStart, {passive: false});
-  galleryMain.addEventListener('touchmove', handleDragMove, {passive: false});
-  galleryMain.addEventListener('touchend', handleDragEnd);
-}
-
-// 드래그 시작
-function handleDragStart(e) {
-  if (totalImages <= 1) {
-    return;
-  }
-
-  isDragging = true;
-  startX = e.type === 'mousedown' ? e.clientX : e.touches[0].clientX;
-  currentX = startX;
-
-  const galleryMain = document.getElementById('galleryMain');
-  if (galleryMain) {
-    galleryMain.classList.add('dragging');
-  }
-
-  e.preventDefault();
-}
-
-// 드래그 중
-function handleDragMove(e) {
-  if (!isDragging || totalImages <= 1) {
-    return;
-  }
-
-  currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
-  const deltaX = currentX - startX;
-
-  // 이미지에 변형 적용 (미리보기 효과)
-  const mainImage = document.getElementById('mainImage');
-  if (mainImage && Math.abs(deltaX) > 10) {
-    const opacity = Math.max(0.7, 1 - Math.abs(deltaX) / 200);
-    mainImage.style.opacity = opacity;
-    mainImage.style.transform = `translateX(${deltaX * 0.3}px)`;
-  }
-
-  e.preventDefault();
-}
-
-// 드래그 끝
-function handleDragEnd(e) {
-  if (!isDragging || totalImages <= 1) {
-    return;
-  }
-
-  const deltaX = currentX - startX;
-  const galleryMain = document.getElementById('galleryMain');
-  const mainImage = document.getElementById('mainImage');
-
-  // 드래그 거리가 충분하면 이미지 변경
-  if (Math.abs(deltaX) > dragThreshold) {
-    if (deltaX > 0) {
-      // 오른쪽으로 드래그 = 이전 이미지
-      prevImage();
+    if (thumbs.length) {
+      images = Array.from(thumbs).map((img, i) => ({
+        url: img.dataset.full || img.src, // 원본 경로 있으면 사용
+        alt: img.alt || `이미지 ${i + 1}`
+      }));
+    } else if (main?.src) {
+      images = [{url: main.src, alt: '이미지 1'}];
     } else {
-      // 왼쪽으로 드래그 = 다음 이미지
-      nextImage();
+      images = [];
+    }
+    current = 0;
+    update();
+    bindThumbClicks();
+  }
+
+  function bindThumbClicks() {
+    document.querySelectorAll('.thumb').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const index = parseInt(btn.dataset.index);
+        if (!isNaN(index)) {
+          showImage(index);
+        }
+      });
+    });
+    document.querySelector('.gallery-nav.prev')?.addEventListener('click',
+        (e) => {
+          e.preventDefault();
+          prevImage();
+        });
+    document.querySelector('.gallery-nav.next')?.addEventListener('click',
+        (e) => {
+          e.preventDefault();
+          nextImage();
+        });
+  }
+
+  function update() {
+    const main = document.getElementById('mainImage');
+    if (main && images[current]) {
+      main.style.opacity = '0.5';
+      setTimeout(() => {
+        main.src = images[current].url;
+        main.alt = images[current].alt;
+        main.style.opacity = '1';
+      }, 120);
+    }
+    document.querySelectorAll('.thumb').forEach(
+        (t, i) => t.classList.toggle('active', i === current));
+    const prev = document.querySelector('.gallery-nav.prev');
+    const next = document.querySelector('.gallery-nav.next');
+    if (prev && next) {
+      const multi = images.length > 1;
+      prev.style.display = multi ? 'flex' : 'none';
+      next.style.display = multi ? 'flex' : 'none';
+    }
+    document.querySelectorAll('.indicator').forEach(
+        (ind, i) => ind.classList.toggle('active', i === current));
+  }
+
+  function prevImage() {
+    if (images.length > 1) {
+      current = (current - 1 + images.length) % images.length;
+      update();
     }
   }
 
-  // 상태 초기화
-  isDragging = false;
-  startX = 0;
-  currentX = 0;
-
-  if (galleryMain) {
-    galleryMain.classList.remove('dragging');
+  function nextImage() {
+    if (images.length > 1) {
+      current = (current + 1) % images.length;
+      update();
+    }
   }
 
-  if (mainImage) {
-    mainImage.style.opacity = '1';
-    mainImage.style.transform = 'translateX(0)';
-  }
-}
-
-// 갤러리 표시 업데이트
-function updateGalleryDisplay() {
-  const mainImage = document.getElementById('mainImage');
-  const thumbnails = document.querySelectorAll('.thumb');
-  const indicators = document.querySelectorAll('.indicator');
-
-  if (mainImage && images[currentImageIndex]) {
-    // 이미지 변경 시 페이드 효과
-    mainImage.style.opacity = '0.5';
-
-    setTimeout(() => {
-      mainImage.src = images[currentImageIndex].url;
-      mainImage.alt = images[currentImageIndex].alt;
-      mainImage.style.opacity = '1';
-      mainImage.style.transform = 'translateX(0)'; // 변형 초기화
-    }, 150);
+  function showImage(i) {
+    if (i >= 0 && i < images.length) {
+      current = i;
+      update();
+    }
   }
 
-  // 썸네일 활성화 상태 업데이트
-  thumbnails.forEach((thumbnail, index) => {
-    thumbnail.classList.toggle('active', index === currentImageIndex);
-  });
-
-  // 인디케이터 활성화 상태 업데이트
-  indicators.forEach((indicator, index) => {
-    indicator.classList.toggle('active', index === currentImageIndex);
-  });
-
-  // 네비게이션 버튼 상태 업데이트
-  const prevBtn = document.querySelector('.gallery-nav.prev');
-  const nextBtn = document.querySelector('.gallery-nav.next');
-
-  if (prevBtn && nextBtn) {
-    prevBtn.style.opacity = currentImageIndex === 0 ? '0.5' : '1';
-    nextBtn.style.opacity = currentImageIndex === totalImages - 1 ? '0.5' : '1';
+  // 드롭다운
+  function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown-menu').forEach(
+        el => el.classList.remove('show'));
   }
-}
 
-// 이전 이미지
-function prevImage() {
-  if (totalImages > 1) {
-    currentImageIndex = (currentImageIndex - 1 + totalImages) % totalImages;
-    updateGalleryDisplay();
+  function togglePostDropdown() {
+    const dd = document.getElementById('postDropdown');
+    if (!dd) {
+      return;
+    }
+    const isOpen = dd.classList.contains('show');
+    closeAllDropdowns();
+    if (!isOpen) {
+      dd.classList.add('show');
+    }
   }
-}
 
-// 다음 이미지
-function nextImage() {
-  if (totalImages > 1) {
-    currentImageIndex = (currentImageIndex + 1) % totalImages;
-    updateGalleryDisplay();
-  }
-}
-
-// 특정 이미지 표시
-function showImage(index) {
-  if (index >= 0 && index < totalImages) {
-    currentImageIndex = index;
-    updateGalleryDisplay();
-  }
-}
-
-// 드롭다운 메뉴 초기화
-function initDropdowns() {
-  // 문서 전체 클릭 시 모든 드롭다운 닫기
-  document.addEventListener('click', function (e) {
+  document.addEventListener('click', (e) => {
     if (!e.target.closest('.dropdown')) {
       closeAllDropdowns();
     }
   });
-}
 
-// 모든 드롭다운 닫기
-function closeAllDropdowns() {
-  const dropdowns = document.querySelectorAll('.dropdown-menu');
-  dropdowns.forEach(dropdown => {
-    dropdown.classList.remove('show');
-  });
-}
-
-// 게시글 드롭다운 토글
-function toggleDropdown() {
-  const dropdown = document.getElementById('postDropdown');
-  if (dropdown) {
-    const isOpen = dropdown.classList.contains('show');
-    closeAllDropdowns();
-
-    if (!isOpen) {
-      dropdown.classList.add('show');
+  // 댓글
+  function focusCommentInput() {
+    const tx = document.getElementById('commentTextarea');
+    if (!tx) {
+      return;
     }
+    tx.focus();
+    setTimeout(() => tx.scrollIntoView({behavior: 'smooth', block: 'center'}),
+        80);
   }
-}
 
-// 댓글 입력창에 포커스
-function focusCommentInput() {
-  const textarea = document.getElementById('commentTextarea');
-  if (textarea) {
-    textarea.focus();
-
-    // 부드럽게 스크롤
-    setTimeout(() => {
-      textarea.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
+  // 상대 시간
+  function initializeRelativeTime() {
+    import('/common/js/utils/time_util.js').then(m => {
+      const fmt = m.formatRelativeTime;
+      const nodes = document.querySelectorAll('.relative-time[data-time]');
+      nodes.forEach(n => {
+        const d = new Date(n.getAttribute('data-time'));
+        n.textContent = fmt(d);
       });
-    }, 100);
-  }
-}
-
-// 게시글 삭제
-async function deletePost() {
-  const modalElement = document.getElementById('postDetailModal');
-  const postId = modalElement ? modalElement.dataset.postId : null;
-
-  if (!postId) {
-    console.error('게시글 ID가 없습니다.');
-    return;
-  }
-
-  if (!confirm('정말로 이 게시글을 삭제하시겠습니까?\n\n삭제된 게시글은 복구할 수 없습니다.')) {
-    return;
-  }
-
-  // CSRF 값 읽기
-  const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-  const csrfHeader = document.querySelector(
-      'meta[name="_csrf_header"]').content;
-
-  try {
-    const response = await fetch(`/posts/${postId}`, {
-      method: 'DELETE',
-      headers: {
-        [csrfHeader]: csrfToken
-      }
+      setInterval(() => {
+        nodes.forEach(n => {
+          const d = new Date(n.getAttribute('data-time'));
+          n.textContent = fmt(d);
+        });
+      }, 60000);
+    }).catch(() => {
     });
+  }
 
-    if (response.ok) {
-      alert('게시글이 삭제되었습니다.');
+  // 닫기 (SSR 상세 페이지 or AJAX 모달 모두 지원)
+  function closeModal() {
+    // 리스트에서 띄운 AJAX 모달이면 전용 닫기 사용
+    if (typeof window.closePostDetail
+        === 'function') {
+      return window.closePostDetail();
+    }
+
+    // 단독 상세 페이지면 목록으로 이동
+    const modal = document.getElementById('postDetailModal');
+    if (!modal) {
       window.location.href = '/posts';
-    } else if (response.status === 403) {
-      alert('삭제 권한이 없습니다.');
-    } else {
-      const text = await response.text();
-      console.error('삭제 실패:', text);
-      alert('삭제 중 오류가 발생했습니다.');
+      return;
     }
-  } catch (err) {
-    console.error('네트워크 오류:', err);
-    alert('서버와 통신 중 문제가 발생했습니다.');
+    modal.classList.add('closing');
+    modal.addEventListener('animationend', () => {
+      window.location.href = '/posts';
+    }, {once: true});
   }
-}
 
-// 이미지 로드 에러 처리
-function handleImageError(img) {
-  img.style.display = 'none';
-
-  // 에러 표시 요소 생성
-  const errorDiv = document.createElement('div');
-  errorDiv.className = 'image-error';
-  errorDiv.innerHTML = `
-      <div style="
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 200px;
-        background: #f8f9fa;
-        color: #6c757d;
-        font-size: 14px;
-        border-radius: 8px;
-      ">
-        이미지를 불러올 수 없습니다
-      </div>
-    `;
-
-  img.parentNode.insertBefore(errorDiv, img.nextSibling);
-}
-
-// 이미지에 에러 핸들러 추가
-document.addEventListener('DOMContentLoaded', function () {
-  const allImages = document.querySelectorAll('img'); // 이름 충돌 방지
-  allImages.forEach(img => {
-    img.addEventListener('error', function () {
-      handleImageError(this);
-    });
-  });
-});
-
-// 상대시간 초기화
-function initializeRelativeTime() {
-  // time_util.js 모듈 import
-  import('/common/js/utils/time_util.js').then(module => {
-    const {formatRelativeTime} = module;
-
-    // 모든 relative-time 클래스를 가진 요소들 찾기
-    const timeElements = document.querySelectorAll('.relative-time[data-time]');
-
-    timeElements.forEach(element => {
-      const datetime = element.getAttribute('data-time');
-      if (datetime) {
-        try {
-          const date = new Date(datetime);
-          element.textContent = formatRelativeTime(date);
-        } catch (error) {
-          console.error('날짜 변환 오류:', error);
-        }
-      }
-    });
-
-    // 1분마다 상대시간 업데이트
-    setInterval(() => {
-      updateRelativeTimes(formatRelativeTime);
-    }, 60000);
-  }).catch(error => {
-    console.error('time_util.js 로드 실패:', error);
-  });
-}
-
-// 상대시간 업데이트
-function updateRelativeTimes(formatRelativeTime) {
-  const timeElements = document.querySelectorAll('.relative-time[data-time]');
-
-  timeElements.forEach(element => {
-    const datetime = element.getAttribute('data-time');
-    if (datetime) {
-      try {
-        const date = new Date(datetime);
-        element.textContent = formatRelativeTime(date);
-      } catch (error) {
-        console.error('날짜 변환 오류:', error);
-      }
+  // 삭제
+  async function deletePost() {
+    const modal = document.getElementById('postDetailModal');
+    const id = modal?.dataset.postId;
+    if (!id) {
+      return alert('게시글 ID를 찾지 못했습니다.');
     }
-  });
-}
+    if (!confirm('정말로 삭제하시겠습니까?')) {
+      return;
+    }
 
-// 전역 함수로 내보내기 (HTML에서 직접 호출하는 함수들)
-window.closeModal = closeModal;
-window.toggleDropdown = toggleDropdown;
-window.focusCommentInput = focusCommentInput;
-window.deletePost = deletePost;
-window.prevImage = prevImage;
-window.nextImage = nextImage;
-window.showImage = showImage;
-window.initializePostDetail = initializePostDetail;
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    const csrfHeader = document.querySelector(
+        'meta[name="_csrf_header"]')?.content;
+
+    try {
+      const res = await fetch(`/posts/${id}`, {
+        method: 'DELETE',
+        headers: csrfToken && csrfHeader ? {[csrfHeader]: csrfToken} : {}
+      });
+      if (res.ok || res.status === 302 || res.status === 303) {
+        if (window.closePostDetail) {
+          window.closePostDetail();
+        }
+        setTimeout(() => {
+          alert('게시글이 삭제되었습니다.');
+          window.location.href = '/posts';
+        }, 200);
+      } else if (res.status === 405) {
+        alert('서버가 DELETE 메서드를 허용하지 않습니다. 컨트롤러 매핑을 확인하세요.');
+      } else {
+        alert('삭제 중 오류가 발생했습니다.');
+      }
+    } catch (_) {
+      alert('서버와 통신 중 문제가 발생했습니다.');
+    }
+  }
+
+  function openPostEdit(id) {
+    // id 인자가 없으면 현재 상세 모달의 data-post-id 사용
+    const targetId = id || document.getElementById(
+        'postDetailModal')?.dataset?.postId;
+    if (!targetId) {
+      console.error('openPostEdit: postId가 없습니다.');
+      return;
+    }
+
+    // 만약 수정 모달을 AJAX로 띄우는 모듈이 있다면 우선 사용
+    if (window.PostEdit && typeof window.PostEdit.open === 'function') {
+      window.PostEdit.open(targetId);
+      return;
+    }
+
+    // 기본: SSR 편집 페이지로 이동
+    window.location.href = `/posts/${targetId}/edit`;
+  }
+
+  // 전역 내보내기
+  window.prevImage = prevImage;
+  window.nextImage = nextImage;
+  window.showImage = showImage;
+  window.focusCommentInput = focusCommentInput;
+  window.togglePostDropdown = togglePostDropdown;
+  window.deletePost = deletePost;
+  window.openPostEdit = openPostEdit;
+  window.closeModal = closeModal;           // ← 상세 모달 닫기
+  window.initializePostDetail = initializePostDetail;
+})();

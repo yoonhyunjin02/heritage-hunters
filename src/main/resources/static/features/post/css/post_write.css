@@ -13,17 +13,7 @@
   justify-content: center;
   animation: fadeIn .25s ease;
 }
-.modal-content {
-  background: #fff;
-  width: min(1100px, 95vw);
-  height: min(760px, 92vh);
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,.2);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  animation: scaleIn .25s ease;
-}
+/* Modal content sizing handled by modal-common.css */
 .modal-header {
   display: flex;
   align-items: center;
@@ -52,15 +42,8 @@
 }
 
 /* ============ Left: Image Stage ============ */
-.compose-left {
-  position: relative;
-  background: #f3f3f3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-.image-upload-section { position: relative; width:100%; height:100%; cursor: pointer; user-select:none; }
+/* compose-left 스타일은 modal-common.css에서 처리 */
+/* image-upload-section 스타일은 modal-common.css에서 처리 */
 .visually-hidden {
   position: absolute !important; width:1px; height:1px; padding:0; margin:-1px;
   overflow:hidden; clip: rect(0 0 0 0); white-space:nowrap; border:0;
@@ -147,7 +130,6 @@
 
 /* ============ Responsive ============ */
 @media (max-width: 992px) {
-  .modal-content { width:96vw; height:92vh; }
   .composer-grid { grid-template-columns: 1fr; }
   .compose-left { height:55vh; }
 }
