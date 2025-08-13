@@ -50,41 +50,40 @@ function initModal() {
   });
 
   // 모달 배경 클릭시 닫기
-  const backdrop = document.querySelector('.modal-backdrop');
-  if (backdrop) {
-    backdrop.addEventListener('click', function (e) {
-      if (e.target === this) {
+  const modal = document.getElementById('postDetailModal');
+  if (modal) {
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) {
         closeModal();
       }
     });
   }
 
-  // 모달이 열릴 때 애니메이션 효과
-  const modalContainer = document.querySelector('.modal-container');
-  if (modalContainer) {
-    modalContainer.style.transform = 'scale(0.9)';
-    modalContainer.style.opacity = '0';
-
-    setTimeout(() => {
-      modalContainer.style.transition = 'all 0.3s ease';
-      modalContainer.style.transform = 'scale(1)';
-      modalContainer.style.opacity = '1';
-    }, 10);
-  }
+  // 모달이 열릴 때 애니메이션 효과는 CSS에서 처리됨
 }
 
 // 모달 닫기
 function closeModal() {
-  const modalContainer = document.querySelector('.modal-container');
-  if (modalContainer) {
-    modalContainer.style.transform = 'scale(0.9)';
-    modalContainer.style.opacity = '0';
+  // 게시글 리스트에서 열린 모달인 경우
+  if (window.closePostDetail) {
+    window.closePostDetail();
+    return;
+  }
+  
+  // 직접 게시글 상세 페이지에서 온 경우
+  const modal = document.getElementById('postDetailModal');
+  const modalContent = modal?.querySelector('.modal-content');
+  
+  if (modalContent) {
+    modalContent.style.transform = 'scale(0.9)';
+    modalContent.style.opacity = '0';
+    modal.style.opacity = '0';
 
     setTimeout(() => {
-      window.history.back();
+      window.location.href = '/posts';
     }, 200);
   } else {
-    window.history.back();
+    window.location.href = '/posts';
   }
 }
 
@@ -481,8 +480,7 @@ window.closeModal = closeModal;
 window.toggleDropdown = toggleDropdown;
 window.focusCommentInput = focusCommentInput;
 window.deletePost = deletePost;
-window.editComment = editComment;
-window.deleteComment = deleteComment;
 window.prevImage = prevImage;
 window.nextImage = nextImage;
 window.showImage = showImage;
+window.initializePostDetail = initializePostDetail;
