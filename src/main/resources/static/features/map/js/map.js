@@ -6,6 +6,9 @@ const gInfoWindows = [];
 let allData = [];
 let clusterer = null;
 
+// 클릭으로 연 InfoWindow를 추적 (마우스 아웃으로 닫히지 않게)
+let lastOpenedByClick = null;
+
 // Advanced Marker 사용 가능 여부(벡터 맵 + 라이브러리 로드되면 true로 설정)
 window.allowAdvanced = false;
 
@@ -18,6 +21,35 @@ const GMap = {
 };
 
 // ===== Utils =====
+// 종목 코드 문자열을 보기 좋은 이름으로 치환
+function mapDesignationLabel(raw) {
+  if (!raw) return '';
+  const map = (window.designationMap || {});
+  // "13" / "11,12" / "11|12" / " 13 " 등 다양한 구분자/공백 허용
+  const tokens = String(raw).split(/[|,/]/).map(s => s.trim()).filter(Boolean);
+  if (tokens.length === 0) return '';
+
+  const names = tokens.map(tok => {
+    const num = Number(tok);
+    // 숫자면 매핑 시도, 아니면 원문 유지
+    if (Number.isFinite(num) && map[num]) return map[num];
+    return tok;
+  });
+
+  // 중복 제거 + 보기 좋게 합침
+  return [...new Set(names)].join(' · ');
+}
+
+// (NEW) InfoWindow/리스트에서 표기할 메타(종목명이 우선, 없으면 era/region 등) 계산
+function getDisplayMeta(item) {
+  // item.category에는 서버에서 designation 또는 era가 들어올 수 있음
+  const fromCategory = mapDesignationLabel(item.category);
+  if (fromCategory) return fromCategory;
+
+  // 백업 표기(원한다면 여기 우선순위 조정 가능)
+  // era나 region 등 추가 노출 원하면 이어붙여도 됨
+  return (item.era || item.region || '').trim();
+}
 
 // 안전한 텍스트 전용 DOM 빌더들
 function buildIwContent(item){
@@ -33,10 +65,11 @@ function buildIwContent(item){
   addr.textContent = (item.address ?? item.region ?? '') || '';
   wrap.appendChild(addr);
 
-  if (item.category) {
+  const metaLabel = getDisplayMeta(item);
+  if (metaLabel) {
     const meta = document.createElement('div');
     meta.className = 'iw-meta';
-    meta.textContent = item.category;
+    meta.textContent = metaLabel; // ← 매핑 적용된 라벨
     wrap.appendChild(meta);
   }
   return wrap;
@@ -57,8 +90,7 @@ function buildListCard(item){
 
   const desc = document.createElement('div');
   desc.className = 'desc';
-  desc.textContent = item.category ?? '';
-
+  desc.textContent = getDisplayMeta(item); // ← 리스트에도 매핑 적용
   el.append(name, addr, desc);
   return el;
 }
@@ -172,15 +204,21 @@ function renderMarkers(list){
       });
 
       mk.addListener?.('gmp-mouseover', () => {
+        if (lastOpenedByClick === info) return; // 클릭 고정이면 유지
         closeAllInfo();
         info.open({ anchor: mk, map });
       });
       mk.addListener?.('gmp-mouseout', () => {
+        if (lastOpenedByClick === info) return; // 클릭 고정이면 닫지 않음
         info.close();
       });
 
-      // 터치(모바일) 보조: 탭으로 열기
-      if (IS_TOUCH) mk.addListener('click', () => { closeAllInfo(); info.open({ anchor: mk, map }); });
+      // 클릭(모바일/데스크톱 공통): 고정 열기
+      mk.addListener?.('click', () => {
+        closeAllInfo();
+        info.open({ anchor: mk, map });
+        lastOpenedByClick = info;
+      });
 
     } else {
       // Basic Marker + SVG 아이콘으로 색상 지정
@@ -193,13 +231,22 @@ function renderMarkers(list){
       });
 
       mk.addListener('mouseover', () => {
+        if (lastOpenedByClick === info) return; // 클릭 고정이면 유지
         closeAllInfo();
         info.open({ anchor: mk, map });
       });
       mk.addListener('mouseout', () => {
+        if (lastOpenedByClick === info) return; // 클릭 고정이면 닫지 않음
         info.close();
       });
-      if (IS_TOUCH) mk.addListener('click', () => { closeAllInfo(); info.open({ anchor: mk, map }); });
+
+      // 클릭(모바일/데스크톱 공통): 고정 열기
+      mk.addListener('click', () => {
+        closeAllInfo();
+        info.open({ anchor: mk, map });
+        lastOpenedByClick = info;
+      });
+
     }
     mk._info = info;
     mk._item = item;
@@ -296,6 +343,7 @@ function renderList(list){
       map.setZoom(Math.max(map.getZoom(), 14));
       closeAllInfo();
       mk._info?.open({ anchor: mk, map });
+      lastOpenedByClick = mk._info;
     });
 
     $list.appendChild(el);
@@ -325,24 +373,6 @@ function wireSearch(){
   $q.addEventListener('input', () => {
     clearTimeout(t);
     t=setTimeout(() => applySearch($q.value),150);
-  });
-}
-
-// ------- 세그먼트 토글 -------
-function setType(type){
-  currentType = type;
-  document.querySelectorAll('#typeSegment .seg-btn')
-    .forEach(b => b.setAttribute('aria-pressed', String(b.dataset.type === type)));
-  lastBboxKey = '';           // 타입 바뀌면 동일 뷰포트라도 다시 요청
-  fetchByViewport();
-}
-
-function wireTypeSegment(){
-  const seg = document.getElementById('typeSegment'); if(!seg) return;
-  seg.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.seg-btn'); if(!btn) return;
-    if (btn.getAttribute('aria-pressed') === 'true') return;
-    setType(btn.dataset.type);
   });
 }
 
@@ -401,6 +431,12 @@ async function initMap(){
 
   // 뷰포트 로딩으로 전환
   wireViewportLoading(); // idle에서 첫 로딩까지 자동
+
+  // initMap() 안, wireViewportLoading() 호출 직전에 한 줄 추가
+  map.addListener('click', () => {
+    lastOpenedByClick = null;
+    closeAllInfo();
+  });
 }
 
 // ------- Boot -------
