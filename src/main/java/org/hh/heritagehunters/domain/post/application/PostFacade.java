@@ -3,6 +3,7 @@ package org.hh.heritagehunters.domain.post.application;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hh.heritagehunters.common.exception.UnauthorizedException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.oauth.entity.User;
@@ -12,9 +13,7 @@ import org.hh.heritagehunters.domain.post.dto.request.PostUpdateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostCreateResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostListResponseDto;
-import org.hh.heritagehunters.domain.post.entity.Comment;
 import org.hh.heritagehunters.domain.post.entity.Post;
-import org.hh.heritagehunters.domain.post.repository.PostRepository;
 import org.hh.heritagehunters.domain.post.service.CommentService;
 import org.hh.heritagehunters.domain.post.service.ImageService;
 import org.hh.heritagehunters.domain.post.service.LikeService;
@@ -25,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostFacade {
@@ -34,7 +34,6 @@ public class PostFacade {
   private final ImageService imageService;
   private final LikeService likeService;
   private final CommentService commentService;
-  private final PostRepository postRepository;
 
   @Transactional(readOnly = true)
   public Page<PostListResponseDto> list(User currentUser,
@@ -51,8 +50,17 @@ public class PostFacade {
   @Transactional
   public PostCreateResponseDto create(User user, PostCreateRequestDto req,
       List<MultipartFile> images) {
+    // 1단계: 게시글 먼저 저장
     Post post = postWriter.create(user, req);
-    imageService.attachImages(images, post);
+    
+    // 2단계: 이미지 처리 (이 부분이 오래 걸림)
+    try {
+      imageService.attachImages(images, post);
+    } catch (Exception e) {
+      // 이미지 처리 실패해도 게시글은 유지
+      log.warn("이미지 처리 실패: {}", e.getMessage());
+    }
+    
     return new PostCreateResponseDto(post.getId(), "게시글이 성공적으로 등록되었습니다.",
         post.getHeritage() != null ? 1 : 0);
   }
@@ -90,6 +98,27 @@ public class PostFacade {
   }
 
   @Transactional
+  public void update(Long postId, User user, PostUpdateRequestDto dto, 
+                     List<MultipartFile> newImages, List<Long> keepImageIds) {
+    Post post = postReader.getById(postId);
+    if (!post.getUser().getId().equals(user.getId())) {
+      throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
+    }
+    
+    // 기본 정보 수정
+    postWriter.update(post, dto);
+    
+    // 이미지 처리
+    if (newImages != null || keepImageIds != null) {
+      try {
+        imageService.updateImages(post, newImages, keepImageIds);
+      } catch (Exception e) {
+        log.warn("이미지 처리 실패: {}", e.getMessage());
+      }
+    }
+  }
+
+  @Transactional
   public void delete(Long postId, User user) {
     Post post = postReader.getById(postId);
     if (!post.getUser().getId().equals(user.getId())) {
@@ -108,8 +137,4 @@ public class PostFacade {
     commentService.add(postId, user, dto);
   }
 
-  @Transactional(readOnly = true)
-  public List<Comment> listComments(Long postId) {
-    return postReader.loadComments(postId);
-  }
 }
