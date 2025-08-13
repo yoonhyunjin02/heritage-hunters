@@ -788,7 +788,7 @@
   width: min(1100px, 95vw);
   height: min(760px, 92vh);
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .2);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -811,7 +811,7 @@
   width: min(1100px, 95vw);
   height: min(760px, 92vh);
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,.2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -820,20 +820,25 @@
   animation: scaleIn .25s ease;
 }
 
-/* 애니메이션 키프레임 */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* 축소/확대 기준을 중앙으로 고정 (닫힐 때 제자리 유지) */
+.modal .modal-content {
+  transform-origin: 50% 50%;
 }
 
-@keyframes scaleIn {
-  from { opacity: .95; transform: scale(.98); }
-  to { opacity: 1; transform: scale(1); }
+/* 닫기 진행 중에도 중앙 정렬 유지: 컨테이너/콘텐츠 각각 페이드/스케일 아웃 */
+#postDetailModal.closing,
+#postEditModal.closing {
+  /* display:flex 상태(=가운데 정렬)는 유지한 채 opacity만 줄입니다 */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  animation: modalFadeOut .20s ease forwards;
+  pointer-events: none;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+#postDetailModal.closing .modal-content,
+#postEditModal.closing .modal-content {
+  animation: modalScaleOut .20s ease forwards;
 }
 
 /* 접근성 */
@@ -856,4 +861,55 @@ button:focus,
 .form-textarea:focus {
   outline: 2px solid #007bff;
   outline-offset: 2px;
+}
+
+/* 애니메이션 키프레임 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: .95;
+    transform: scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 닫기 애니메이션 키프레임 */
+@keyframes modalFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modalScaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(.98);
+  }
 }
