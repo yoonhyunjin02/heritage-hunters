@@ -32,7 +32,8 @@
               ⋯
             </button>
             <div class="dropdown-menu" id="postDropdown" role="menu">
-              <a th:href="@{/posts/{id}/edit(id=${post.id})}" class="dropdown-item" role="menuitem">수정</a>
+              <button type="button" class="dropdown-item" role="menuitem" 
+                      th:onclick="'openPostEdit(' + ${post.id} + ')'">수정</button>
               <button class="dropdown-item delete-item" role="menuitem" onclick="deletePost()">삭제
               </button>
             </div>

@@ -10,6 +10,13 @@ spring:
   profiles:
     active: local
 
+
+  #form에서 put 메소드를 받기 위한 설정
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+
   # 파일 업로드 용량 제한
   servlet:
     multipart:
