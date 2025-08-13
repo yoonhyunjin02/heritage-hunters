@@ -64,7 +64,7 @@
             초기화
           </button>
           <button type="button" id="openPostModal" class="control-btn new-post-btn"
-                  sec:authorize="isAuthenticated()" onclick="PostListManager.openPostModal()">게시글 작성
+                  sec:authorize="isAuthenticated()" data-action="open-post-modal">게시글 작성
           </button>
         </div>
       </div>
@@ -83,7 +83,7 @@
                th:data-index="${stat.index}">
 
         <!-- 클릭 이동: 이미지 + 유물 종류 -->
-        <div class="post-link" th:onclick="'openPostDetail(' + ${post.id} + ')'" style="cursor: pointer;">
+        <div class="post-link" th:data-post-id="${post.id}" data-action="open-detail" style="cursor: pointer;">
 
           <!-- ① 이미지 -->
           <div class="post-image-container">
@@ -125,7 +125,7 @@
           </button>
           
           <button class="icon-action comment-btn"
-                  th:onclick="'openPostDetail(' + ${post.id} + ', true)'" title="댓글 달기">
+                  th:data-post-id="${post.id}" data-action="open-detail-comment" title="댓글 달기">
             <!-- 말풍선 -->
             <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
@@ -162,7 +162,7 @@
       <div class="pagination">
         <a th:if="${posts.number > 0}"
            th:href="@{/posts(page=0, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-           class="page-btn first-page" title="첫 페이지">⏮️ 처음</a>
+           class="page-btn first-page" title="첫 페이지">‹‹ 처음</a>
 
         <a th:if="${posts.number > 0}"
            th:href="@{/posts(page=${posts.number - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
@@ -185,7 +185,7 @@
 
         <a th:if="${posts.number < posts.totalPages - 1}"
            th:href="@{/posts(page=${posts.totalPages - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-           class="page-btn last-page" title="마지막 페이지">마지막 ⏭️</a>
+           class="page-btn last-page" title="마지막 페이지">마지막 ››</a>
       </div>
     </nav>
   </section>
@@ -193,7 +193,8 @@
 
 <div th:replace="~{fragments/footer :: common-footer}"></div>
 <div th:replace="~{features/post/post_write :: postWriteModal}"></div>
-<div th:replace="~{features/post/post_detail_modal :: postDetailModal}"></div>
+<div th:replace="~{features/post/post_detail :: postDetailModal}"></div>
+<div th:replace="~{features/post/post_edit :: postEditModal}"></div>
 <div th:replace="~{fragments/toast :: toast}"></div>
 
 <!-- JS 파일들 -->
@@ -201,7 +202,7 @@
 <script defer th:src="@{/common/js/like-manager.js}"></script>
 <script defer th:src="@{/features/post/js/post_detail.js}"></script>
 <script type="module" th:src="@{/features/post/js/post_write.js}"></script>
-<script th:src="@{/features/post/js/post_list.js}"></script>
+<script defer th:src="@{/features/post/js/post_list.js}"></script>
 <!-- 사진메타데이터 추출 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
 <!-- 구글 지도 자동완성 -->
