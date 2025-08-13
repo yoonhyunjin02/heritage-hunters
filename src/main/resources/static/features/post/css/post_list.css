@@ -229,8 +229,6 @@
   align-items: center;
   gap: 16px;
   padding: 14px 16px;
-  border-top: 1px solid var(--border-color);
-  background: #fff;
 }
 
 .like-form {
