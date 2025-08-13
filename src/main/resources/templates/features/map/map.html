@@ -3,6 +3,7 @@
 <head>
   <th:block th:insert="~{fragments/head :: common-head('Map')}"></th:block>
   <link rel="stylesheet" th:href="@{/features/map/css/map.css}">
+  <link rel="stylesheet" th:href="@{/features/map/css/legend.css}">
 </head>
 <body>
 <!-- 사이트 공통 헤더 -->
@@ -18,7 +19,7 @@
 
     <!-- 세그먼트 토글 -->
     <div class="segmented" id="typeSegment">
-      <button class="seg-btn" data-type="all"      aria-pressed="true">전체</button>
+      <button class="seg-btn" data-type="all" aria-pressed="true">전체</button>
       <button class="seg-btn" data-type="heritage" aria-pressed="false">문화재</button>
       <button class="seg-btn" data-type="museum" aria-pressed="false">박물관·미술관</button>
     </div>
@@ -28,24 +29,48 @@
     <div class="toolbar-search">
       <input id="search" type="text" placeholder="이름, 지역 검색" autocomplete="off" />
       <span class="search-icon" aria-hidden="true">
-      <img src="/images/icons/search.svg" alt="검색" width="20" height="20" />
-    </span>
+          <img src="/images/icons/search.svg" alt="검색" width="20" height="20" />
+      </span>
     </div>
   </div>
 </div>
 
-<!--main-->
+<!-- main -->
 <main class="map-root"
       th:attr="data-endpoint=@{/map},data-maps-key=${mapsApiKey},data-map-id='109936b5c5c9266ad969d919'">
 
   <!-- 왼쪽 사이드 네비게이션 -->
   <nav id="sideNav" class="side-nav">
-    <ul>
-      <li><a href="#">홈</a></li>
-      <li><a href="#">문화재</a></li>
-      <li><a href="#">박물관</a></li>
-      <li><a href="#">설정</a></li>
-    </ul>
+    <!-- 범례 -->
+    <section class="legend">
+      <h3 class="legend-title">범례</h3>
+      <ul class="legend-list">
+        <!-- 문화재 (빨강) -->
+        <li class="legend-item">
+          <img src="/images/icons/location.svg" alt="문화재 위치 아이콘" class="legend-icon legend-heritage" />
+          <span>문화재</span>
+        </li>
+
+        <!-- 박물관·미술관 (파랑) -->
+        <li class="legend-item">
+          <img src="/images/icons/location.svg" alt="박물관·미술관 위치 아이콘" class="legend-icon legend-museum" />
+          <span>박물관·미술관</span>
+        </li>
+
+        <li><hr class="legend-divider"></li>
+
+        <!-- 클러스터 규칙 -->
+        <li class="legend-footnote">숫자 = 근접 지점 수</li>
+        <li class="legend-note">
+          <span class="cluster-swatch cluster-swatch-blue" aria-hidden="true">10</span>
+          근접 지점 수 10개 이하
+        </li>
+        <li class="legend-note">
+          <span class="cluster-swatch cluster-swatch-red" aria-hidden="true">15</span>
+          근접 지점 수 15개 초과
+        </li>
+      </ul>
+    </section>
   </nav>
 
   <section class="map-area">
