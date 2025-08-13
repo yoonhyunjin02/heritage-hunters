@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  const totalImages = 2;
+  const totalImages = 10;
   const randomIndex = Math.floor(Math.random() * totalImages) + 1;
   const imageUrl = `/images/oauth/auth-bg${randomIndex}.jpg`;
 

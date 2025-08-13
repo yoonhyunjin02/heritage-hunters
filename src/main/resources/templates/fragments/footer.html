@@ -1,26 +1,24 @@
 <div th:fragment="common-footer">
   <footer class="footer">
+    <!-- 상단: 로고 + 메뉴 -->
     <div class="footer-container">
+      <a th:href="@{/main}">
+        <img th:src="@{/images/logo/github.svg}" alt="로고" class="logo-image">
+      </a>
 
-      <!-- 왼쪽 영역 -->
-      <div class="footer-left">
-        <a th:href="@{/main}">
-          <img th:src="@{/images/logo/github.svg}" alt="로고" class="logo-image">
-        </a>
-        <p class="footer-desc">
-          본 사이트는 국가유산청 및 문화체육관광부 공공 데이터를 활용하여 제작되었습니다.<br>
-          문의 : heritage-hunters @ gmail.com
-        </p>
-      </div>
-
-      <!-- 오른쪽 메뉴 -->
-      <div class="footer-right">
+      <nav class="footer-right">
         <a href="/map">MAP</a>
         <a href="/search">SEARCH</a>
         <a href="/post">POST</a>
         <a href="/leaderboard">LEADERBOARD</a>
-      </div>
+      </nav>
     </div>
+
+    <!-- 설명글 (한 줄 아래 꽉 차게) -->
+    <p class="footer-desc">
+      본 사이트는 국가유산청 및 문화체육관광부 공공 데이터를 활용하여 제작되었습니다.<br>
+      문의 : heritage-hunters @ gmail.com
+    </p>
 
     <!-- 하단 저작권 -->
     <div class="footer-bottom">
@@ -28,6 +26,6 @@
       <p class="footer-copy">© 2025 Heritage Hunters</p>
     </div>
   </footer>
-  <!-- 공통 js -->
+
   <script defer th:src="@{/common/js/header.js}"></script>
 </div>
