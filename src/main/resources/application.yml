@@ -51,6 +51,7 @@ logging:
   level:
     org.springframework: INFO
     org.hh.heritagehunters: DEBUG  # 패키지 이름 기준
+    org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
 
 springdoc:
   api-docs:

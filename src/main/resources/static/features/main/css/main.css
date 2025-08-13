@@ -1,88 +1,101 @@
-.main-container {
-  text-align: center;
-  padding-top: 16px;           /* 헤더와 슬라이드 사이 패딩 */
+/* ========= Main container ========= */
+.main-container{
+  text-align:center;
+  padding:1rem 0;
 }
 
-.slideshow-container {
-  max-width: 1000px;
-  position: relative;
+/* ========= Slideshow ========= */
+.slideshow-container{
+  max-width: var(--section-max);
   margin: 0 auto;
-}
-
-.slide {
   position: relative;
+  padding: 0;
 }
 
-.slide img {
+/* 높이 확보 + 둥근모서리/클리핑 */
+.slides{
+  position: relative;
+  aspect-ratio: 16 / 9;      /* 필요하면 21/9, 4/3 등으로 변경 */
+  border-radius: 0.625rem;   /* 10px */
+  overflow: hidden;          /* 자식 절대배치가 넘치지 않게 */
+  background: #f5f5f5;       /* 로딩 중 배경 */
+}
+
+
+/* 각 슬라이드: 기본은 숨김(opacity), active만 보이게 */
+.slide{
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .5s ease;
+  pointer-events: none;
+}
+.slide.active{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.slide img{
   width: 100%;
-  height: auto;
-  border-radius: 10px;
+  height: 100%;
+  object-fit: cover;         /* 잘라서 꽉 채우기 */
   display: block;
 }
 
-#slide-img {
-  transition: opacity .8s ease-in-out;  /* 더 부드러운 전환 */
-  opacity: 1;
-}
-
-.fade {
-  animation: fade 0.6s ease;
-}
-
-@keyframes fade {
-  from { opacity: 0.3; }
-  to   { opacity: 1; }
-}
-
-.location-tag {
+/* 위치 라벨 */
+.location-tag{
   position: absolute;
-  top: 14px;
-  right: 14px;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  z-index: 2;                  /* 라벨도 사진 위로 */
+  top: .875rem; right: .875rem;
+  background: rgba(255,255,255,.85);
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  font-size: .875rem;
+  z-index: 2;
 }
 
-.dots {
-  position: absolute;          /* 사진 위에 겹치기 */
-  left: 0;
-  right: 0;
-  bottom: 14px;
+/* 인디케이터 도트 */
+.dots{
+  position: absolute;
+  left: 0; right: 0;
+  bottom: .875rem;
   text-align: center;
-  z-index: 3;                  /* z축 최상위로 */
-  margin: 0;                   /* 기존 margin 제거 */
+  margin: 0;
+  z-index: 3;
 }
-
-.dot {
-  width: 10px;
-  height: 10px;
+.dot{
+  width: .625rem; height: .625rem;
   display: inline-block;
-  margin: 0 5px;
-  background: rgba(255,255,255,.75); /* 어두운 사진에서도 보이게 */
-  border: 1px solid rgba(0,0,0,.25);
+  margin: 0 .3125rem;
+  background: rgba(255,255,255,.75);
+  border: .0625rem solid rgba(0,0,0,.25);
   border-radius: 50%;
   cursor: pointer;
   transition: transform .2s, background .2s, border-color .2s;
 }
-
-.dot.active {
-  background: #fff;
-  border-color: rgba(0,0,0,.4);
-  transform: scale(1.15);
+.dot.active{
+  background: #fff; border-color: rgba(0,0,0,.4); transform: scale(1.15);
 }
 
-.main-nav {
-  display: flex;
-  justify-content: center;
-  gap: 48px;
-  margin-top: 10px;
+/* ========= Main nav ========= */
+.main-nav{
+  display:flex; justify-content:center;
+  gap:3rem; margin-top:.625rem;
+}
+.main-nav a{
+  text-decoration:none; font-weight:700;
+  color:var(--gray-900); letter-spacing:.08em;
 }
 
-.main-nav a {
-  text-decoration: none;
-  font-weight: 700;
-  color: #111;
-  letter-spacing: 0.08em;
+/* ========= Responsive ========= */
+@media (max-width: var(--bp-tablet)){
+  .main-container{ padding: .875rem 0; }
+  .main-nav{ gap:2rem; }
+}
+@media (max-width: var(--bp-mobile)){
+  .main-container{ padding: .75rem 0; }
+  .slideshow-container{ padding: 0 .5rem; }
+  .location-tag{ top:.625rem; right:.625rem; font-size:.8125rem; }
+  .dots{ bottom:.625rem; }
+  .dot{ transform: scale(.95); }
+  .main-nav{ gap:1.25rem; flex-wrap:wrap; row-gap:.5rem; }
 }
