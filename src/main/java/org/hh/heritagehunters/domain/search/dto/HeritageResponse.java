@@ -14,6 +14,7 @@ public record HeritageResponse(
     String region,
     String address,
     String era,
+    String eraDetail,
     String description
 ) {
 
@@ -27,6 +28,7 @@ public record HeritageResponse(
         RegionCodeMapper.getKoreanName(h.getRegion()),
         h.getAddress(),
         h.getEra(),
+        h.getEraDetail(),
         h.getDescription()
     );
   }
