@@ -31,7 +31,7 @@ public class SecurityConfig {
                 "/register",
                 "/login",
                 "/logout",
-                "/map",
+                "/map/**",
 
                 // static resource allowlist
                 "/css/**",
