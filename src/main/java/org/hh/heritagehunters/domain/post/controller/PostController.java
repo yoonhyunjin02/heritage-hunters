@@ -87,29 +87,22 @@ public class PostController {
       @RequestParam(value = "images") List<MultipartFile> images,
       RedirectAttributes redirectAttributes) {
 
-    // 인증 보호: 미인증 → 로그인 페이지로
+
     if (userDetails == null || userDetails.getUser() == null) {
-      redirectAttributes.addFlashAttribute("toastType", "error");
-      redirectAttributes.addFlashAttribute("toastMessage", "로그인 후 게시글을 작성할 수 있습니다.");
-      return "redirect:/login";
+      return redirectWithError(redirectAttributes, "로그인 후 게시글을 작성할 수 있습니다.", "/login");
     }
 
     if (bindingResult.hasErrors()) {
-      redirectAttributes.addFlashAttribute("toastType", "error");
-      redirectAttributes.addFlashAttribute("toastMessage", "입력값을 확인해주세요.");
-      return "redirect:/posts";
+      return redirectWithError(redirectAttributes, "입력값을 확인해주세요.", "/posts");
     }
 
-    // 생성은 파사드가 오케스트레이션 (유물 매핑/이미지 업로드 포함)
     PostCreateResponseDto response = postFacade.create(userDetails.getUser(), request, images);
 
-    redirectAttributes.addFlashAttribute("toastType", "success");
-    redirectAttributes.addFlashAttribute("toastMessage", response.getMessage());
     if (response.getPointsEarned() > 0) {
       redirectAttributes.addFlashAttribute("pointsEarned", response.getPointsEarned());
     }
 
-    return "redirect:/posts";
+    return redirectWithSuccess(redirectAttributes, response.getMessage(), "/posts");
   }
 
   /**
@@ -125,7 +118,6 @@ public class PostController {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
 
-    // images만 fetch-join된 안전 조회 + 작성자 검증은 파사드/서비스에서 한 번 더 체크
     PostDetailResponseDto post = postFacade.forEdit(postId, userDetails.getUser());
 
     PostUpdateRequestDto updateForm = new PostUpdateRequestDto();
@@ -147,6 +139,8 @@ public class PostController {
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @Valid @ModelAttribute PostUpdateRequestDto postUpdateRequestDto,
       BindingResult bindingResult,
+      @RequestParam(value = "images", required = false) List<MultipartFile> newImages,
+      @RequestParam(value = "keepImages", required = false) List<Long> keepImageIds,
       RedirectAttributes redirectAttributes) {
 
     if (userDetails == null || userDetails.getUser() == null) {
@@ -154,18 +148,12 @@ public class PostController {
     }
 
     if (bindingResult.hasErrors()) {
-      redirectAttributes.addFlashAttribute("toastType", "error");
-      redirectAttributes.addFlashAttribute("toastMessage", "입력값을 확인해주세요.");
-      return "redirect:/posts/" + postId;
+      return redirectWithError(redirectAttributes, "입력값을 확인해주세요.", "/posts/" + postId);
     }
 
-    // 작성자 검증 포함
-    postFacade.update(postId, userDetails.getUser(), postUpdateRequestDto);
+    postFacade.update(postId, userDetails.getUser(), postUpdateRequestDto, newImages, keepImageIds);
 
-    redirectAttributes.addFlashAttribute("toastType", "success");
-    redirectAttributes.addFlashAttribute("toastMessage", "게시글이 수정되었습니다.");
-
-    return "redirect:/posts/" + postId;
+    return redirectWithSuccess(redirectAttributes, "게시글이 수정되었습니다.", "/posts/" + postId);
   }
 
 
@@ -179,7 +167,6 @@ public class PostController {
 
     User currentUser = (userDetails != null) ? userDetails.getUser() : null;
 
-    // images fetch-join + 좋아요 여부/작성자 여부 조립
     PostDetailResponseDto post = postFacade.detail(postId, currentUser);
 
     model.addAttribute("post", post);
@@ -205,18 +192,13 @@ public class PostController {
     }
 
     if (bindingResult.hasErrors()) {
-      redirectAttributes.addFlashAttribute("toastType", "error");
-      redirectAttributes.addFlashAttribute("toastMessage", "댓글 내용을 입력해주세요.");
-      return "redirect:/posts/" + postId;
+      return redirectWithError(redirectAttributes, "댓글 내용을 입력해주세요.", "/posts/" + postId);
     }
 
     // 댓글 작성 및 카운트
     postFacade.addComment(postId, userDetails.getUser(), commentForm);
 
-    redirectAttributes.addFlashAttribute("toastType", "success");
-    redirectAttributes.addFlashAttribute("toastMessage", "댓글이 등록되었습니다.");
-
-    return "redirect:/posts/" + postId;
+    return redirectWithSuccess(redirectAttributes, "댓글이 등록되었습니다.", "/posts/" + postId);
   }
 
   /**
@@ -235,10 +217,7 @@ public class PostController {
     boolean isLiked = postFacade.toggleLike(postId, userDetails.getUser());
 
     String message = isLiked ? "좋아요를 눌렀습니다." : "좋아요를 취소했습니다.";
-    redirectAttributes.addFlashAttribute("toastType", "success");
-    redirectAttributes.addFlashAttribute("toastMessage", message);
-
-    return "redirect:/posts/" + postId;
+    return redirectWithSuccess(redirectAttributes, message, "/posts/" + postId);
   }
 
   /**
@@ -257,9 +236,32 @@ public class PostController {
     // 작성자 검증 + 삭제
     postFacade.delete(postId, userDetails.getUser());
 
-    redirectAttributes.addFlashAttribute("toastType", "success");
-    redirectAttributes.addFlashAttribute("toastMessage", "게시글이 삭제되었습니다.");
+    return redirectWithSuccess(redirectAttributes, "게시글이 삭제되었습니다.", "/posts");
+  }
 
-    return "redirect:/posts";
+  // ================= 헬퍼 메서드들 =================
+
+  /**
+   * 토스트 메시지와 함께 리다이렉트
+   * 사용자 경험을 고려한 적절한 페이지로 이동
+   */
+  private String redirectWithToast(RedirectAttributes redirectAttributes, String type, String message, String path) {
+    redirectAttributes.addFlashAttribute("toastType", type);
+    redirectAttributes.addFlashAttribute("toastMessage", message);
+    return "redirect:" + path;
+  }
+
+  /**
+   * 성공 메시지와 함께 리다이렉트
+   */
+  private String redirectWithSuccess(RedirectAttributes redirectAttributes, String message, String path) {
+    return redirectWithToast(redirectAttributes, "success", message, path);
+  }
+
+  /**
+   * 에러 메시지와 함께 리다이렉트
+   */
+  private String redirectWithError(RedirectAttributes redirectAttributes, String message, String path) {
+    return redirectWithToast(redirectAttributes, "error", message, path);
   }
 }
