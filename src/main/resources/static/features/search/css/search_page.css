@@ -11,16 +11,16 @@
   --filter-height: 200px;
 }
 
-body {
+/* body {
   display: flex;
   flex-direction: column;
-}
+} */
 
 /*----------------------------------------
   main Container
 ----------------------------------------*/
 .main-container {
-  flex: 1;
+  /* flex: 1; */
   display: flex;
   flex-direction: column;
   justify-content: center;

@@ -1,11 +1,11 @@
 :root {
   /* Breakpoints (1rem = 16px) */
-  --bp-mobile: 47.9375rem;  /* 767px */
-  --bp-tablet: 64rem;       /* 1024px */
+  --bp-mobile: 47.9375rem; /* 767px */
+  --bp-tablet: 64rem; /* 1024px */
   --bp-desktop: 64.0625rem; /* 1025px */
 
   /* 공통 컨테이너 폭: 로그인 오른쪽 카드와 메인 사진 동일 */
-  --section-max: 62.5rem;   /* 1000px */
+  --section-max: 62.5rem; /* 1000px */
 
   /* Color Palette */
   --gray-000: #ffffff;
@@ -33,9 +33,9 @@
   --purple-900: #2d0066;
 }
 
-/* ===============================
-   Global Reset & Base Styles
-   =============================== */
+/* ==================================
+  Global Reset & Base Styles
+================================== */
 
 /* 기본 박스 모델 & 여백 제거 */
 * {
@@ -52,8 +52,14 @@ body {
 
 /* 기본 폰트 & 본문 색상 */
 body {
-  font-family: 'Pretendard Variable', sans-serif;
+  font-family: "Pretendard Variable", sans-serif;
   color: var(--gray-900);
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
 }
 
 /* 링크: 밑줄 제거 + 색상 상속 */
@@ -69,9 +75,9 @@ ol {
   list-style: none;
 }
 
-/* ===============================
-   Common Container Utility
-   =============================== */
+/* ==================================
+  Common Container Utility
+================================== */
 
 /* 중앙 정렬 + 최대 폭 제한 */
 .container-max {
