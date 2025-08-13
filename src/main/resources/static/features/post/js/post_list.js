@@ -1,5 +1,6 @@
 // features/post/js/post_list.js
 window.PostListManager = window.PostListManager || {};
+var PostListManager = window.PostListManager; // 전역 식별자 바인딩 추가
 
 /** 정렬/필터 변경 시 전송 */
 window.submitForm = () => {
