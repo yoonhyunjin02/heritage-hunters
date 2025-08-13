@@ -14,7 +14,7 @@
 /*----------------------------------------
   Search Container
 ----------------------------------------*/
-.search {
+.main-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: var(--spacing-unit);
