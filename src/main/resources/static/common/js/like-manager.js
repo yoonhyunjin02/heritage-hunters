@@ -125,10 +125,10 @@ class LikeManager {
             }
         }
 
-        // 게시글 상세에서 - 좋아요 통계만
-        const detailStats = document.querySelector('.stats');
-        if (detailStats) {
-            const statElements = detailStats.querySelectorAll('.stat');
+        // 게시글 상세에서 - 액션박스의 좋아요 통계만
+        const actionsStats = document.querySelector('.actions-box .stats');
+        if (actionsStats) {
+            const statElements = actionsStats.querySelectorAll('.stat');
             for (let stat of statElements) {
                 if (stat.textContent.includes('좋아요')) {
                     const bElement = stat.querySelector('b');
@@ -163,9 +163,6 @@ class LikeManager {
 
         // 좋아요 개수 업데이트 (여러 위치에서 찾기)
         this.updateLikeCount(button, likeCount);
-
-        // 애니메이션 효과
-        this.addLikeAnimation(button);
     }
 
     /**
@@ -197,61 +194,6 @@ class LikeManager {
         }
     }
 
-    /**
-     * 좋아요 애니메이션 효과
-     */
-    addLikeAnimation(button) {
-        button.style.transform = 'scale(1.2)';
-        button.style.transition = 'transform 0.15s ease';
-        
-        setTimeout(() => {
-            button.style.transform = 'scale(1)';
-        }, 150);
-
-        // 하트 팝업 효과 (선택적)
-        if (button.classList.contains('liked')) {
-            this.showHeartAnimation(button);
-        }
-    }
-
-    /**
-     * 하트 팝업 애니메이션
-     */
-    showHeartAnimation(button) {
-        const heart = document.createElement('div');
-        heart.innerHTML = '❤️';
-        heart.style.cssText = `
-            position: absolute;
-            z-index: 1000;
-            font-size: 20px;
-            pointer-events: none;
-            animation: heartPop 0.6s ease-out forwards;
-        `;
-
-        // CSS 애니메이션 정의
-        if (!document.querySelector('#heart-animation-style')) {
-            const style = document.createElement('style');
-            style.id = 'heart-animation-style';
-            style.textContent = `
-                @keyframes heartPop {
-                    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-                    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-                    100% { transform: translate(-50%, -70%) scale(1); opacity: 0; }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        const rect = button.getBoundingClientRect();
-        heart.style.left = rect.left + rect.width / 2 + 'px';
-        heart.style.top = rect.top + rect.height / 2 + 'px';
-
-        document.body.appendChild(heart);
-
-        setTimeout(() => {
-            heart.remove();
-        }, 600);
-    }
 
     /**
      * 에러 메시지 표시
