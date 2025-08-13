@@ -235,6 +235,56 @@ const UI = {
   },
 };
 
+// 키 스케줄러: Round-Robin + 429 회피
+const KeyRR = {
+  queue: [1, 2, 3],
+  // code -> expireAt(ms)
+  blacklist: new Map(),
+  // 블랙리스트 유지 시간
+  TTL_MS: 60 * 60 * 1000,
+
+  initOffset() {
+    const offset = Math.floor(Math.random() * this.queue.length); // 0~length-1
+    this.queue = this.queue.slice(offset).concat(this.queue.slice(0, offset));
+  },
+
+  isBlocked(code) {
+    const until = this.blacklist.get(code);
+    if (!until) return false;
+    if (Date.now() > until) {
+      this.blacklist.delete(code);
+      return false;
+    }
+    return true;
+  },
+
+  block(code, ttl = this.TTL_MS) {
+    this.blacklist.set(code, Date.now() + ttl);
+  },
+
+  // 다음 사용 가능한 code 반환(블랙리스트는 건너뜀)
+  next() {
+    if (!this.queue.length) throw new Error("No keys configured");
+    let tries = this.queue.length;
+    while (tries-- > 0) {
+      const code = this.queue.shift();
+      this.queue.push(code); // 회전
+      if (!this.isBlocked(code)) return code;
+    }
+    // 모두 블록이면 그냥 첫 번째 반환(어차피 서버가 거절하면 다시 블록됨)
+    return this.queue[0];
+  },
+
+  // 특정 code를 뒤로 미룹니다(선택 사용)
+  use(code) {
+    const idx = this.queue.indexOf(code);
+    if (idx > -1) {
+      this.queue.splice(idx, 1);
+      this.queue.push(code);
+    }
+  },
+};
+
 /**
  * AI 모듈(요청/리셋/페치 핸들링)
  */
@@ -247,7 +297,12 @@ const AI = {
    */
   async ask(heritageId, payload) {
     const res = await U.postJson(`/heritage/${heritageId}/ai`, payload);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    // 상태 코드를 보존해서 상위에서 429 판별 가능하게 함
+    if (!res.ok) {
+      const err = new Error(`HTTP ${res.status}`);
+      err.status = res.status;
+      throw err;
+    }
     return res.json();
   },
 
@@ -276,9 +331,23 @@ const AI = {
     UI.setLoading(selector, btnSelector);
     const start = performance.now();
     try {
-      const json = await AI.ask(heritageId, { type, code, ...base });
+      // 1차 시도
+      let json;
+      try {
+        json = await AI.ask(heritageId, { type, code, ...base });
+      } catch (e) {
+        // 429면 해당 code 블랙리스트 + 다른 code로 1회 재시도
+        if (e && e.status === 429) {
+          console.warn(`429 for code=${code}, blacklist & retry`);
+          KeyRR.block(code);
+          const retryCode = KeyRR.next();
+          json = await AI.ask(heritageId, { type, code: retryCode, ...base });
+        } else {
+          throw e;
+        }
+      }
       const markdown = json?.content ?? C.MSG.empty;
-      const html = window.marked.parse(markdown); // ✅ Markdown → HTML
+      const html = window.marked.parse(markdown);
       const target = U.qs(selector);
       if (target) target.innerHTML = html;
     } catch (e) {
@@ -328,20 +397,25 @@ const App = {
   initAi() {
     const heritageId = U.getHeritageId();
     const base = U.getHeritagePayloadBase();
-    const cc = U.clientCodeOf();
 
-    // 초기 로드
-    AI.fetchContent(heritageId, C.AI_TARGET.recommends, "recommends", 1, base);
-    AI.fetchContent(heritageId, C.AI_TARGET.weather, "weather", 2, base);
-    AI.fetchContent(heritageId, C.AI_TARGET.news, "news", 3, base);
-    AI.fetchContent(heritageId, C.AI_TARGET.summary, "summary", cc, base);
+    // 새로고침/접속 시 랜덤하게 queue 출발점 결정
+    KeyRR.initOffset();
+
+    // 초기 로드: 라운드로빈으로 코드 선택
+    AI.fetchContent(heritageId, C.AI_TARGET.recommends, "recommends", KeyRR.next(), base);
+    AI.fetchContent(heritageId, C.AI_TARGET.weather, "weather", KeyRR.next(), base);
+    AI.fetchContent(heritageId, C.AI_TARGET.news, "news", KeyRR.next(), base);
+    AI.fetchContent(heritageId, C.AI_TARGET.summary, "summary", KeyRR.next(), base);
 
     // 새로고침 버튼
     U.qsa(C.SELECTOR.refreshBtns).forEach((btn) => {
       btn.addEventListener("click", async () => {
         const type = btn.dataset.type;
         if (!type || !C.AI_TARGET[type]) return;
-        const code = btn.dataset.code ? Number(btn.dataset.code) : cc;
+
+        // data-code가 있으면 그걸 쓰고, 없으면 라운드로빈
+        // (운영 중 data-code 제거하면 모두 RR로 일원화됨)
+        const code = btn.dataset.code ? Number(btn.dataset.code) : KeyRR.next();
         const selector = C.AI_TARGET[type];
         const btnSelector = `.ai-refresh[data-type="${type}"]`;
 
