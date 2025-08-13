@@ -205,14 +205,56 @@ const PostModal = {
   /* ---------- 제출 ---------- */
   async handleSubmit(e) {
     e.preventDefault();
-    if (this.isSubmitting || !this.validateForm()) {
+    console.log('폼 제출 시작');
+    
+    if (this.isSubmitting) {
+      console.log('이미 제출 중');
+      return;
+    }
+    
+    if (!this.validateForm()) {
+      console.log('폼 검증 실패');
       return;
     }
 
+    console.log('폼 검증 성공, 제출 진행');
     this.isSubmitting = true;
     this.setLoading(true);
 
-    this.form.submit();
+    try {
+      // FormData를 사용해 파일과 함께 전송
+      const formData = new FormData(this.form);
+      console.log('FormData 생성 완료');
+      
+      // CSRF 토큰 확인
+      const csrfToken = document.querySelector('input[name="_csrf"]')?.value;
+      console.log('CSRF 토큰:', csrfToken);
+      
+      const response = await fetch(this.form.action || '/posts', {
+        method: 'POST',
+        body: formData
+      });
+      
+      console.log('서버 응답:', response);
+      
+      if (response.ok) {
+        console.log('게시글 작성 성공');
+        this.close();
+        // 페이지 새로고침하여 새 게시글 표시
+        window.location.reload();
+      } else {
+        console.error('서버 오류:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('오류 내용:', errorText);
+        alert('게시글 작성 중 오류가 발생했습니다.');
+      }
+    } catch (error) {
+      console.error('네트워크 오류:', error);
+      alert('서버와 통신 중 오류가 발생했습니다.');
+    } finally {
+      this.isSubmitting = false;
+      this.setLoading(false);
+    }
   },
 
   validateForm() {
