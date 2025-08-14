@@ -24,6 +24,10 @@ public class SearchService {
       throw new IllegalArgumentException("검색어가 비어 있습니다.");
     }
     int safeLimit = Math.max(1, Math.min(limit, 500)); // 1~500 제한
-    return searchRepository.search(q.trim(), safeLimit, type);
+
+    return searchRepository.search(q.trim(), safeLimit, type).stream()
+        // lat/lng가 모두 0.0이면 제외
+        .filter(d -> !(d.lat() == 0.0 && d.lng() == 0.0))
+        .toList();
   }
 }

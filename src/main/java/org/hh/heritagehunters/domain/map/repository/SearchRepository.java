@@ -27,7 +27,7 @@ public class SearchRepository {
       rs.getDouble("lng"),
       sanitize(rs.getString("address")),
       sanitize(rs.getString("category")),
-      0.0 // 검색 API는 거리 계산 안 함
+      0.0
   );
 
   /**
@@ -42,12 +42,9 @@ public class SearchRepository {
   public List<MapMarkerDto> search(String q, int limit, String type) {
     final String like = "%" + q + "%";
     switch (type == null ? "all" : type) {
-      case "museum":
-        return searchMuseums(like, limit);
-      case "heritage":
-        return searchHeritages(like, limit);
-      default:
-        return searchAll(like, limit);
+      case "museum":   return searchMuseums(like, limit);
+      case "heritage": return searchHeritages(like, limit);
+      default:         return searchAll(like, limit);
     }
   }
 
@@ -63,6 +60,9 @@ public class SearchRepository {
         COALESCE(m.category, '')          AS category
       FROM museums m
       WHERE (m.name ILIKE :like OR m.address ILIKE :like OR m.category ILIKE :like)
+        AND m.geom IS NOT NULL
+        AND ST_X(m.geom) <> 0
+        AND ST_Y(m.geom) <> 0
       ORDER BY m.name ASC
       LIMIT :limit
     """;
@@ -84,9 +84,10 @@ public class SearchRepository {
              OR h.address ILIKE :like
              OR h.designation ILIKE :like
              OR h.era ILIKE :like)
-        AND NOT EXISTS (
-          SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id
-        )
+        AND NOT EXISTS (SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id)
+        AND h.geom IS NOT NULL
+        AND ST_X(h.geom) <> 0
+        AND ST_Y(h.geom) <> 0
       ORDER BY h.name ASC
       LIMIT :limit
     """;
@@ -106,6 +107,9 @@ public class SearchRepository {
           COALESCE(m.category, '')          AS category
         FROM museums m
         WHERE (m.name ILIKE :like OR m.address ILIKE :like OR m.category ILIKE :like)
+          AND m.geom IS NOT NULL
+          AND ST_X(m.geom) <> 0
+          AND ST_Y(m.geom) <> 0
       )
       UNION ALL
       (
@@ -122,9 +126,10 @@ public class SearchRepository {
                OR h.address ILIKE :like
                OR h.designation ILIKE :like
                OR h.era ILIKE :like)
-          AND NOT EXISTS (
-            SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id
-          )
+          AND NOT EXISTS (SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id)
+          AND h.geom IS NOT NULL
+          AND ST_X(h.geom) <> 0
+          AND ST_Y(h.geom) <> 0
       )
       LIMIT :limit
     """;

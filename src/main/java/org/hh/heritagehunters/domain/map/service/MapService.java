@@ -24,17 +24,16 @@ public class MapService {
   /** 지도에 뿌릴 모든 마커(박물관 + 문화재) */
   public List<MapMarkerDto> getAllMarkers() {
     List<MapMarkerDto> museums = museumRepository.findAll().stream()
-        .filter(m -> nonNullLatLng(m.getLatitude(), m.getLongitude()))
+        .filter(m -> validLatLng(m.getLatitude(), m.getLongitude()))
         .map(this::museumToDto)
-        .collect(Collectors.toList());
+        .toList();
 
     List<MapMarkerDto> heritages = heritageRepository.findAll().stream()
-        .filter(h -> nonNullLatLng(h.getLatitude(), h.getLongitude()))
+        .filter(h -> validLatLng(h.getLatitude(), h.getLongitude()))
         .map(this::heritageToDto)
-        .collect(Collectors.toList());
+        .toList();
 
-    return Stream.concat(museums.stream(), heritages.stream())
-        .collect(Collectors.toList());
+    return Stream.concat(museums.stream(), heritages.stream()).toList();
   }
 
   private boolean nonNullLatLng(BigDecimal lat, BigDecimal lng) {
@@ -70,7 +69,6 @@ public class MapService {
   public List<MapMarkerDto> getMarkers(
       String type, List<String> designation, List<String> region, List<String> era) {
 
-    // 빈 리스트 → null (쿼리의 "전체" 의미)
     designation = (designation == null || designation.isEmpty()) ? null : designation;
     region      = (region == null || region.isEmpty()) ? null : region;
     era         = (era == null || era.isEmpty()) ? null : era;
@@ -82,15 +80,22 @@ public class MapService {
 
     if (wantMuseum) {
       museumRepository.findAll().stream()
-          .filter(m -> nonNullLatLng(m.getLatitude(), m.getLongitude()))
+          .filter(m -> validLatLng(m.getLatitude(), m.getLongitude()))
           .map(this::museumToDto)
           .forEach(result::add);
     }
     if (wantHeritage) {
       heritageRepository.findForMap(designation, region, era).stream()
+          .filter(h -> validLatLng(h.getLatitude(), h.getLongitude()))
           .map(this::heritageToDto)
           .forEach(result::add);
     }
     return result;
+  }
+
+  private boolean validLatLng(BigDecimal lat, BigDecimal lng) {
+    return lat != null && lng != null
+        && lat.compareTo(BigDecimal.ZERO) != 0
+        && lng.compareTo(BigDecimal.ZERO) != 0;
   }
 }
