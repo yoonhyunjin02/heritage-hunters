@@ -35,12 +35,18 @@ public class PostImage {
   private Integer orderIndex;
 
 
-  // 메인 이미지인지 확인
+  /**
+   * 이 이미지가 메인 이미지인지 확인합니다
+   * @return 메인 이미지 여부 (orderIndex가 0이면 true)
+   */
   public boolean isMainImage() {
     return orderIndex != null && orderIndex == 0;
   }
 
-  // 이미지 순서 업데이트
+  /**
+   * 이미지의 순서를 업데이트합니다
+   * @param newOrder 새로운 순서 인덱스
+   */
   public void updateOrder(int newOrder) {
     this.orderIndex = newOrder;
   }

@@ -14,6 +14,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
+  /**
+   * 키워드와 지역 필터로 게시글 목록을 조회합니다
+   * @param keyword 검색 키워드 (내용, 문화유산명, 위치에서 검색)
+   * @param region 지역 필터
+   * @param pageable 페이지네이션 정보
+   * @return 필터링된 게시글 목록
+   */
   @Query("SELECT p FROM Post p " +
       "LEFT JOIN FETCH p.user " +
       "LEFT JOIN FETCH p.heritage " +
@@ -26,12 +33,20 @@ public interface PostRepository extends JpaRepository<Post, Long> {
       @Param("region") String region,
       Pageable pageable);
 
+  /**
+   * 사용자가 좋아요를 누른 게시글 ID들을 조회합니다
+   * @param userId 사용자 ID
+   * @param posts 게시글 목록
+   * @return 좋아요를 누른 게시글 ID 집합
+   */
   @Query("SELECT l.post.id FROM Like l WHERE l.user.id = :userId AND l.post IN :posts")
   Set<Long> findLikedPostIds(@Param("userId") Long userId, @Param("posts") List<Post> posts);
 
 
   /**
-   * ✅ 수정: comments fetch-join 제거, 이미지만 fetch-join (기존 findByIdWithDetails 대체)
+   * 이미지를 포함하여 게시글을 조회합니다
+   * @param postId 게시글 ID
+   * @return 이미지가 포함된 게시글 Optional
    */
   @Query("""
         select p from Post p
@@ -42,6 +57,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
       """)
   Optional<Post> findByIdWithImages(@Param("postId") Long postId);
 
+  /**
+   * 사용자가 해당 게시글에 좋아요를 눌렀는지 확인합니다
+   * @param userId 사용자 ID
+   * @param postId 게시글 ID
+   * @return 좋아요 존재 여부
+   */
   @Query("SELECT COUNT(l) > 0 FROM Like l WHERE l.userId = :userId AND l.postId = :postId")
   boolean existsByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 }

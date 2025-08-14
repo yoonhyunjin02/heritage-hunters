@@ -41,7 +41,16 @@ public class PostController {
   private final PostFacade postFacade;
 
   /**
-   * 게시글 리스트
+   * 게시글 목록을 조회하고 페이지네이션된 결과를 반환합니다
+   * @param keyword 검색 키워드 (선택사항)
+   * @param region 지역 필터 (선택사항)
+   * @param sort 정렬 기준 (기본값: createdAt)
+   * @param direction 정렬 방향 (기본값: desc)
+   * @param page 페이지 번호 (기본값: 0)
+   * @param size 페이지 크기 (기본값: 16)
+   * @param customUserDetails 현재 로그인한 사용자 정보
+   * @param model 뷰에 전달할 데이터 모델
+   * @return 게시글 목록 페이지 뷰 이름
    */
   @GetMapping
   public String getPosts(
@@ -77,7 +86,13 @@ public class PostController {
   }
 
   /**
-   * 게시글 작성
+   * 새로운 게시글을 작성합니다
+   * @param userDetails 현재 로그인한 사용자 정보
+   * @param request 게시글 작성 요청 데이터
+   * @param bindingResult 유효성 검증 결과
+   * @param images 업로드할 이미지 파일 목록
+   * @param redirectAttributes 리다이렉트 시 전달할 속성
+   * @return 리다이렉트 URL
    */
   @PostMapping
   public String createPost(
@@ -106,7 +121,11 @@ public class PostController {
   }
 
   /**
-   * 게시글 수정 폼
+   * 게시글 수정 폼을 조회합니다
+   * @param postId 수정할 게시글 ID
+   * @param userDetails 현재 로그인한 사용자 정보
+   * @param model 뷰에 전달할 데이터 모델
+   * @return 게시글 수정 페이지 뷰 이름
    */
   @GetMapping("/{id}/edit")
   public String getEditForm(
@@ -131,7 +150,15 @@ public class PostController {
   }
 
   /**
-   * 게시글 수정 처리
+   * 게시글을 수정합니다
+   * @param postId 수정할 게시글 ID
+   * @param userDetails 현재 로그인한 사용자 정보
+   * @param postUpdateRequestDto 게시글 수정 요청 데이터
+   * @param bindingResult 유효성 검증 결과
+   * @param newImages 새로 업로드할 이미지 파일 목록
+   * @param keepImageIds 유지할 기존 이미지 ID 목록
+   * @param redirectAttributes 리다이렉트 시 전달할 속성
+   * @return 리다이렉트 URL
    */
   @PutMapping("/{id}")
   public String updatePost(
@@ -158,7 +185,11 @@ public class PostController {
 
 
   /**
-   * 게시글 상세
+   * 게시글 상세 정보를 조회합니다
+   * @param postId 조회할 게시글 ID
+   * @param userDetails 현재 로그인한 사용자 정보
+   * @param model 뷰에 전달할 데이터 모델
+   * @return 게시글 상세 페이지 뷰 이름
    */
   @GetMapping("/{id}")
   public String getPostDetail(@PathVariable("id") Long postId,
@@ -177,7 +208,13 @@ public class PostController {
   }
 
   /**
-   * 댓글 작성
+   * 게시글에 댓글을 작성합니다
+   * @param postId 댓글을 작성할 게시글 ID
+   * @param userDetails 현재 로그인한 사용자 정보
+   * @param commentForm 댓글 작성 요청 데이터
+   * @param bindingResult 유효성 검증 결과
+   * @param redirectAttributes 리다이렉트 시 전달할 속성
+   * @return 리다이렉트 URL
    */
   @PostMapping("/{postId}/comments")
   public String createComment(
@@ -202,7 +239,11 @@ public class PostController {
   }
 
   /**
-   * 좋아요 토글
+   * 게시글 좋아요를 토글합니다
+   * @param postId 좋아요를 토글할 게시글 ID
+   * @param userDetails 현재 로그인한 사용자 정보
+   * @param redirectAttributes 리다이렉트 시 전달할 속성
+   * @return 리다이렉트 URL
    */
   @PostMapping("/{id}/like")
   public String toggleLike(
@@ -221,7 +262,11 @@ public class PostController {
   }
 
   /**
-   * 게시글 삭제
+   * 게시글을 삭제합니다
+   * @param postId 삭제할 게시글 ID
+   * @param userDetails 현재 로그인한 사용자 정보
+   * @param redirectAttributes 리다이렉트 시 전달할 속성
+   * @return 리다이렉트 URL
    */
   @DeleteMapping("/{id}")
   public String deletePost(
@@ -242,8 +287,12 @@ public class PostController {
   // ================= 헬퍼 메서드들 =================
 
   /**
-   * 토스트 메시지와 함께 리다이렉트
-   * 사용자 경험을 고려한 적절한 페이지로 이동
+   * 토스트 메시지와 함께 리다이렉트합니다
+   * @param redirectAttributes 리다이렉트 시 전달할 속성
+   * @param type 토스트 메시지 타입
+   * @param message 토스트 메시지 내용
+   * @param path 리다이렉트할 경로
+   * @return 리다이렉트 URL
    */
   private String redirectWithToast(RedirectAttributes redirectAttributes, String type, String message, String path) {
     redirectAttributes.addFlashAttribute("toastType", type);
@@ -252,14 +301,22 @@ public class PostController {
   }
 
   /**
-   * 성공 메시지와 함께 리다이렉트
+   * 성공 메시지와 함께 리다이렉트합니다
+   * @param redirectAttributes 리다이렉트 시 전달할 속성
+   * @param message 성공 메시지
+   * @param path 리다이렉트할 경로
+   * @return 리다이렉트 URL
    */
   private String redirectWithSuccess(RedirectAttributes redirectAttributes, String message, String path) {
     return redirectWithToast(redirectAttributes, "success", message, path);
   }
 
   /**
-   * 에러 메시지와 함께 리다이렉트
+   * 에러 메시지와 함께 리다이렉트합니다
+   * @param redirectAttributes 리다이렉트 시 전달할 속성
+   * @param message 에러 메시지
+   * @param path 리다이렉트할 경로
+   * @return 리다이렉트 URL
    */
   private String redirectWithError(RedirectAttributes redirectAttributes, String message, String path) {
     return redirectWithToast(redirectAttributes, "error", message, path);

@@ -23,6 +23,12 @@ public class PostWriter {
   private final PostRepository postRepository;
   private final HeritageRepository heritageRepository;
 
+  /**
+   * 새로운 게시글을 생성합니다
+   * @param user 게시글 작성자
+   * @param request 게시글 생성 요청 데이터
+   * @return 생성된 게시글 엔티티
+   */
   public Post create(User user, PostCreateRequestDto request) {
     if (user == null) {
       throw new BadRequestException(ErrorCode.LOGIN_REQUIRED);
@@ -39,15 +45,30 @@ public class PostWriter {
     return postRepository.save(post);
   }
 
+  /**
+   * 게시글 정보를 수정합니다
+   * @param post 수정할 게시글 엔티티
+   * @param dto 수정 데이터
+   */
   public void update(Post post, PostUpdateRequestDto dto) {
     post.setContent(dto.getContent());
     post.setLocation(dto.getLocation());
   }
 
+  /**
+   * 게시글을 삭제합니다
+   * @param post 삭제할 게시글 엔티티
+   */
   public void delete(Post post) {
     postRepository.delete(post);
   }
 
+  /**
+   * 지정된 좌표에서 가장 가까운 문화유산을 찾습니다
+   * @param lat 위도
+   * @param lng 경도
+   * @return 가장 가까운 문화유산 (없으면 null)
+   */
   private Heritage findNearestHeritage(Double lat, Double lng) {
     if (lat == null || lng == null) {
       return null;
@@ -64,6 +85,14 @@ public class PostWriter {
         .orElse(null);
   }
 
+  /**
+   * 두 좌표 간의 거리를 계산합니다 (Haversine 공식)
+   * @param lat1 첫 번째 위도
+   * @param lng1 첫 번째 경도
+   * @param lat2 두 번째 위도
+   * @param lng2 두 번째 경도
+   * @return 거리 (미터)
+   */
   private double distance(double lat1, double lng1, double lat2, double lng2) {
     double R = 6371000;
     double dLat = Math.toRadians(lat2 - lat1);
