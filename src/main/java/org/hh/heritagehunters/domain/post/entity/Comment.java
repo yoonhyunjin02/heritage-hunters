@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hh.heritagehunters.domain.oauth.entity.User;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Data
 @NoArgsConstructor
@@ -38,5 +39,14 @@ public class Comment {
   private String content;
 
   @Column(name = "created_at", nullable = false)
+  @CreationTimestamp
   private LocalDateTime createdAt;
+
+  public static Comment create(User user, Post post, String content) {
+    Comment comment = new Comment();
+    comment.setUser(user);
+    comment.setPost(post);
+    comment.setContent(content);
+    return comment;
+  }
 }
