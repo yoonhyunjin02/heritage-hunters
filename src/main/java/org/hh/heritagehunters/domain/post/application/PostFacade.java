@@ -1,5 +1,6 @@
 package org.hh.heritagehunters.domain.post.application;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +80,7 @@ public class PostFacade {
 
   @Transactional
   public PostDetailResponseDto detail(Long postId, User currentUser) {
-    Post post = postReader.getDetailWithImages(postId);
+    Post post = postReader.getPostWithImages(postId);
 
     // 조회수 증가
     post.incrementViewCount();
@@ -92,7 +93,7 @@ public class PostFacade {
 
   @Transactional(readOnly = true)
   public PostDetailResponseDto forEdit(Long postId, User user) {
-    Post post = postReader.getForEditWithImages(postId);
+    Post post = postReader.getPostWithImages(postId);
     if (!post.getUser().getId().equals(user.getId())) {
       throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
     }
@@ -147,6 +148,30 @@ public class PostFacade {
   @Transactional
   public void addComment(Long postId, User user, CommentCreateRequestDto dto) {
     commentService.add(postId, user, dto);
+  }
+
+
+  // PostFacade
+  @Transactional(readOnly = true)
+  public Page<PostListResponseDto> userPosts(Long targetUserId, User currentUser, int page, int size) {
+    Page<Post> posts = postReader.getUserPosts(targetUserId, page, size);
+    return mapWithLikeFlag(posts, currentUser);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<PostListResponseDto> likedPosts(Long targetUserId, User currentUser, int page, int size) {
+    Page<Post> posts = postReader.getLikedPosts(targetUserId, page, size);
+    return mapWithLikeFlag(posts, currentUser);
+  }
+
+  private Page<PostListResponseDto> mapWithLikeFlag(Page<Post> posts, User currentUser) {
+    Set<Long> likedIds = Collections.emptySet();
+    if (currentUser != null && !posts.isEmpty()) {
+//      List<Long> postIds = posts.getContent().stream().map(Post::getId).toList();
+      likedIds = postReader.findLikedPostIds(currentUser.getId(), posts.stream().toList());
+    }
+    Set<Long> finalLiked = likedIds; // effectively final
+    return posts.map(p -> PostListResponseDto.from(p, finalLiked.contains(p.getId())));
   }
 
 }
