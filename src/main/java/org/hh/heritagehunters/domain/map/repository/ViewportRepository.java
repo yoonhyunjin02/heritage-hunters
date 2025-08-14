@@ -19,7 +19,7 @@ public class ViewportRepository {
     this.jdbc = jdbc;
   }
 
-  // MapMarkerDto(id, type, name, lat, lng, address, category)
+  // MapMarkerDto(id, type, name, lat, lng, address, category, distanceMeters)
   private static final RowMapper<MapMarkerDto> MAPPER = (rs, i) -> new MapMarkerDto(
       rs.getLong("id"),
       rs.getString("type"),
@@ -27,7 +27,8 @@ public class ViewportRepository {
       rs.getDouble("lat"),
       rs.getDouble("lng"),
       sanitize(rs.getString("address")),
-      sanitize(rs.getString("category"))
+      sanitize(rs.getString("category")),
+      rs.getObject("distanceMeters") != null ? rs.getDouble("distanceMeters") : 0.0
   );
 
   /**
@@ -53,79 +54,177 @@ public class ViewportRepository {
   // 박물관/미술관만
   public List<MapMarkerDto> findMuseums(double s, double w, double n, double e, int limit) {
     final String sql = """
-      SELECT
-        m.id                                   AS id,
-        'museum'                               AS type,
-        m.name                                 AS name,
-        ST_Y(m.geom)                           AS lat,
-        ST_X(m.geom)                           AS lng,
-        COALESCE(m.address, m.region, '')      AS address,
-        COALESCE(m.category, '')               AS category
-      FROM museums m
-      WHERE ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
-      LIMIT :limit
-    """;
+          SELECT
+            m.id                                   AS id,
+            'museum'                               AS type,
+            m.name                                 AS name,
+            ST_Y(m.geom)                           AS lat,
+            ST_X(m.geom)                           AS lng,
+            COALESCE(m.address, m.region, '')      AS address,
+            COALESCE(m.category, '')               AS category,
+            NULL                                    AS distanceMeters
+          FROM museums m
+          WHERE ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
+          LIMIT :limit
+        """;
     return jdbc.query(sql, Map.of("s", s, "w", w, "n", n, "e", e, "limit", limit), MAPPER);
   }
 
   // 전시 중(=exhibited_at에 존재)인 문화재는 숨김
   public List<MapMarkerDto> findHeritagesExcludingExhibited(double s, double w, double n, double e, int limit) {
     final String sql = """
-      SELECT
-        h.id                                   AS id,
-        'heritage'                             AS type,
-        h.name                                 AS name,
-        ST_Y(h.geom)                           AS lat,
-        ST_X(h.geom)                           AS lng,
-        COALESCE(h.address, h.region, '')      AS address,
-        COALESCE(h.designation, h.era, '')     AS category
-      FROM heritages h
-      WHERE ST_Intersects(h.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
-        AND NOT EXISTS (
-          SELECT 1
-          FROM exhibited_at ea
-          WHERE ea.heritages_id = h.id
-        )
-      LIMIT :limit
-    """;
+          SELECT
+            h.id                                   AS id,
+            'heritage'                             AS type,
+            h.name                                 AS name,
+            ST_Y(h.geom)                           AS lat,
+            ST_X(h.geom)                           AS lng,
+            COALESCE(h.address, h.region, '')      AS address,
+            COALESCE(h.designation, h.era, '')     AS category,
+            NULL                                    AS distanceMeters
+          FROM heritages h
+          WHERE ST_Intersects(h.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
+            AND NOT EXISTS (
+              SELECT 1
+              FROM exhibited_at ea
+              WHERE ea.heritages_id = h.id
+            )
+          LIMIT :limit
+        """;
     return jdbc.query(sql, Map.of("s", s, "w", w, "n", n, "e", e, "limit", limit), MAPPER);
   }
 
   // 둘 다(UNION ALL)
   public List<MapMarkerDto> findAllMixed(double s, double w, double n, double e, int limit) {
     final String sql = """
-      (
-        SELECT
-          m.id                                   AS id,
-          'museum'                               AS type,
-          m.name                                 AS name,
-          ST_Y(m.geom)                           AS lat,
-          ST_X(m.geom)                           AS lng,
-          COALESCE(m.address, m.region, '')      AS address,
-          COALESCE(m.category, '')               AS category
-        FROM museums m
-        WHERE ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
-      )
-      UNION ALL
-      (
-        SELECT
-          h.id                                   AS id,
-          'heritage'                             AS type,
-          h.name                                 AS name,
-          ST_Y(h.geom)                           AS lat,
-          ST_X(h.geom)                           AS lng,
-          COALESCE(h.address, h.region, '')      AS address,
-          COALESCE(h.designation, h.era, '')     AS category
-        FROM heritages h
-        WHERE ST_Intersects(h.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
-          AND NOT EXISTS (
-            SELECT 1
-            FROM exhibited_at ea
-            WHERE ea.heritages_id = h.id
+          (
+            SELECT
+              m.id                                   AS id,
+              'museum'                               AS type,
+              m.name                                 AS name,
+              ST_Y(m.geom)                           AS lat,
+              ST_X(m.geom)                           AS lng,
+              COALESCE(m.address, m.region, '')      AS address,
+              COALESCE(m.category, '')               AS category,
+              NULL                                    AS distanceMeters
+            FROM museums m
+            WHERE ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
           )
-      )
-      LIMIT :limit
-    """;
+          UNION ALL
+          (
+            SELECT
+              h.id                                   AS id,
+              'heritage'                             AS type,
+              h.name                                 AS name,
+              ST_Y(h.geom)                           AS lat,
+              ST_X(h.geom)                           AS lng,
+              COALESCE(h.address, h.region, '')      AS address,
+              COALESCE(h.designation, h.era, '')     AS category,
+              NULL                                    AS distanceMeters
+            FROM heritages h
+            WHERE ST_Intersects(h.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
+              AND NOT EXISTS (
+                SELECT 1
+                FROM exhibited_at ea
+                WHERE ea.heritages_id = h.id
+              )
+          )
+          LIMIT :limit
+        """;
     return jdbc.query(sql, Map.of("s", s, "w", w, "n", n, "e", e, "limit", limit), MAPPER);
+  }
+
+  /**
+   * 내 위치 주변 반경 m 이내 지점 조회 (거리순)
+   */
+  public List<MapMarkerDto> findNearby(double lat, double lng, double radiusMeters, int limit, String type) {
+    return switch (type == null ? "all" : type) {
+      case "museum"   -> findNearbyMuseums(lat, lng, radiusMeters, limit);
+      case "heritage" -> findNearbyHeritagesExcludingExhibited(lat, lng, radiusMeters, limit);
+      default         -> findNearbyAllMixed(lat, lng, radiusMeters, limit);
+    };
+  }
+
+  private List<MapMarkerDto> findNearbyMuseums(double lat, double lng, double radius, int limit) {
+    final String sql = """
+          SELECT
+            m.id                                   AS id,
+            'museum'                               AS type,
+            m.name                                 AS name,
+            ST_Y(m.geom)                           AS lat,
+            ST_X(m.geom)                           AS lng,
+            COALESCE(m.address, m.region, '')      AS address,
+            COALESCE(m.category, '')               AS category,
+            ST_DistanceSphere(ST_MakePoint(:lng,:lat), m.geom) AS distanceMeters
+          FROM museums m
+          WHERE ST_DWithin(m.geom::geography, ST_MakePoint(:lng,:lat)::geography, :radius)
+          ORDER BY distanceMeters ASC
+          LIMIT :limit
+        """;
+    return jdbc.query(sql, Map.of("lat", lat, "lng", lng, "radius", radius, "limit", limit), MAPPER);
+  }
+
+  private List<MapMarkerDto> findNearbyHeritagesExcludingExhibited(double lat, double lng, double radius, int limit) {
+    final String sql = """
+          SELECT
+            h.id                                   AS id,
+            'heritage'                             AS type,
+            h.name                                 AS name,
+            ST_Y(h.geom)                           AS lat,
+            ST_X(h.geom)                           AS lng,
+            COALESCE(h.address, h.region, '')      AS address,
+            COALESCE(h.designation, h.era, '')     AS category,
+            ST_DistanceSphere(ST_MakePoint(:lng,:lat), h.geom) AS distanceMeters
+          FROM heritages h
+          WHERE ST_DWithin(h.geom::geography, ST_MakePoint(:lng,:lat)::geography, :radius)
+            AND NOT EXISTS (
+              SELECT 1
+              FROM exhibited_at ea
+              WHERE ea.heritages_id = h.id
+            )
+          ORDER BY distanceMeters ASC
+          LIMIT :limit
+        """;
+    return jdbc.query(sql, Map.of("lat", lat, "lng", lng, "radius", radius, "limit", limit), MAPPER);
+  }
+
+  private List<MapMarkerDto> findNearbyAllMixed(double lat, double lng, double radius, int limit) {
+    final String sql = """
+          (
+            SELECT
+              m.id                                   AS id,
+              'museum'                               AS type,
+              m.name                                 AS name,
+              ST_Y(m.geom)                           AS lat,
+              ST_X(m.geom)                           AS lng,
+              COALESCE(m.address, m.region, '')      AS address,
+              COALESCE(m.category, '')               AS category,
+              ST_DistanceSphere(ST_MakePoint(:lng,:lat), m.geom) AS distanceMeters
+            FROM museums m
+            WHERE ST_DWithin(m.geom::geography, ST_MakePoint(:lng,:lat)::geography, :radius)
+          )
+          UNION ALL
+          (
+            SELECT
+              h.id                                   AS id,
+              'heritage'                             AS type,
+              h.name                                 AS name,
+              ST_Y(h.geom)                           AS lat,
+              ST_X(h.geom)                           AS lng,
+              COALESCE(h.address, h.region, '')      AS address,
+              COALESCE(h.designation, h.era, '')     AS category,
+              ST_DistanceSphere(ST_MakePoint(:lng,:lat), h.geom) AS distanceMeters
+            FROM heritages h
+            WHERE ST_DWithin(h.geom::geography, ST_MakePoint(:lng,:lat)::geography, :radius)
+              AND NOT EXISTS (
+                SELECT 1
+                FROM exhibited_at ea
+                WHERE ea.heritages_id = h.id
+              )
+          )
+          ORDER BY distanceMeters ASC
+          LIMIT :limit
+        """;
+    return jdbc.query(sql, Map.of("lat", lat, "lng", lng, "radius", radius, "limit", limit), MAPPER);
   }
 }

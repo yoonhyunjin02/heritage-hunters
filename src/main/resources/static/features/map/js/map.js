@@ -476,6 +476,7 @@ function loadGoogleMaps(apiKey){
 }
 
 async function initMap(){
+  wireLocateButton(); // my_location.js에 있는 함수
   if (google.maps.importLibrary){
     const { Map, InfoWindow } = await google.maps.importLibrary('maps');
     const markerLib = await google.maps.importLibrary('marker'); // AdvancedMarkerElement, PinElement
@@ -616,8 +617,3 @@ function wireViewportLoading(){
     t = setTimeout(fetchByViewport, 250);
   });
 }
-
-/*
-(2) 접근성 포커스 링은 CSS에서 추가하세요 (map.css 예시):
-.card:focus { outline: 2px solid var(--purple-400); outline-offset: 2px; }
-*/

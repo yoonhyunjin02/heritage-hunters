@@ -47,7 +47,7 @@ class MapControllerTest {
   @Test
   @DisplayName("JSON: 단일 designation/region/era 파라미터 위임")
   void map_json_singleFilters() throws Exception {
-    var dto = new MapMarkerDto(10L, "heritage", "숭례문", 37.56, 126.97, "서울특별시", "국보");
+    var dto = new MapMarkerDto(10L, "heritage", "숭례문", 37.56, 126.97, "서울특별시", "국보", 0.0);
     given(mapService.getMarkers(eq("heritage"), anyList(), anyList(), anyList()))
         .willReturn(List.of(dto));
 

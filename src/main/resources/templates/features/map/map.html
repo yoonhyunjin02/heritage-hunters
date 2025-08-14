@@ -70,6 +70,11 @@
         </li>
       </ul>
     </section>
+
+    <button id="locateBtn" class="locate-btn" aria-label="내 위치로 이동">
+      <img src="/images/icons/target.svg" alt="" width="16" height="16">
+      <span>내 위치</span>
+    </button>
   </nav>
 
   <section class="map-area">
@@ -82,6 +87,7 @@
 
 <!-- JS -->
 <script defer th:src="@{/features/map/js/map.js}"></script>
+<script defer th:src="@{/features/map/js/my_location.js}"></script>
 <script defer src="https://unpkg.com/@googlemaps/markerclusterer@2.5.3/dist/index.min.js"></script>
 <script defer th:src="@{/features/map/js/designation_map.js}"></script>
 <script defer th:src="@{/features/map/js/nav_toggle.js}"></script>

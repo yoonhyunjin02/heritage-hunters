@@ -49,7 +49,8 @@ public class MapService {
         m.getLatitude().doubleValue(),
         m.getLongitude().doubleValue(),
         sanitize(m.getAddress()),
-        sanitize(m.getCategory())
+        sanitize(m.getCategory()),
+        0.0 // distanceMeters: 기본값(내 위치 기반 조회가 아니므로 0)
     );
   }
 
@@ -61,7 +62,8 @@ public class MapService {
         h.getLatitude().doubleValue(),
         h.getLongitude().doubleValue(),
         sanitize(h.getAddress()),
-        sanitize(h.getDesignation()) // 필요시 era 등 다른 노출값도 sanitize
+        sanitize(h.getDesignation()),
+        0.0 // distanceMeters: 기본값
     );
   }
 

@@ -21,4 +21,11 @@ public class ViewportService {
 
     return repo.findByViewport(south, west, north, east, limit, type == null ? "all" : type);
   }
+
+  // 내 위치 반경 조회 (거리순)
+  public List<MapMarkerDto> nearby(double lat, double lng, double radiusMeters, int limit, String type) {
+    if (radiusMeters <= 0) radiusMeters = 2000;           // 기본 2km
+    if (limit <= 0 || limit > 500) limit = 100;           // 안전 상한
+    return repo.findNearby(lat, lng, radiusMeters, limit, (type == null ? "all" : type));
+  }
 }

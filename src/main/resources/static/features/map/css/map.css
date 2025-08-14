@@ -358,3 +358,25 @@
   padding: 4px 6px;
   border-radius: 9999px;
 }
+
+.locate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111827;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.locate-btn:hover {
+  background: #f9fafb;
+}
+.locate-btn[aria-busy="true"] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
