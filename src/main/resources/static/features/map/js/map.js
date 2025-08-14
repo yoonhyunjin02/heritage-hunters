@@ -155,6 +155,65 @@ async function loadMarkers(params = {}){
 
 // ------- Markers / List -------
 function renderMarkers(list){
+  // === [NEW] 좌표 기준 그룹핑 유틸 ===
+  function groupByPosition(items, precision = 6){
+    const map = new Map();
+    items.forEach(item => {
+      const pos = toLatLngLiteral(item);
+      if (!pos) return;
+      const lat = Number(pos.lat).toFixed(precision);
+      const lng = Number(pos.lng).toFixed(precision);
+      const key = `${lat},${lng}`;
+      if (!map.has(key)){
+        map.set(key, { pos:{ lat:Number(lat), lng:Number(lng) }, items:[] });
+      }
+      map.get(key).items.push(item);
+    });
+    return Array.from(map.values()); // [{pos, items:[...]}, ...]
+  }
+
+  // === [NEW] 그룹 InfoWindow 콘텐츠 ===
+  function buildIwGroupContent(group){
+    const wrap = document.createElement('div');
+    wrap.className = 'iw iw-group';
+
+    // 주소 (굵게, 아래 선)
+    const addr = document.createElement('div');
+    addr.className = 'iw-title';
+    addr.textContent = group.items[0]?.address ?? group.items[0]?.region ?? '';
+    wrap.appendChild(addr);
+
+    // "이 위치의 항목 (n개)" (작은 회색, 아래 선)
+    const title = document.createElement('div');
+    title.className = 'iw-addr';
+    title.textContent = `이 위치의 항목 (${group.items.length}개)`;
+    wrap.appendChild(title);
+
+    // 리스트
+    const listEl = document.createElement('div');
+    listEl.className = 'iw-group-list';
+
+    group.items.forEach(it => {
+      const row = document.createElement('div');
+      row.className = 'iw-group-row';
+
+      const name = document.createElement('div');
+      name.className = 'iw-group-name';
+      name.textContent = it.name ?? '(이름 없음)';
+
+      const meta = document.createElement('div');
+      meta.className = 'iw-group-meta';
+      meta.textContent = getDisplayMeta(it);
+
+      row.appendChild(name);
+      row.appendChild(meta);
+      listEl.appendChild(row);
+    });
+
+    wrap.appendChild(listEl);
+    return wrap;
+  }
+
   clearMarkers();
 
   const AdvancedCtor = window.allowAdvanced
@@ -164,56 +223,53 @@ function renderMarkers(list){
   const InfoWindowCtor = GMap.InfoWindow || google.maps.InfoWindow;
 
   // (1) 튜닝: 포인트 50개 이하이면 클러스터러 비활성화
-  const useClusterer = Boolean(window.markerClusterer?.MarkerClusterer) && list.length > 50;
+  //  ※ 그룹핑 후 개수 기준으로 판단해야 하므로 list.length 대신 groups.length 사용
+  const groups = groupByPosition(list, 6); // ← 좌표 소수 6자리로 묶기
+  const useClusterer = Boolean(window.markerClusterer?.MarkerClusterer) && groups.length > 50;
 
-  // 터치 디바이스 여부(모바일 보조용)
-  const IS_TOUCH = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  groups.forEach(group => {
+    const pos = group.pos;
 
-  list.forEach(item => {
-    const pos = toLatLngLiteral(item);
-    if (!pos){
-      console.warn('잘못된 좌표 스킵:', item?.name, item?.latitude, item?.longitude);
-      return;
-    }
+    // 그룹 크기에 따라 InfoWindow 콘텐츠 결정
+    const info = new InfoWindowCtor({
+      content: group.items.length === 1
+        ? buildIwContent(group.items[0])
+        : buildIwGroupContent(group)
+    });
 
-    // 클래스 기반 InfoWindow 콘텐츠 (DOM API 사용)
-    const info = new InfoWindowCtor({ content: buildIwContent(item) });
-
-    const color = getTypeColor(item.type);
+    // 그룹 대표 색: 그룹 내 첫 항목 기준(필요시 majority 로직 도입 가능)
+    const color = getTypeColor(group.items[0]?.type);
     let mk;
 
     if (AdvancedCtor){
-      // Advanced Marker + PinElement(있으면 색 커스터마이즈)
       let content;
       if (GMap.PinElement){
         const pin = new GMap.PinElement({
           background: color,
           borderColor: '#ffffff',
           glyphColor: '#ffffff',
-          scale: 0.7, // 핀 크기
+          scale: 0.7,
         });
         content = pin.element;
       }
 
       mk = new AdvancedCtor({
         position: pos,
-        ...(useClusterer ? {} : { map }), // 클러스터 사용 시 map은 생략
-        // (4) 튜닝: 마커 타이틀 null 가드
-        title: item.name || '',
+        ...(useClusterer ? {} : { map }),
+        title: (group.items[0]?.name || '') + (group.items.length > 1 ? ` 외 ${group.items.length-1}` : ''),
         ...(content ? { content } : {}),
       });
 
       mk.addListener?.('gmp-mouseover', () => {
-        if (lastOpenedByClick === info) return; // 클릭 고정이면 유지
+        if (lastOpenedByClick === info) return;
+        // 그룹일 때는 hover로도 리스트를 보여주되, 클릭하면 고정
         closeAllInfo();
         info.open({ anchor: mk, map });
       });
       mk.addListener?.('gmp-mouseout', () => {
-        if (lastOpenedByClick === info) return; // 클릭 고정이면 닫지 않음
+        if (lastOpenedByClick === info) return;
         info.close();
       });
-
-      // 클릭(모바일/데스크톱 공통): 고정 열기
       mk.addListener?.('click', () => {
         closeAllInfo();
         info.open({ anchor: mk, map });
@@ -221,50 +277,46 @@ function renderMarkers(list){
       });
 
     } else {
-      // Basic Marker + SVG 아이콘으로 색상 지정
       mk = new MarkerCtor({
         position: pos,
         ...(useClusterer ? {} : { map }),
-        title: item.name || '',
+        title: (group.items[0]?.name || '') + (group.items.length > 1 ? ` 외 ${group.items.length-1}` : ''),
         icon: makeSvgIcon(color),
         optimized: true,
       });
 
       mk.addListener('mouseover', () => {
-        if (lastOpenedByClick === info) return; // 클릭 고정이면 유지
+        if (lastOpenedByClick === info) return;
         closeAllInfo();
         info.open({ anchor: mk, map });
       });
       mk.addListener('mouseout', () => {
-        if (lastOpenedByClick === info) return; // 클릭 고정이면 닫지 않음
+        if (lastOpenedByClick === info) return;
         info.close();
       });
-
-      // 클릭(모바일/데스크톱 공통): 고정 열기
       mk.addListener('click', () => {
         closeAllInfo();
         info.open({ anchor: mk, map });
         lastOpenedByClick = info;
       });
-
     }
+
     mk._info = info;
-    mk._item = item;
+    mk._group = group; // ← 참고용으로 그룹 저장
 
     gMarkers.push(mk);
     gInfoWindows.push(info);
   });
 
-  // (1) 튜닝 적용: 조건부로만 클러스터링
+  // (1) 튜닝 적용: 조건부로만 클러스터링 (그룹된 마커들 기준)
   if (useClusterer) {
     const renderer = {
       render({ count, position }) {
-        const isRed  = count > 10;              // 10개 초과면 빨강
-        const size   = count <= 10 ? 22 : 26;   // 22~26px
+        const isRed  = count > 10;
+        const size   = count <= 10 ? 22 : 26;
         const bg     = isRed ? '#dc2626' : '#2563eb';
         const border = isRed ? '#b91c1c' : '#1d4ed8';
 
-        // AdvancedMarkerElement 우선
         if (window.allowAdvanced && google.maps.marker?.AdvancedMarkerElement) {
           const el = document.createElement('div');
           el.textContent = String(count);
@@ -281,8 +333,7 @@ function renderMarkers(list){
           });
         }
 
-        // 기본 Marker 아이콘(SVG 원)로 폴백
-        const scale = size / 2; // SymbolPath.CIRCLE은 반지름처럼 동작
+        const scale = size / 2;
         return new google.maps.Marker({
           position,
           icon: {
@@ -308,12 +359,9 @@ function renderMarkers(list){
       map,
       markers: gMarkers,
       renderer,
-      // gridSize: 50,  // 클러스터링 민감도 조절 가능
       onClusterClick: (ev) => {
-        // (a) 다음 1회의 idle 재조회는 스킵 (확대 애니메이션 중 데이터 흔들림 방지)
         skipNextFetchOnce = true;
 
-        // (b) 이 클러스터에 포함된 마커들의 bounds 계산
         const ms = ev?.markers || [];
         const bounds = new google.maps.LatLngBounds();
         ms.forEach(mk => {
@@ -321,7 +369,6 @@ function renderMarkers(list){
           if (p) bounds.extend(p);
         });
 
-        // (c) bounds가 있으면 그 영역으로 확대 + 과도 확대 상한(예: 18)
         if (!bounds.isEmpty()) {
           map.fitBounds(bounds, 80);
           const once = map.addListener('idle', () => {
@@ -329,7 +376,6 @@ function renderMarkers(list){
             google.maps.event.removeListener(once);
           });
         } else {
-          // 예외: bounds 계산 실패 시 위치 기준으로 한 단계 확대
           const pos = ev?.cluster?.position || ev?.marker?.getPosition?.();
           if (pos) map.panTo(pos);
           map.setZoom(map.getZoom() + 1);
