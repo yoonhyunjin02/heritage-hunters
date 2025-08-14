@@ -60,21 +60,11 @@ public class PostReader {
   }
 
   /**
-   * 이미지를 포함하여 게시글 상세 정보를 조회합니다
+   * 이미지를 포함하여 게시글 정보를 조회합니다
    * @param postId 게시글 ID
    * @return 이미지가 포함된 게시글 엔티티
    */
-  public Post getDetailWithImages(Long postId) {
-    return postRepository.findByIdWithImages(postId)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
-  }
-
-  /**
-   * 수정용 게시글 데이터를 이미지와 함께 조회합니다
-   * @param postId 게시글 ID
-   * @return 이미지가 포함된 게시글 엔티티
-   */
-  public Post getForEditWithImages(Long postId) {
+  public Post getPostWithImages(Long postId) {
     return postRepository.findByIdWithImages(postId)
         .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
   }
