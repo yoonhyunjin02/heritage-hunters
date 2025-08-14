@@ -309,7 +309,32 @@ function renderMarkers(list){
       markers: gMarkers,
       renderer,
       // gridSize: 50,  // 클러스터링 민감도 조절 가능
-      onClusterClick: () => { skipNextFetchOnce = true; }
+      onClusterClick: (ev) => {
+        // (a) 다음 1회의 idle 재조회는 스킵 (확대 애니메이션 중 데이터 흔들림 방지)
+        skipNextFetchOnce = true;
+
+        // (b) 이 클러스터에 포함된 마커들의 bounds 계산
+        const ms = ev?.markers || [];
+        const bounds = new google.maps.LatLngBounds();
+        ms.forEach(mk => {
+          const p = getMarkerPosition(mk);
+          if (p) bounds.extend(p);
+        });
+
+        // (c) bounds가 있으면 그 영역으로 확대 + 과도 확대 상한(예: 18)
+        if (!bounds.isEmpty()) {
+          map.fitBounds(bounds, 80);
+          const once = map.addListener('idle', () => {
+            if (map.getZoom() > 18) map.setZoom(18);
+            google.maps.event.removeListener(once);
+          });
+        } else {
+          // 예외: bounds 계산 실패 시 위치 기준으로 한 단계 확대
+          const pos = ev?.cluster?.position || ev?.marker?.getPosition?.();
+          if (pos) map.panTo(pos);
+          map.setZoom(map.getZoom() + 1);
+        }
+      }
     });
   }
 
