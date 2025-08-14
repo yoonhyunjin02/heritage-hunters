@@ -47,6 +47,18 @@ public class PostFacade {
     return posts.map(p -> PostListResponseDto.from(p, likedIds.contains(p.getId())));
   }
 
+  @Transactional(readOnly = true)
+  public PostListResponseDto toListItem(Post post, User currentUser) {
+    // 현재 list(...)와 동일한 로직을 재사용하기 위해,
+    // '좋아요 여부' 판별이 필요하면 currentUser를 받아 likedIds 조회 대신 단건 exists를 피하세요.
+    boolean liked = false;
+    if (currentUser != null) {
+      // 성능을 위해 단건 exists 대신, 호출부에서 likedIds 배치 조회를 넘겨도 됨
+      liked = likeService.isLiked(post.getId(), currentUser.getId());
+    }
+    return PostListResponseDto.from(post, liked);
+  }
+
   @Transactional
   public PostCreateResponseDto create(User user, PostCreateRequestDto req,
       List<MultipartFile> images) {

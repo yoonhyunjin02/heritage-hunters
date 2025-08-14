@@ -62,6 +62,17 @@ public class PostReader {
     return likeRepository.findLikedPostIds(userId, posts);
   }
 
+
+  public Page<Post> getUserPosts(Long userId, int page, int size) {
+    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+    return postRepository.findByUserIdOrderByIdDesc(userId, pageable);
+  }
+
+  public Page<Post> getLikedPosts(Long userId, int page, int size) {
+    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+    return postRepository.findLikedPostsByUserId(userId, pageable);
+  }
+
   private Sort createSortCondition(String sort, String direction) {
     Sort.Direction dir = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
     return switch (sort != null ? sort.toLowerCase() : "createdat") {
