@@ -73,9 +73,19 @@ async function panToMyLocation(){
     }
 
     const list = await fetchNearby(latlng.lat, latlng.lng, 2000, currentType, 200);
+
+    // 사이드바에 내 위치 공유 → 가까운 순 정렬 버튼 활성
+    if (window.__sidebar?.setMyLocationForSidebar) {
+      window.__sidebar.setMyLocationForSidebar(latlng.lat, latlng.lng);
+    }
+
     allData = list;
-    renderMarkers(list);
-    renderList(list);
+    const filtered = (window.__sidebar?.updateSidebar)
+      ? window.__sidebar.updateSidebar(list)
+      : list;
+    renderMarkers(filtered);
+    renderList(filtered);
+
 
     skipNextFetchOnce = true;
 

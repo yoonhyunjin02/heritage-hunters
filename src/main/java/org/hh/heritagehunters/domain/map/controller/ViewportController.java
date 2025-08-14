@@ -19,9 +19,13 @@ public class ViewportController {
   public List<MapMarkerDto> points(
       @RequestParam String bbox,                    // "south,west,north,east"
       @RequestParam(defaultValue = "800") int limit,
-      @RequestParam(defaultValue = "all") String type // museum | heritage | all
+      @RequestParam(defaultValue = "all") String type,
+      @RequestParam(name = "museumCats", required = false) List<String> museumCats,
+      @RequestParam(name = "designations", required = false) List<String> designations
   ) {
-    return service.fetch(bbox, limit, type);
+    // limit 가드(선택)
+    limit = Math.max(1, Math.min(limit, 2000));
+    return service.fetch(bbox, limit, type, museumCats, designations);
   }
 
   // GET /map/nearby?lat=37.56&lng=126.98&radius=2000&type=all&limit=100

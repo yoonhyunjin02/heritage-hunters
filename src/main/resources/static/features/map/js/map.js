@@ -525,8 +525,12 @@ function wireSearch(){
       // 검색 결과가 있을 때만 검색모드 전환 및 렌더
       searchMode = true;
       allData = list;
-      renderMarkers(list);
-      renderList(list);
+      const filtered = (window.__sidebar?.updateSidebar)
+        ? window.__sidebar.updateSidebar(list)
+        : list;
+      renderMarkers(filtered);
+      renderList(filtered);
+
       skipNextFetchOnce = true;
 
       if (autoFit) fitMapToResults(list);
@@ -654,8 +658,12 @@ async function initMap(){
       $q.setAttribute('aria-busy', 'true');
       const list = await fetchSearchResults(query, currentType, 50);
       allData = list;
-      renderMarkers(list);
-      renderList(list);
+      const filtered = (window.__sidebar?.updateSidebar)
+        ? window.__sidebar.updateSidebar(list)
+        : list;
+      renderMarkers(filtered);
+      renderList(filtered);
+
       skipNextFetchOnce = true;
 
       if (!list || list.length === 0) {
@@ -738,6 +746,15 @@ async function fetchByViewport() {
   url.searchParams.set('type', currentType); // 'all' | 'heritage' | 'museum'
   url.searchParams.set('limit', 800);
 
+  // 사이드바 필터(있을 때만)
+  const ss = window.__sidebar;
+  if (ss) {
+    const cats = [...(ss.__state?.selectedMuseumCats || new Set())];
+    const desi = [...(ss.__state?.selectedDesignations || new Set())];
+    cats.forEach(c => url.searchParams.append('museumCats', c));
+    desi.forEach(d => url.searchParams.append('designations', d)); // "11","12",...
+  }
+
   try {
     const res = await fetch(url, {
       signal: aborter.signal,
@@ -751,8 +768,12 @@ async function fetchByViewport() {
 
     const list = await res.json();
     allData = list;
-    renderMarkers(list);
-    renderList(list);
+    const filtered = (window.__sidebar?.updateSidebar)
+      ? window.__sidebar.updateSidebar(list)
+      : list;
+    renderMarkers(filtered);
+    renderList(filtered);
+
   } catch (e) {
     if (e.name !== 'AbortError') console.error('지점 로드 에러:', e);
   }

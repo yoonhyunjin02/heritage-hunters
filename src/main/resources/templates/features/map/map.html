@@ -39,26 +39,20 @@
       th:attr="data-endpoint=@{/map},data-maps-key=${mapsApiKey},data-map-id='109936b5c5c9266ad969d919'">
 
   <!-- 왼쪽 사이드 네비게이션 -->
-  <nav id="sideNav" class="side-nav">
+  <nav id="sideNav" class="side-nav" role="navigation" aria-label="지도 범례와 필터">
     <!-- 범례 -->
     <section class="legend">
-      <h3 class="legend-title">범례</h3>
+      <h3 class="legend-title" id="legendHeading" tabindex="-1">범례</h3>
       <ul class="legend-list">
-        <!-- 문화재 (빨강) -->
         <li class="legend-item">
           <img src="/images/icons/location.svg" alt="문화재 위치 아이콘" class="legend-icon legend-heritage" />
           <span>문화재</span>
         </li>
-
-        <!-- 박물관·미술관 (파랑) -->
         <li class="legend-item">
           <img src="/images/icons/location.svg" alt="박물관·미술관 위치 아이콘" class="legend-icon legend-museum" />
           <span>박물관·미술관</span>
         </li>
-
         <li><hr class="legend-divider"></li>
-
-        <!-- 클러스터 규칙 -->
         <li class="legend-footnote">숫자 = 근접 지점 수</li>
         <li class="legend-note">
           <span class="cluster-swatch cluster-swatch-blue" aria-hidden="true">10</span>
@@ -71,10 +65,44 @@
       </ul>
     </section>
 
-    <button id="locateBtn" class="locate-btn" aria-label="내 위치로 이동">
+    <!-- 필터 -->
+    <section class="filters" aria-labelledby="filterHeading" style="margin-top:14px">
+      <h3 id="filterHeading" class="legend-title">필터</h3>
+
+      <!-- 박물관·미술관 카테고리 -->
+      <details id="museumFilter" open>
+        <summary>박물관·미술관 카테고리</summary>
+        <div class="filter-group" id="museumCatList" aria-label="박물관·미술관 카테고리"></div>
+      </details>
+
+      <!-- 문화재 종목 -->
+      <details id="heritageFilter" open>
+        <summary>문화재 종목</summary>
+        <div class="filter-group" id="heritageDesignationList" aria-label="문화재 종목"></div>
+      </details>
+    </section>
+
+    <!-- 검색 상태 배지 -->
+    <section id="searchBadge" class="legend-note" style="display:none; margin-top:10px">
+      <span>검색: <strong id="searchQueryText"></strong></span>
+      <button id="clearSearchBtn" class="locate-btn" style="margin-left:6px">검색 해제</button>
+    </section>
+
+    <button id="locateBtn" class="locate-btn" aria-label="내 위치로 이동" style="margin-top:12px">
       <img src="/images/icons/target.svg" alt="" width="16" height="16">
       <span>내 위치</span>
     </button>
+    <button id="sortByDistance" class="locate-btn" style="float:right" disabled>가까운 순</button>
+
+    <!-- 목록 헤더 -->
+    <h3 class="legend-title" style="margin-top:14px">
+      현재 화면 지점 <span id="listCount" style="color:#6b7280;font-weight:600"></span>
+    </h3>
+
+    <!-- 목록 컨테이너 (renderList가 씀) -->
+    <div id="list" class="list" style="max-height: 40vh;"></div>
+
+
   </nav>
 
   <section class="map-area">
@@ -92,5 +120,6 @@
 <script defer th:src="@{/features/map/js/designation_map.js}"></script>
 <script defer th:src="@{/features/map/js/nav_toggle.js}"></script>
 <script defer th:src="@{/features/map/js/segment_toggle.js}"></script>
+<script defer th:src="@{/features/map/js/side_nav.js}"></script>
 </body>
 </html>
