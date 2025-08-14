@@ -414,6 +414,20 @@
 /* 버튼 다음에 오는 “현재 화면 지점” 제목과의 간격을 더 띄움 */
 #sortByDistance + h3.legend-title { margin-top: 18px; }
 
+/* ----- Reset button (bottom) ----- */
+.side-reset-btn{
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.side-reset-btn:hover { background:#f9fafb; }
+
 /* ---------- Media queries ---------- */
 @media (max-width: 1100px) {
   .toolbar-search { width: min(24rem, 60vw); }
