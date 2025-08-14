@@ -1,8 +1,6 @@
 package org.hh.heritagehunters.domain.post.repository;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.hh.heritagehunters.domain.post.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,16 +32,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
       Pageable pageable);
 
   /**
-   * 사용자가 좋아요를 누른 게시글 ID들을 조회합니다
-   * @param userId 사용자 ID
-   * @param posts 게시글 목록
-   * @return 좋아요를 누른 게시글 ID 집합
-   */
-  @Query("SELECT l.post.id FROM Like l WHERE l.user.id = :userId AND l.post IN :posts")
-  Set<Long> findLikedPostIds(@Param("userId") Long userId, @Param("posts") List<Post> posts);
-
-
-  /**
    * 이미지를 포함하여 게시글을 조회합니다
    * @param postId 게시글 ID
    * @return 이미지가 포함된 게시글 Optional
@@ -56,13 +44,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         where p.id = :postId
       """)
   Optional<Post> findByIdWithImages(@Param("postId") Long postId);
-
-  /**
-   * 사용자가 해당 게시글에 좋아요를 눌렀는지 확인합니다
-   * @param userId 사용자 ID
-   * @param postId 게시글 ID
-   * @return 좋아요 존재 여부
-   */
-  @Query("SELECT COUNT(l) > 0 FROM Like l WHERE l.userId = :userId AND l.postId = :postId")
-  boolean existsByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 }
