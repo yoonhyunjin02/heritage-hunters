@@ -455,6 +455,32 @@ function renderList(list){
   });
 }
 
+// 검색 결과에 맞춰 지도 뷰 이동(결과가 1개면 그 좌표로, 여러개면 bounds로)
+function fitMapToResults(list){
+  if (!list || list.length === 0) return;
+
+  const pos0 = toLatLngLiteral(list[0]);
+  if (list.length === 1 && pos0) {
+    map.panTo(pos0);
+    map.setZoom(Math.max(14, map.getZoom() || 0));
+    return;
+  }
+
+  const bounds = new google.maps.LatLngBounds();
+  let added = 0;
+  list.forEach(it => {
+    const p = toLatLngLiteral(it);
+    if (p) { bounds.extend(p); added++; }
+  });
+  if (added > 0) {
+    map.fitBounds(bounds, 80);
+    const once = map.addListener('idle', () => {
+      if (map.getZoom() > 16) map.setZoom(16);
+      google.maps.event.removeListener(once);
+    });
+  }
+}
+
 // ------- Search -------
 function wireSearch(){
   const $q = document.getElementById('search');
@@ -466,7 +492,6 @@ function wireSearch(){
     // 검색어가 비었으면: 검색 모드 해제 → 뷰포트 데이터로 복귀
     if (!query) {
       searchMode = false;
-      // 기존 뷰포트 데이터 다시 로드
       await fetchByViewport();
       return;
     }
@@ -480,11 +505,21 @@ function wireSearch(){
       allData = list;
       renderMarkers(list);
       renderList(list);
-      // 검색 결과를 보여주는 동안 우발적인 뷰포트 재조회 억제(다음 idle 1회)
       skipNextFetchOnce = true;
+
+      // 결과 0개 처리 + 뷰포트 복귀
+      if (!list || list.length === 0) {
+        alert('검색 결과가 없습니다.');
+        searchMode = false;
+        await fetchByViewport();
+        return;
+      }
+
+      // 결과가 있으면 지도 이동
+      fitMapToResults(list);
+
     } catch (e) {
       console.error(e);
-      // 실패 시 간단 안내(원하면 토스트 체계로 연결)
       // alert('검색에 실패했어요. 잠시 후 다시 시도해주세요.');
     } finally {
       $q.removeAttribute('aria-busy');
@@ -509,6 +544,16 @@ function wireSearch(){
           renderMarkers(list);
           renderList(list);
           skipNextFetchOnce = true;
+
+          if (!list || list.length === 0) {
+            alert('검색 결과가 없습니다.');
+            searchMode = false;
+            await fetchByViewport();
+            return;
+          }
+
+          fitMapToResults(list);
+
         } finally { $q.removeAttribute('aria-busy'); }
       })();
     }
@@ -600,11 +645,19 @@ async function initMap(){
       renderMarkers(list);
       renderList(list);
       skipNextFetchOnce = true;
+
+      if (!list || list.length === 0) {
+        alert('검색 결과가 없습니다.');
+        searchMode = false;
+        await fetchByViewport();
+        return;
+      }
+
+      fitMapToResults(list);
     } finally {
       $q.removeAttribute('aria-busy');
     }
   };
-
 }
 
 // ------- Boot -------
