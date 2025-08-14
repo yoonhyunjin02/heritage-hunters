@@ -5,6 +5,7 @@ const gMarkers = [];
 const gInfoWindows = [];
 let allData = [];
 let clusterer = null;
+let searchMode = false; // ← 검색 결과 화면인지 여부
 
 // 클릭으로 연 InfoWindow 추적
 let lastOpenedByClick = null;
@@ -147,6 +148,18 @@ function makeSvgIcon(color='#dc2626'){
     strokeColor: '#ffffff',
     scale: 1,
   };
+}
+
+// 검색
+async function fetchSearchResults(q, type = currentType, limit = 30) {
+  const url = new URL('/map/search', window.location.origin);
+  url.searchParams.set('q', q);
+  url.searchParams.set('type', type || 'all');
+  url.searchParams.set('limit', String(Math.min(Math.max(limit, 1), 200))); // 1~200 클램프
+
+  const res = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error('검색 요청 실패: ' + res.status);
+  return res.json(); // MapMarkerDto[]
 }
 
 // ------- Legacy endpoint loader (현재는 안 씀, 보관) -------
@@ -417,11 +430,19 @@ function renderList(list){
     const el = buildListCard(item);
 
     el.addEventListener('click', () => {
-      const mk = gMarkers[idx];
-      if (!mk) return;
-
-      const p = getMarkerPosition(mk) || pos;
+      // 리스트 아이템의 좌표
+      const p = pos;
       if (!p) return;
+
+      // 같은 좌표의 마커(그룹 대표)를 찾는다
+      const mk = gMarkers.find(m => {
+        const mp = getMarkerPosition(m);
+        if (!mp) return false;
+        const ml = typeof mp.lat === 'function' ? mp.lat() : mp.lat;
+        const mlg = typeof mp.lng === 'function' ? mp.lng() : mp.lng;
+        return Math.abs(ml - p.lat) < 1e-6 && Math.abs(mlg - p.lng) < 1e-6;
+      });
+      if (!mk) { map.panTo(p); map.setZoom(Math.max(map.getZoom(), 14)); return; }
 
       map.panTo(p);
       map.setZoom(Math.max(map.getZoom(), 14));
@@ -435,29 +456,74 @@ function renderList(list){
 }
 
 // ------- Search -------
-// (3) 튜닝: toLowerCase 호출 최소화
-function applySearch(raw){
-  const q = raw.trim().toLowerCase();
-  if (!q){ renderMarkers(allData); renderList(allData); return; }
+function wireSearch(){
+  const $q = document.getElementById('search');
+  if (!$q) return;
 
-  const filtered = allData.filter(d => {
-    const name = (d.name || '').toLowerCase();
-    const addr = ((d.address || d.region || '')).toLowerCase();
-    const cat  = (d.category || '').toLowerCase();
-    return (name.includes(q) || addr.includes(q) || cat.includes(q));
+  const run = debounce(async () => {
+    const query = $q.value.trim();
+
+    // 검색어가 비었으면: 검색 모드 해제 → 뷰포트 데이터로 복귀
+    if (!query) {
+      searchMode = false;
+      // 기존 뷰포트 데이터 다시 로드
+      await fetchByViewport();
+      return;
+    }
+
+    // 검색 모드 진입
+    searchMode = true;
+    $q.setAttribute('aria-busy', 'true');
+
+    try {
+      const list = await fetchSearchResults(query, currentType, 50);
+      allData = list;
+      renderMarkers(list);
+      renderList(list);
+      // 검색 결과를 보여주는 동안 우발적인 뷰포트 재조회 억제(다음 idle 1회)
+      skipNextFetchOnce = true;
+    } catch (e) {
+      console.error(e);
+      // 실패 시 간단 안내(원하면 토스트 체계로 연결)
+      // alert('검색에 실패했어요. 잠시 후 다시 시도해주세요.');
+    } finally {
+      $q.removeAttribute('aria-busy');
+    }
+  }, 300);
+
+  // 입력 시 디바운스 검색
+  $q.addEventListener('input', run);
+
+  // 엔터키 즉시 검색(디바운스 무시)
+  $q.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      run.flush?.(); // 지원 안하면 아래 수동 실행
+      (async () => {
+        const query = $q.value.trim();
+        if (!query) { searchMode = false; await fetchByViewport(); return; }
+        $q.setAttribute('aria-busy','true');
+        try{
+          const list = await fetchSearchResults(query, currentType, 50);
+          allData = list;
+          renderMarkers(list);
+          renderList(list);
+          skipNextFetchOnce = true;
+        } finally { $q.removeAttribute('aria-busy'); }
+      })();
+    }
   });
-
-  renderMarkers(filtered);
-  renderList(filtered);
 }
 
-function wireSearch(){
-  const $q = document.getElementById('search'); if (!$q) return;
-  let t=null;
-  $q.addEventListener('input', () => {
+// 간단 디바운스
+function debounce(fn, delay){
+  let t;
+  function wrapped(...args){
     clearTimeout(t);
-    t=setTimeout(() => applySearch($q.value),150);
-  });
+    t = setTimeout(() => fn.apply(this, args), delay);
+  }
+  wrapped.flush = () => { clearTimeout(t); fn(); };
+  return wrapped;
 }
 
 // ------- Google loader & init -------
@@ -476,7 +542,6 @@ function loadGoogleMaps(apiKey){
 }
 
 async function initMap(){
-  wireLocateButton(); // my_location.js에 있는 함수
   if (google.maps.importLibrary){
     const { Map, InfoWindow } = await google.maps.importLibrary('maps');
     const markerLib = await google.maps.importLibrary('marker'); // AdvancedMarkerElement, PinElement
@@ -507,6 +572,7 @@ async function initMap(){
     });
   }
 
+  wireLocateButton();
   wireSearch();
   wireTypeSegment();
 
@@ -522,17 +588,41 @@ async function initMap(){
     lastOpenedByClick = null;
     closeAllInfo();
   });
+
+  window.__forceSearchRefresh = async () => {
+    const $q = document.getElementById('search'); if (!$q) return;
+    const query = $q.value.trim();
+    if (!query) { searchMode = false; await fetchByViewport(); return; }
+    try {
+      $q.setAttribute('aria-busy', 'true');
+      const list = await fetchSearchResults(query, currentType, 50);
+      allData = list;
+      renderMarkers(list);
+      renderList(list);
+      skipNextFetchOnce = true;
+    } finally {
+      $q.removeAttribute('aria-busy');
+    }
+  };
+
 }
 
 // ------- Boot -------
 document.addEventListener('DOMContentLoaded', async () => {
-  try{
+  try {
+    const btn = document.getElementById('locateBtn');
+    if (btn) btn.disabled = true; // 초기 비활성화
+
     const root = document.querySelector('.map-root');
     const apiKey = root?.dataset.mapsKey;
     if (!apiKey) return console.error('maps api key 누락');
     await loadGoogleMaps(apiKey);
     await initMap();
-  }catch(e){ console.error(e); }
+
+    if (btn) btn.disabled = false; // 지도 준비 후 활성화
+  } catch (e) {
+    console.error(e);
+  }
 });
 
 // ------- Viewport loader -------
@@ -608,8 +698,8 @@ window.fetchByViewport = fetchByViewport;
 function wireViewportLoading(){
   let t=null;
   map.addListener('idle', () => {
-    // 클러스터 클릭 직후 1회는 재조회 스킵(확대 애니메이션 중 데이터 흔들림 방지)
-    if (skipNextFetchOnce) {
+    if (searchMode) return;            // ← 검색 모드면 뷰포트 재조회 스킵
+    if (skipNextFetchOnce) {           // (기존)
       skipNextFetchOnce = false;
       return;
     }
