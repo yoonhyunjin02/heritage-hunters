@@ -47,7 +47,20 @@ function closePostDetail() {
 
 // 게시글 수정 모달 닫기
 function closePostEdit() {
-  closeModal('postEditModal', false, '/posts');
+  const modal = document.getElementById('postEditModal');
+  if (modal) {
+    // PostEdit 모드 비활성화 (원본 함수들 복원)
+    if (window.PostEdit && typeof window.PostEdit.restore === 'function') {
+      window.PostEdit.restore();
+    }
+    
+    // 모달인 경우 - 다른 모달들처럼 닫기만 하고 페이지는 그대로 유지
+    modal.classList.remove('show');
+    setTimeout(() => {
+      modal.style.display = 'none';
+      modal.innerHTML = '';
+    }, 250);
+  }
 }
 
 // 게시글 작성 모달 닫기

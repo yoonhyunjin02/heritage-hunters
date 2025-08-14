@@ -16,7 +16,7 @@
 
     if (thumbs.length) {
       images = Array.from(thumbs).map((img, i) => ({
-        url: img.src,
+        url: img.dataset.full || img.src,   // 상세와 동일: 원본 우선
         alt: img.alt || `이미지 ${i + 1}`
       }));
     } else if (main?.src) {
@@ -25,14 +25,20 @@
       images = [];
     }
     current = 0;
-    updateGallery();
+    update();
     bindGalleryEvents();
+    // 초기 로드 시에도 add-btn 상태 업데이트
+    updateThumbAddButton();
   }
 
   function bindGalleryEvents() {
-    // 썸네일 클릭 이벤트
+    // 썸네일 클릭 이벤트 (게시글 상세와 동일)
     document.querySelectorAll('.thumb').forEach((btn) => {
       btn.addEventListener('click', (e) => {
+        // 썸네일 안의 삭제 버튼을 눌렀을 때는 이미지 전환 금지
+        if (e.target.closest('.thumb-delete-btn')) {
+          return;
+        }
         e.preventDefault();
         const index = parseInt(btn.dataset.index);
         if (!isNaN(index)) {
@@ -41,7 +47,7 @@
       });
     });
 
-    // 화살표 버튼 이벤트
+    // 화살표 버튼 이벤트 (게시글 상세와 동일)
     document.querySelector('.gallery-nav.prev')?.addEventListener('click', (e) => {
       e.preventDefault();
       prevImage();
@@ -52,7 +58,7 @@
     });
   }
 
-  function updateGallery() {
+  function update() {
     const main = document.getElementById('mainImage');
     if (main && images[current]) {
       main.style.opacity = '0.5';
@@ -62,11 +68,12 @@
         main.style.opacity = '1';
       }, 120);
     }
-    
-    // 썸네일 활성화 상태 업데이트
-    document.querySelectorAll('.thumb').forEach((t, i) => t.classList.toggle('active', i === current));
-    
-    // 화살표 버튼 표시/숨김
+
+    // 썸네일 활성화 상태 업데이트 (게시글 상세와 동일)
+    document.querySelectorAll('.thumb').forEach(
+        (t, i) => t.classList.toggle('active', i === current));
+
+    // 화살표 버튼 표시/숨김 (게시글 상세와 동일)
     const prev = document.querySelector('.gallery-nav.prev');
     const next = document.querySelector('.gallery-nav.next');
     if (prev && next) {
@@ -74,38 +81,66 @@
       prev.style.display = multi ? 'flex' : 'none';
       next.style.display = multi ? 'flex' : 'none';
     }
+
+    // 인디케이터 활성화 상태 업데이트 (게시글 상세와 동일)
+    document.querySelectorAll('.indicator').forEach(
+        (ind, i) => ind.classList.toggle('active', i === current));
+
+    // thumb-add-btn 표시/숨김 (최대 3장일 때 숨김)
+    updateThumbAddButton();
+  }
+
+  function updateThumbAddButton() {
+    const addBtn = document.querySelector('.thumb-add-btn');
+    const currentImageCount = document.querySelectorAll('.thumb').length;
+
+    if (addBtn) {
+      if (currentImageCount >= 3) {
+        addBtn.style.display = 'none';
+      } else {
+        addBtn.style.display = 'flex';
+      }
+    }
   }
 
   function prevImage() {
     if (images.length > 1) {
       current = (current - 1 + images.length) % images.length;
-      updateGallery();
+      update();
     }
   }
 
   function nextImage() {
     if (images.length > 1) {
       current = (current + 1) % images.length;
-      updateGallery();
+      update();
     }
   }
 
   function showImage(i) {
     if (i >= 0 && i < images.length) {
       current = i;
-      updateGallery();
+      update();
     }
   }
 
   // 필요한 최소 전역만 유지 (기존 기능은 그대로)
   function closePostEdit() {
+    // PostEdit 모드 비활성화 (원본 함수들 복원)
+    if (window.PostEdit && typeof window.PostEdit.restore === 'function') {
+      window.PostEdit.restore();
+    }
+    
     const modal = $('postEditModal');
     if (modal) {
+      // 모달인 경우 - 다른 모달들처럼 닫기만 하고 페이지는 그대로 유지
       modal.classList.remove('show');
       setTimeout(() => {
-        window.location.href = '/posts';
-      }, 200);
+        modal.style.display = 'none';
+        modal.innerHTML = '';
+      }, 250);
     } else {
+      // 단독 페이지인 경우 - 기존 방식대로 페이지 이동
       window.history.back?.() || (window.location.href = '/posts');
     }
   }
@@ -114,12 +149,45 @@
     closePostEdit();
   }
 
-  // 전역 노출 (인라인 onclick 호환)
+  // 기존 함수들 백업
+  const originalFunctions = {
+    prevImage: window.prevImage,
+    nextImage: window.nextImage,  
+    showImage: window.showImage,
+    update: window.update
+  };
+
+  // PostEdit 네임스페이스에 함수들 정의
+  window.PostEdit = {
+    cancel: cancel,
+    close: closePostEdit,
+    closePostEdit: closePostEdit,
+    prevImage: prevImage,
+    nextImage: nextImage,
+    showImage: showImage,
+    update: update,
+    updateThumbAddButton: updateThumbAddButton,
+    initializeImageGallery: initializeImageGallery,
+    // 원본 함수들 복원
+    restore: function() {
+      window.prevImage = originalFunctions.prevImage;
+      window.nextImage = originalFunctions.nextImage;
+      window.showImage = originalFunctions.showImage;
+      window.update = originalFunctions.update;
+    },
+    // 수정 모드 함수들로 변경
+    activate: function() {
+      window.prevImage = prevImage;
+      window.nextImage = nextImage;
+      window.showImage = showImage;
+      window.update = update;
+    }
+  };
+
+  // 전역 함수들 (모달에서만 사용시 활성화)
   window.closePostEdit = closePostEdit;
-  window.PostEdit = {cancel};
-  window.prevImage = prevImage;
-  window.nextImage = nextImage;
-  window.showImage = showImage;
+  window.updateThumbAddButton = updateThumbAddButton;
+  window.initializeImageGallery = initializeImageGallery;
 
   // (안전장치) 이 페이지는 post_detail.js를 포함하지 않을 수 있으므로
   // closeModal이 비어있을 때만 연결

@@ -3,8 +3,6 @@
  * 상세 페이지와 유사한 레이아웃의 이미지 편집 인터페이스
  */
 
-/* 게시글 수정 전용 스타일 (갤러리는 modal-common.css 사용) */
-
 /* 이미지가 없을 때 플레이스홀더 */
 .no-image-placeholder {
   flex-direction: column;
@@ -126,6 +124,41 @@
   pointer-events: none;
 }
 
+/* 편집 화면: 썸네일 스크롤바 완전 제거 */
+#postEditModal .gallery-thumbs {
+  max-width: none !important;
+  overflow: hidden !important;
+}
+
+#postEditModal .thumbs-container {
+  display: flex !important;
+  gap: 8px !important;
+  align-items: center !important;
+  overflow-x: hidden !important;
+  overflow-y: hidden !important;
+  max-width: 100% !important;
+}
+
+/* webkit 스크롤바 완전 제거 */
+#postEditModal .gallery-thumbs::-webkit-scrollbar,
+#postEditModal .thumbs-container::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Firefox 스크롤바 제거 */
+#postEditModal .gallery-thumbs,
+#postEditModal .thumbs-container {
+  scrollbar-width: none !important;
+}
+
+/* 커서/포지션 개선(삭제 버튼 겹침 대비) */
+.thumb{
+  position: relative;
+  cursor: pointer;
+}
+
 /* 썸네일 드래그 상태 */
 .thumb.dragging {
   opacity: 0.5;
@@ -136,8 +169,6 @@
   border-color: #2b3f33;
   background: rgba(43, 63, 51, 0.1);
 }
-
-/* 갤러리 썸네일 스크롤바는 modal-common.css에서 처리 */
 
 /* 위치 자동완성 스타일 */
 .location-input-wrapper {
@@ -394,25 +425,7 @@
   }
 }
 
-/* 스크롤바 스타일 */
-.image-controls::-webkit-scrollbar {
-  height: 6px;
-}
-
-.image-controls::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.image-controls::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.image-controls::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
+/* location-suggestions 스크롤바 스타일만 유지 */
 .location-suggestions::-webkit-scrollbar {
   width: 6px;
 }

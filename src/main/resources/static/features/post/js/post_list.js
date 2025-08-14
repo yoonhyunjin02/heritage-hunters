@@ -25,6 +25,25 @@
   // ---------------------------
   window.PostListManager = window.PostListManager || {};
 
+  // PostEdit 전역 객체 정의 (모달에서 사용)
+  window.PostEdit = window.PostEdit || {
+    cancel: function() {
+      if (typeof window.closePostEdit === 'function') {
+        window.closePostEdit();
+      }
+    },
+    close: function() {
+      if (typeof window.closePostEdit === 'function') {
+        window.closePostEdit();
+      }
+    },
+    closePostEdit: function() {
+      if (typeof window.closePostEdit === 'function') {
+        window.closePostEdit();
+      }
+    }
+  };
+
   // 게시글 작성 모달 열기 (post_write.js 의 window.PostModal 사용)
   window.PostListManager.openPostModal = function openPostModal() {
     try {
@@ -94,6 +113,10 @@
       modal.innerHTML = '';
       modal.appendChild(content.cloneNode(true));
 
+      // 모달에 post ID 설정
+      modal.setAttribute('data-post-id', postId);
+      modal.dataset.postId = postId;
+
       // 댓글 포커스 옵션
       if (focusComments) {
         setTimeout(() => {
@@ -149,6 +172,27 @@
     if (!modal) {
       return;
     }
+    modal.classList.remove('show');
+    setTimeout(() => {
+      modal.style.display = 'none';
+      modal.innerHTML = '';
+    }, 250);
+  };
+
+  // ---------------------------
+  // 전역: 게시글 수정 모달 닫기 (AJAX 모달용)
+  // ---------------------------
+  window.closePostEdit = function closePostEdit() {
+    const modal = document.getElementById('postEditModal');
+    if (!modal) {
+      return;
+    }
+    
+    // PostEdit 모드 비활성화 (원본 함수들 복원)
+    if (window.PostEdit && typeof window.PostEdit.restore === 'function') {
+      window.PostEdit.restore();
+    }
+    
     modal.classList.remove('show');
     setTimeout(() => {
       modal.style.display = 'none';

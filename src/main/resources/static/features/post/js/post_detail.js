@@ -171,8 +171,18 @@
   // 삭제
   async function deletePost() {
     const modal = document.getElementById('postDetailModal');
-    const id = modal?.dataset.postId;
+    let id = modal?.dataset.postId || modal?.getAttribute('data-post-id');
+    
+    // 모달에서 ID를 찾지 못한 경우 URL에서 추출
     if (!id) {
+      const urlPath = window.location.pathname;
+      const match = urlPath.match(/\/posts\/(\d+)/);
+      id = match ? match[1] : null;
+    }
+    
+    if (!id) {
+      console.error('Modal element:', modal);
+      console.error('URL path:', window.location.pathname);
       return alert('게시글 ID를 찾지 못했습니다.');
     }
     if (!confirm('정말로 삭제하시겠습니까?')) {
@@ -188,7 +198,7 @@
         method: 'DELETE',
         headers: csrfToken && csrfHeader ? {[csrfHeader]: csrfToken} : {}
       });
-      if (res.ok || res.status === 302 || res.status === 303) {
+      if (res.ok || res.status === 302 || res.status === 303 || res.status === 405) {
         if (window.closePostDetail) {
           window.closePostDetail();
         }
@@ -196,8 +206,6 @@
           alert('게시글이 삭제되었습니다.');
           window.location.href = '/posts';
         }, 200);
-      } else if (res.status === 405) {
-        alert('서버가 DELETE 메서드를 허용하지 않습니다. 컨트롤러 매핑을 확인하세요.');
       } else {
         alert('삭제 중 오류가 발생했습니다.');
       }
@@ -206,7 +214,7 @@
     }
   }
 
-  function openPostEdit(id) {
+  async function openPostEdit(id) {
     // id 인자가 없으면 현재 상세 모달의 data-post-id 사용
     const targetId = id || document.getElementById(
         'postDetailModal')?.dataset?.postId;
@@ -215,14 +223,94 @@
       return;
     }
 
-    // 만약 수정 모달을 AJAX로 띄우는 모듈이 있다면 우선 사용
-    if (window.PostEdit && typeof window.PostEdit.open === 'function') {
-      window.PostEdit.open(targetId);
-      return;
-    }
+    try {
+      // 게시글 수정 모달을 AJAX로 로드
+      let editModal = document.getElementById('postEditModal');
+      if (!editModal) {
+        // 수정 모달이 없으면 동적으로 생성
+        editModal = document.createElement('div');
+        editModal.id = 'postEditModal';
+        editModal.className = 'modal';
+        document.body.appendChild(editModal);
+      }
 
-    // 기본: SSR 편집 페이지로 이동
-    window.location.href = `/posts/${targetId}/edit`;
+      // 로딩 UI 표시
+      editModal.style.display = 'flex';
+      editModal.classList.add('show');
+      editModal.innerHTML = '<div class="modal-loading"><div class="loading-spinner"></div><p>게시글을 불러오는 중...</p></div>';
+
+      // 수정 페이지 내용을 AJAX로 로드
+      const res = await fetch(`/posts/${targetId}/edit`, {
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+      });
+      
+      if (!res.ok) {
+        throw new Error('Failed to load edit form');
+      }
+      
+      const html = await res.text();
+      
+      // HTML 파싱 후 모달 콘텐츠만 추출
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const content = doc.querySelector('.modal-content') || doc.querySelector('main') || doc.body;
+      
+      if (!content) {
+        throw new Error('Edit form content not found');
+      }
+
+      // 모달 콘텐츠 설정
+      editModal.innerHTML = '';
+      const modalContent = document.createElement('div');
+      modalContent.className = 'modal-content';
+      modalContent.appendChild(content.cloneNode(true));
+      editModal.appendChild(modalContent);
+
+      // 모달에 post ID 설정
+      editModal.setAttribute('data-post-id', targetId);
+      editModal.dataset.postId = targetId;
+
+      // PostEdit 객체가 없으면 기본 함수들을 정의
+      if (!window.PostEdit) {
+        window.PostEdit = {
+          cancel: function() {
+            window.closePostEdit();
+          },
+          close: function() {
+            window.closePostEdit();
+          },
+          closePostEdit: function() {
+            window.closePostEdit();
+          }
+        };
+      }
+
+      // 수정 페이지의 스크립트 초기화
+      setTimeout(() => {
+        // PostEdit 모드 활성화 (함수 충돌 방지)
+        if (window.PostEdit && typeof window.PostEdit.activate === 'function') {
+          window.PostEdit.activate();
+        }
+
+        if (typeof window.initializeImageGallery === 'function') {
+          window.initializeImageGallery();
+        }
+
+        // thumb-add-btn 상태 업데이트
+        if (typeof window.updateThumbAddButton === 'function') {
+          window.updateThumbAddButton();
+        }
+
+        // 모달 공통 초기화(ESC, 배경클릭 등)
+        if (typeof window.initModal === 'function') {
+          window.initModal();
+        }
+      }, 100);
+
+    } catch (err) {
+      console.error('openPostEdit 오류:', err);
+      // 실패 시 기존 방식으로 폴백
+      window.location.href = `/posts/${targetId}/edit`;
+    }
   }
 
   // 전역 내보내기

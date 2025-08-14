@@ -58,16 +58,17 @@
               </div>
 
               <!-- 썸네일 영역 (게시글 상세와 완전히 동일 + 편집 기능) -->
-              <div class="gallery-thumbs" th:if="${post.images.size() > 1 or true}">
+              <div class="gallery-thumbs" th:if="${post.images != null and post.images.size() > 1}">
                 <div class="thumbs-container">
-                  <!-- 기존 이미지 썸네일들 -->
-                  <button type="button" th:each="image, it : ${post.images}"
-                          class="thumb"
+                  <!-- 기존 이미지 썸네일들 (게시글 상세와 동일한 구조 + 삭제 버튼) -->
+                  <button type="button" class="thumb"
+                          th:each="image, it : ${post.images}"
                           th:data-image-id="${image.id}"
                           th:data-index="${it.index}"
                           th:classappend="${it.index == 0} ? ' active'">
-                    <img th:src="${image.url}" th:alt="'썸네일 ' + ${it.index + 1}">
-                    <!-- 편집용 삭제 버튼 -->
+                    <img th:src="${image.url}" 
+                         th:attr="data-full=${image.url}"
+                         th:alt="'썸네일 ' + ${it.index + 1}">
                     <button type="button" class="thumb-delete-btn"
                             th:data-image-id="${image.id}"
                             aria-label="이미지 삭제">×
