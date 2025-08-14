@@ -6,8 +6,21 @@ const gInfoWindows = [];
 let allData = [];
 let clusterer = null;
 
-// 클릭으로 연 InfoWindow를 추적 (마우스 아웃으로 닫히지 않게)
+// 클릭으로 연 InfoWindow 추적
 let lastOpenedByClick = null;
+
+// 캐시 키(라운딩된 bbox)
+let lastBboxKey = '';
+
+// (브리지: segment_toggle.js와 상태 동기화)
+Object.defineProperty(window, 'currentType', {
+  get(){ return currentType; },
+  set(v){ currentType = v; }
+});
+Object.defineProperty(window, 'lastBboxKey', {
+  get(){ return lastBboxKey; },
+  set(v){ lastBboxKey = v; }
+});
 
 // Advanced Marker 사용 가능 여부(벡터 맵 + 라이브러리 로드되면 true로 설정)
 window.allowAdvanced = false;
@@ -523,7 +536,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ------- Viewport loader -------
 let aborter = null;
-let lastBboxKey = '';          // 캐시 키(라운딩된 bbox)
 let skipNextFetchOnce = false; // 클러스터 클릭 직후 1회 재조회 스킵
 
 function getBboxFromMap() {
@@ -589,6 +601,8 @@ async function fetchByViewport() {
     if (e.name !== 'AbortError') console.error('지점 로드 에러:', e);
   }
 }
+
+window.fetchByViewport = fetchByViewport;
 
 function wireViewportLoading(){
   let t=null;
