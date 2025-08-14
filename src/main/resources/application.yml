@@ -10,6 +10,13 @@ spring:
   profiles:
     active: local
 
+
+  #form에서 put 메소드를 받기 위한 설정
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+
   # 파일 업로드 용량 제한
   servlet:
     multipart:
@@ -51,6 +58,7 @@ logging:
   level:
     org.springframework: INFO
     org.hh.heritagehunters: DEBUG  # 패키지 이름 기준
+    org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
 
 springdoc:
   api-docs:

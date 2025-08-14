@@ -39,4 +39,9 @@ public class PostImage {
   public boolean isMainImage() {
     return orderIndex != null && orderIndex == 0;
   }
+
+  // 이미지 순서 업데이트
+  public void updateOrder(int newOrder) {
+    this.orderIndex = newOrder;
+  }
 }
