@@ -424,17 +424,52 @@ function renderList(list){
   const $list = document.getElementById('list'); if (!$list) return;
   $list.innerHTML = '';
 
-  list.forEach((item, idx) => {
-    const pos = toLatLngLiteral(item); if (!pos) return;
-
-    const el = buildListCard(item);
-
-    el.addEventListener('click', () => {
-      // 리스트 아이템의 좌표
-      const p = pos;
+  // 좌표 기반 그룹핑(마커와 동일 기준: 소수 6자리)
+  function groupByPosition(items, precision = 6){
+    const map = new Map();
+    (items || []).forEach(item => {
+      const p = toLatLngLiteral(item);
       if (!p) return;
+      const lat = Number(p.lat).toFixed(precision);
+      const lng = Number(p.lng).toFixed(precision);
+      const key = `${lat},${lng}`;
+      if (!map.has(key)){
+        map.set(key, { pos:{ lat:Number(lat), lng:Number(lng) }, items:[] });
+      }
+      map.get(key).items.push(item);
+    });
+    return Array.from(map.values());
+  }
 
-      // 같은 좌표의 마커(그룹 대표)를 찾는다
+  // 그룹 카드(여러 건) — 주소 + 개수만
+  function buildGroupCard(group){
+    const el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'card';
+
+    const name = document.createElement('div');
+    name.className = 'name';
+    // 첫 항목의 address/region 사용
+    name.textContent = group.items[0]?.address || group.items[0]?.region || '(주소 없음)';
+
+    const desc = document.createElement('div');
+    desc.className = 'desc';
+    desc.textContent = `이 위치의 항목 ${group.items.length}개`;
+
+    el.append(name, desc);
+    return el;
+  }
+
+  const groups = groupByPosition(list, 6);
+
+  groups.forEach(group => {
+    const isSingle = group.items.length === 1;
+    const el = isSingle ? buildListCard(group.items[0]) : buildGroupCard(group);
+
+    // 클릭 시: 해당 좌표의(그룹 대표) 마커 찾고 InfoWindow 열기
+    el.addEventListener('click', () => {
+      const p = group.pos; if (!p) return;
+
       const mk = gMarkers.find(m => {
         const mp = getMarkerPosition(m);
         if (!mp) return false;
@@ -442,13 +477,15 @@ function renderList(list){
         const mlg = typeof mp.lng === 'function' ? mp.lng() : mp.lng;
         return Math.abs(ml - p.lat) < 1e-6 && Math.abs(mlg - p.lng) < 1e-6;
       });
-      if (!mk) { map.panTo(p); map.setZoom(Math.max(map.getZoom(), 14)); return; }
 
       map.panTo(p);
-      map.setZoom(Math.max(map.getZoom(), 14));
-      closeAllInfo();
-      mk._info?.open({ anchor: mk, map });
-      lastOpenedByClick = mk._info;
+      map.setZoom(Math.max(map.getZoom() || 0, 14));
+
+      if (mk?._info){
+        closeAllInfo();
+        mk._info.open({ anchor: mk, map });
+        lastOpenedByClick = mk._info;
+      }
     });
 
     $list.appendChild(el);
@@ -751,8 +788,8 @@ async function fetchByViewport() {
   if (ss) {
     const cats = [...(ss.__state?.selectedMuseumCats || new Set())];
     const desi = [...(ss.__state?.selectedDesignations || new Set())];
-    cats.forEach(c => url.searchParams.append('museumCats', c));
-    desi.forEach(d => url.searchParams.append('designations', d)); // "11","12",...
+    cats.forEach(c => url.searchParams.append('museumCats', String(c).trim()));
+    desi.forEach(d => url.searchParams.append('designations', d)); // 종목 코드
   }
 
   try {

@@ -68,17 +68,18 @@ public class ViewportRepository {
     WHERE m.geom IS NOT NULL
       AND ST_X(m.geom) <> 0 AND ST_Y(m.geom) <> 0
       AND ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
-      AND (:catsEmpty OR m.category = ANY(:cats))
+      -- 선택한 카테고리가 있을 때만 필터 (btrim으로 안전 비교)
+      AND (:catsEmpty OR btrim(m.category) = ANY(:cats))
     LIMIT :limit
-    """;
+  """;
 
-    String[] catsArr = (cats == null) ? new String[0] : cats.toArray(String[]::new);
+    String[] catsArr = (cats == null) ? new String[0] : cats.stream().map(String::trim).toArray(String[]::new);
 
     var params = new MapSqlParameterSource()
         .addValue("s", s).addValue("w", w).addValue("n", n).addValue("e", e)
         .addValue("limit", limit)
-        .addValue("cats", catsArr)                     // ← 항상 배열
-        .addValue("catsEmpty", catsArr.length == 0);   // ← 비었는지 여부
+        .addValue("cats", catsArr)                     // text[]
+        .addValue("catsEmpty", catsArr.length == 0);   // boolean
 
     return jdbc.query(sql, params, MAPPER);
   }
@@ -102,21 +103,25 @@ public class ViewportRepository {
       AND ST_X(h.geom) <> 0 AND ST_Y(h.geom) <> 0
       AND ST_Intersects(h.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
       AND NOT EXISTS (SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id)
-      AND (:desigsEmpty OR EXISTS (
-            SELECT 1
-            FROM unnest(:desigs) d
-            WHERE h.designation ~ ('(^|[|,/])' || d || '($|[|,/])')
-          ))
+      -- 선택 종목이 있을 때만 필터: designation을 분해해서 ANY(:desigs)와 매칭
+      AND (
+        :desigsEmpty
+        OR EXISTS (
+             SELECT 1
+             FROM regexp_split_to_table(COALESCE(h.designation,''), '[|,/]') AS d(code)
+             WHERE btrim(d.code) = ANY(:desigs)
+           )
+      )
     LIMIT :limit
-    """;
+  """;
 
-    String[] desigsArr = (desigs == null) ? new String[0] : desigs.toArray(String[]::new);
+    String[] desigsArr = (desigs == null) ? new String[0] : desigs.stream().map(String::trim).toArray(String[]::new);
 
     var params = new MapSqlParameterSource()
         .addValue("s", s).addValue("w", w).addValue("n", n).addValue("e", e)
         .addValue("limit", limit)
-        .addValue("desigs", desigsArr)                     // ← 항상 배열
-        .addValue("desigsEmpty", desigsArr.length == 0);   // ← 비었는지 여부
+        .addValue("desigs", desigsArr)                   // text[]
+        .addValue("desigsEmpty", desigsArr.length == 0); // boolean
 
     return jdbc.query(sql, params, MAPPER);
   }
@@ -141,7 +146,7 @@ public class ViewportRepository {
       WHERE m.geom IS NOT NULL
         AND ST_X(m.geom) <> 0 AND ST_Y(m.geom) <> 0
         AND ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
-        AND (:catsEmpty OR m.category = ANY(:cats))
+        AND (:catsEmpty OR btrim(m.category) = ANY(:cats))
     )
     UNION ALL
     (
@@ -159,16 +164,20 @@ public class ViewportRepository {
         AND ST_X(h.geom) <> 0 AND ST_Y(h.geom) <> 0
         AND ST_Intersects(h.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
         AND NOT EXISTS (SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id)
-        AND (:desigsEmpty OR EXISTS (
-              SELECT 1 FROM unnest(:desigs) d
-              WHERE h.designation ~ ('(^|[|,/])' || d || '($|[|,/])')
-            ))
+        AND (
+          :desigsEmpty
+          OR EXISTS (
+               SELECT 1
+               FROM regexp_split_to_table(COALESCE(h.designation,''), '[|,/]') AS d(code)
+               WHERE btrim(d.code) = ANY(:desigs)
+             )
+        )
     )
     LIMIT :limit
-    """;
+  """;
 
-    String[] catsArr   = (cats   == null) ? new String[0] : cats.toArray(String[]::new);
-    String[] desigsArr = (desigs == null) ? new String[0] : desigs.toArray(String[]::new);
+    String[] catsArr   = (cats   == null) ? new String[0] : cats.stream().map(String::trim).toArray(String[]::new);
+    String[] desigsArr = (desigs == null) ? new String[0] : desigs.stream().map(String::trim).toArray(String[]::new);
 
     var params = new MapSqlParameterSource()
         .addValue("s", s).addValue("w", w).addValue("n", n).addValue("e", e)

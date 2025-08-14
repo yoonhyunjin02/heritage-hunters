@@ -34,7 +34,8 @@ function buildFiltersFromData(list){
 
   (list || []).forEach(it => {
     if (it.type === 'museum' && it.category) {
-      museumCount.set(it.category, (museumCount.get(it.category) || 0) + 1);
+      const cat = String(it.category).trim();
+      museumCount.set(cat, (museumCount.get(cat) || 0) + 1);
     }
     if (it.type === 'heritage' && it.category) {
       // "11|12" 같은 복수 처리
@@ -101,7 +102,11 @@ function applyFilter(list){
   let out = list || [];
   // museum 카테고리
   if (SidebarState.selectedMuseumCats.size > 0){
-    out = out.filter(it => it.type !== 'museum' || SidebarState.selectedMuseumCats.has(it.category || ''));
+    out = out.filter(it => {
+      if (it.type !== 'museum') return true;
+      const cat = (it.category ?? '').toString().trim();
+      return SidebarState.selectedMuseumCats.has(cat);
+    });
   }
   // heritage 종목
   if (SidebarState.selectedDesignations.size > 0){
