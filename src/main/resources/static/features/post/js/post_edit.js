@@ -10,6 +10,15 @@
     initializeImageGallery();
   });
 
+  /**
+   * 게시글 수정 화면의 이미지 갤러리를 초기화합니다.
+   * 
+   * @description
+   * - 기존 이미지들을 스캔하여 images 배열 생성
+   * - 메인 이미지 설정 및 썸네일 이벤트 바인딩
+   * - 이미지 추가 버튼 상태 업데이트
+   * - 게시글 상세와 동일한 갤러리 기능 제공
+   */
   function initializeImageGallery() {
     const thumbs = document.querySelectorAll('.thumb img');
     const main = document.getElementById('mainImage');
@@ -31,6 +40,14 @@
     updateThumbAddButton();
   }
 
+  /**
+   * 갤러리 이벤트들을 바인딩합니다.
+   * 
+   * @description
+   * - 썸네일 클릭 시 이미지 전환 (삭제 버튼 제외)
+   * - 화살표 버튼 클릭 시 이미지 네비게이션
+   * - 게시글 상세와 동일한 이벤트 처리
+   */
   function bindGalleryEvents() {
     // 썸네일 클릭 이벤트 (게시글 상세와 동일)
     document.querySelectorAll('.thumb').forEach((btn) => {
@@ -58,6 +75,16 @@
     });
   }
 
+  /**
+   * 현재 선택된 이미지에 맞춰 UI를 업데이트합니다.
+   * 
+   * @description
+   * - 메인 이미지 교체 (페이드 효과 포함)
+   * - 썸네일 활성화 상태 업데이트
+   * - 화살표 버튼 표시/숨김 처리
+   * - 이미지 추가 버튼 상태 업데이트
+   * - 게시글 상세와 동일한 업데이트 로직
+   */
   function update() {
     const main = document.getElementById('mainImage');
     if (main && images[current]) {
@@ -90,6 +117,14 @@
     updateThumbAddButton();
   }
 
+  /**
+   * 이미지 추가 버튼의 표시/숨김 상태를 업데이트합니다.
+   * 
+   * @description
+   * - 현재 이미지 개수가 3장 이상이면 추가 버튼 숨김
+   * - 3장 미만이면 추가 버튼 표시
+   * - 최대 이미지 개수 제한 적용
+   */
   function updateThumbAddButton() {
     const addBtn = document.querySelector('.thumb-add-btn');
     const currentImageCount = document.querySelectorAll('.thumb').length;

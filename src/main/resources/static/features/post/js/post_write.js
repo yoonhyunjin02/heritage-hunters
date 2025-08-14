@@ -8,6 +8,14 @@ const PostModal = {
 
   files: [], activeIndex: 0, isSubmitting: false, gpsFromImg: null,
 
+  /**
+   * 게시글 작성 모달을 초기화합니다.
+   * 
+   * @description
+   * - DOM 요소들을 캐시하고 이벤트 바인딩
+   * - 필수 요소가 없으면 초기화하지 않음
+   * - 파일 업로드, 폼 제출 등 모든 이벤트 설정
+   */
   init() {
     this.modal = document.getElementById('postModal');
     this.form = document.getElementById('postForm');
@@ -23,6 +31,15 @@ const PostModal = {
     this.bindEvents();
   },
 
+  /**
+   * 모든 이벤트 리스너를 바인딩합니다.
+   * 
+   * @description
+   * - 모달 열기/닫기 버튼 이벤트
+   * - 파일 선택 및 드래그 앤 드롭 이벤트
+   * - 폼 제출 및 입력 검증 이벤트
+   * - ESC 키로 모달 닫기 이벤트
+   */
   bindEvents() {
     // 열기 버튼들
     document.getElementById('openPostModalEmpty')?.addEventListener('click',
@@ -86,16 +103,39 @@ const PostModal = {
     this.form.addEventListener('submit', e => this.handleSubmit(e));
   },
 
+  /**
+   * 게시글 작성 모달을 엽니다.
+   * 
+   * @description
+   * - 모달을 표시하고 body 스크롤 방지
+   * - 텍스트 영역에 자동 포커스
+   */
   open() {
     this.modal.classList.add('show');
     document.body.style.overflow = 'hidden';
     this.textarea?.focus();
   },
+  /**
+   * 게시글 작성 모달을 닫습니다.
+   * 
+   * @description
+   * - 모달을 숨기고 body 스크롤 복원
+   * - 250ms 후 폼 초기화
+   */
   close() {
     this.modal.classList.remove('show');
     document.body.style.overflow = '';
     setTimeout(() => this.resetForm(), 250);
   },
+  /**
+   * 폼을 초기 상태로 리셋합니다.
+   * 
+   * @description
+   * - 모든 입력 필드 및 파일 목록 초기화
+   * - 이미지 스테이지 및 썸네일 영역 비우기
+   * - 로딩 상태 해제 및 문자 카운트 초기화
+   * - 업로드 플레이스홀더 다시 표시
+   */
   resetForm() {
     this.form.reset();
     this.files = [];
@@ -109,6 +149,17 @@ const PostModal = {
         'visually-hidden');
   },
 
+  /**
+   * 선택된 파일들을 처리합니다.
+   * 
+   * @param {FileList} fileList - 선택된 파일 목록
+   * @description
+   * - 파일 형식 및 크기 검증 (JPEG, PNG, GIF, WebP / 50MB 이하)
+   * - 최대 3장 제한 확인
+   * - 유효한 파일들을 files 배열에 추가
+   * - DataTransfer를 사용해 input 파일 동기화
+   * - 이미지 스테이지 및 썸네일 렌더링
+   */
   handleFileSelect(fileList) {
     const MAX = 3, TYPES = /image\/(jpeg|jpg|png|gif|webp)/,
         SIZE = 50 * 1024 * 1024;
@@ -137,6 +188,14 @@ const PostModal = {
     document.querySelector('.upload-placeholder')?.classList.add(
         'visually-hidden');
   },
+  /**
+   * 현재 활성 이미지를 메인 스테이지에 렌더링합니다.
+   * 
+   * @description
+   * - 현재 activeIndex에 해당하는 파일을 표시
+   * - FileReader를 사용해 파일을 Data URL로 변환
+   * - 파일이 없으면 아무것도 렌더링하지 않음
+   */
   renderStage() {
     this.stageEl.innerHTML = '';
     const file = this.files[this.activeIndex];
@@ -151,6 +210,15 @@ const PostModal = {
     reader.readAsDataURL(file);
     this.stageEl.appendChild(img);
   },
+  /**
+   * 모든 파일들의 썸네일을 렌더링합니다.
+   * 
+   * @description
+   * - files 배열의 모든 파일에 대해 썸네일 생성
+   * - 현재 활성 썸네일에 'active' 클래스 적용
+   * - 썸네일 클릭 시 해당 이미지로 전환
+   * - FileReader를 사용해 썸네일 이미지 생성
+   */
   renderThumbs() {
     this.thumbsEl.innerHTML = '';
     this.files.forEach((file, idx) => {
@@ -171,6 +239,16 @@ const PostModal = {
     });
   },
 
+  /**
+   * 이미지 파일에서 GPS 정보를 추출합니다.
+   * 
+   * @param {File} file - GPS 정보를 추출할 이미지 파일
+   * @description
+   * - EXIF 데이터에서 GPS 위도/경도 정보 추출
+   * - DMS(도분초) 형식을 십진수 형식으로 변환
+   * - GPS 정보가 없으면 gpsFromImg를 null로 설정
+   * - 추출된 GPS는 위치 검증에 사용
+   */
   extractGps(file) {
     if (!file) {
       this.gpsFromImg = null;
@@ -191,6 +269,17 @@ const PostModal = {
     });
   },
 
+  /**
+   * 폼 제출을 처리합니다.
+   * 
+   * @async
+   * @param {Event} e - 폼 제출 이벤트
+   * @description
+   * - 폼 검증 후 서버로 데이터 전송
+   * - 중복 제출 방지 및 로딩 상태 관리
+   * - 성공 시 모달 닫기 후 페이지 새로고침
+   * - 실패 시 오류 메시지 표시
+   */
   async handleSubmit(e) {
     e.preventDefault();
     if (this.isSubmitting) {
@@ -222,6 +311,16 @@ const PostModal = {
     }
   },
 
+  /**
+   * 폼 입력 내용을 검증합니다.
+   * 
+   * @returns {boolean} 검증 통과 여부
+   * @description
+   * - 내용 입력 및 글자 수 제한 확인
+   * - 위치 입력 확인
+   * - 이미지 업로드 확인 (최소 1장)
+   * - GPS 정보와 선택 위치 간의 거리 검증 (200m 이내)
+   */
   validateForm() {
     const {content, location, lat, lng} = this.form;
     if (!content.value.trim()) {
@@ -245,10 +344,29 @@ const PostModal = {
     return true;
   },
 
+  /**
+   * 로딩 상태를 설정합니다.
+   * 
+   * @param {boolean} on - 로딩 상태 여부
+   * @description
+   * - 제출 버튼 텍스트 및 로딩 스피너 표시 제어
+   * - 로딩 중일 때 "작성 중...", 평상시 "작성하기"
+   */
   setLoading(on) {
     this.submitBtnText.textContent = on ? '작성 중...' : '작성하기';
     this.submitBtnLoader.style.display = on ? 'inline-flex' : 'none';
   },
+  /**
+   * 두 지점 간의 거리를 계산합니다 (Haversine formula).
+   * 
+   * @param {Object} a - 첫 번째 지점 {lat, lng}
+   * @param {Object} b - 두 번째 지점 {lat, lng}
+   * @returns {number} 두 지점 간의 거리 (미터)
+   * @description
+   * - GPS 좌표와 선택한 위치 간의 거리 계산
+   * - 지구의 곡률을 고려한 정확한 거리 계산
+   * - 200m 이내 제한 검증에 사용
+   */
   haversine(a, b) {
     const R = 6371000, rad = x => x * Math.PI / 180;
     const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);

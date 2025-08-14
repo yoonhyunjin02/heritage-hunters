@@ -9,6 +9,16 @@
     initializeRelativeTime();
   });
 
+  /**
+   * 게시글 상세 화면의 이미지 갤러리를 초기화합니다.
+   * 썸네일 이미지 목록을 생성하고 초기 UI를 설정합니다.
+   * 
+   * @description 
+   * - 썸네일 이미지들을 스캔하여 images 배열 생성
+   * - 메인 이미지가 있으면 단일 이미지로 처리
+   * - 초기 인덱스를 0으로 설정하고 UI 업데이트
+   * - 이벤트 리스너 바인딩
+   */
   function initializePostDetail() {
     const thumbs = document.querySelectorAll('.thumb img');
     const main = document.getElementById('mainImage');
@@ -28,6 +38,14 @@
     bindThumbClicks();
   }
 
+  /**
+   * 썸네일과 화살표 버튼에 클릭 이벤트를 바인딩합니다.
+   * 
+   * @description
+   * - 썸네일 클릭 시 해당 이미지로 이동
+   * - 이전/다음 화살표 버튼 클릭 시 이미지 네비게이션
+   * - 모든 이벤트에서 기본 동작 방지
+   */
   function bindThumbClicks() {
     document.querySelectorAll('.thumb').forEach((btn) => {
       btn.addEventListener('click', (e) => {
@@ -50,6 +68,15 @@
         });
   }
 
+  /**
+   * 현재 선택된 이미지에 맞춰 UI를 업데이트합니다.
+   * 
+   * @description
+   * - 메인 이미지 교체 (페이드 효과 포함)
+   * - 썸네일 활성화 상태 업데이트
+   * - 화살표 버튼 표시/숨김 처리
+   * - 인디케이터 활성화 상태 업데이트
+   */
   function update() {
     const main = document.getElementById('mainImage');
     if (main && images[current]) {
@@ -73,6 +100,14 @@
         (ind, i) => ind.classList.toggle('active', i === current));
   }
 
+  /**
+   * 이전 이미지로 이동합니다.
+   * 
+   * @description
+   * - 현재 인덱스를 1 감소시킴 (순환)
+   * - 이미지가 2개 이상일 때만 동작
+   * - UI 업데이트 호출
+   */
   function prevImage() {
     if (images.length > 1) {
       current = (current - 1 + images.length) % images.length;
@@ -80,6 +115,14 @@
     }
   }
 
+  /**
+   * 다음 이미지로 이동합니다.
+   * 
+   * @description
+   * - 현재 인덱스를 1 증가시킴 (순환)
+   * - 이미지가 2개 이상일 때만 동작
+   * - UI 업데이트 호출
+   */
   function nextImage() {
     if (images.length > 1) {
       current = (current + 1) % images.length;
@@ -87,6 +130,15 @@
     }
   }
 
+  /**
+   * 특정 인덱스의 이미지를 표시합니다.
+   * 
+   * @param {number} i - 표시할 이미지의 인덱스
+   * @description
+   * - 유효한 인덱스인지 검증
+   * - 현재 인덱스를 지정된 값으로 설정
+   * - UI 업데이트 호출
+   */
   function showImage(i) {
     if (i >= 0 && i < images.length) {
       current = i;
@@ -95,11 +147,26 @@
   }
 
   // 드롭다운
+  /**
+   * 모든 드롭다운 메뉴를 닫습니다.
+   * 
+   * @description
+   * - 페이지 내 모든 .dropdown-menu 요소에서 'show' 클래스 제거
+   * - 다른 드롭다운 열기 전 정리 작업에 사용
+   */
   function closeAllDropdowns() {
     document.querySelectorAll('.dropdown-menu').forEach(
         el => el.classList.remove('show'));
   }
 
+  /**
+   * 게시글 옵션 드롭다운을 토글합니다.
+   * 
+   * @description
+   * - 현재 드롭다운이 열려있으면 닫고, 닫혀있으면 엽니다
+   * - 다른 모든 드롭다운을 먼저 닫습니다
+   * - 드롭다운 요소가 없으면 아무 동작하지 않습니다
+   */
   function togglePostDropdown() {
     const dd = document.getElementById('postDropdown');
     if (!dd) {
@@ -119,6 +186,14 @@
   });
 
   // 댓글
+  /**
+   * 댓글 입력 창에 포커스를 주고 화면에 표시합니다.
+   * 
+   * @description
+   * - 댓글 textarea에 포커스 설정
+   * - 부드러운 스크롤로 댓글 입력 영역을 화면 중앙에 표시
+   * - textarea가 없으면 아무 동작하지 않습니다
+   */
   function focusCommentInput() {
     const tx = document.getElementById('commentTextarea');
     if (!tx) {
@@ -130,6 +205,15 @@
   }
 
   // 상대 시간
+  /**
+   * 상대 시간 표시를 초기화합니다.
+   * 
+   * @description
+   * - time_util.js 모듈을 동적으로 로드
+   * - data-time 속성을 가진 요소들의 시간을 상대 시간으로 변환
+   * - 1분마다 자동으로 시간 업데이트
+   * - 모듈 로드 실패 시 조용히 무시
+   */
   function initializeRelativeTime() {
     import('/common/js/utils/time_util.js').then(m => {
       const fmt = m.formatRelativeTime;
@@ -149,6 +233,14 @@
   }
 
   // 닫기 (SSR 상세 페이지 or AJAX 모달 모두 지원)
+  /**
+   * 모달을 닫거나 상세 페이지에서 나갑니다.
+   * 
+   * @description
+   * - AJAX 모달인 경우: closePostDetail() 함수 호출
+   * - SSR 상세 페이지인 경우: 게시글 목록으로 이동
+   * - 모달 요소가 있으면 닫기 애니메이션 적용 후 페이지 이동
+   */
   function closeModal() {
     // 리스트에서 띄운 AJAX 모달이면 전용 닫기 사용
     if (typeof window.closePostDetail
@@ -169,6 +261,17 @@
   }
 
   // 삭제
+  /**
+   * 게시글을 삭제합니다.
+   * 
+   * @async
+   * @description
+   * - 모달 또는 URL에서 게시글 ID 추출
+   * - 사용자 확인 후 DELETE 요청 전송
+   * - CSRF 토큰을 포함하여 보안 처리
+   * - 성공 시 모달 닫기 후 목록 페이지로 이동
+   * - 실패 시 오류 메시지 표시
+   */
   async function deletePost() {
     const modal = document.getElementById('postDetailModal');
     let id = modal?.dataset.postId || modal?.getAttribute('data-post-id');
@@ -214,6 +317,18 @@
     }
   }
 
+  /**
+   * 게시글 수정 모달을 엽니다.
+   * 
+   * @async
+   * @param {string|number} [id] - 수정할 게시글 ID (없으면 현재 상세 모달의 ID 사용)
+   * @description
+   * - AJAX로 수정 폼을 동적 로드
+   * - 수정 모달이 없으면 동적으로 생성
+   * - PostEdit 객체 초기화 및 이벤트 바인딩
+   * - 스크립트 초기화 및 함수 충돌 방지
+   * - 실패 시 SSR 수정 페이지로 폴백
+   */
   async function openPostEdit(id) {
     // id 인자가 없으면 현재 상세 모달의 data-post-id 사용
     const targetId = id || document.getElementById(
