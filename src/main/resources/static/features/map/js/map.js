@@ -486,78 +486,90 @@ function wireSearch(){
   const $q = document.getElementById('search');
   if (!$q) return;
 
-  const run = debounce(async () => {
+  const $icon = document.querySelector('.toolbar-search .search-icon');
+  let inflight = false; // 중복 실행 방지
+
+  // 공통 검색 실행 (옵션으로 알림/자동이동 제어)
+  const executeSearch = async ({ notify = false, autoFit = true } = {}) => {
     const query = $q.value.trim();
 
-    // 검색어가 비었으면: 검색 모드 해제 → 뷰포트 데이터로 복귀
+    // 비어있으면: 검색모드 해제 + 뷰포트 복귀(제출일 때만)
     if (!query) {
-      searchMode = false;
-      await fetchByViewport();
+      if (notify) {
+        searchMode = false;
+        await fetchByViewport();
+      }
       return;
     }
 
-    // 검색 모드 진입
-    searchMode = true;
+    if (inflight) return;
+    inflight = true;
     $q.setAttribute('aria-busy', 'true');
 
     try {
       const list = await fetchSearchResults(query, currentType, 50);
+
+      // 사용자가 그 사이 다른 입력을 했으면 이 결과는 버림 (레이스 가드)
+      if ($q.value.trim() !== query) return;
+
+      if (!list || list.length === 0) {
+        if (notify) {
+          alert('검색 결과가 없습니다.');
+          searchMode = false;
+          await fetchByViewport();
+        }
+        // 조용한 모드(silent)면 아무것도 바꾸지 않고 종료
+        return;
+      }
+
+      // 검색 결과가 있을 때만 검색모드 전환 및 렌더
+      searchMode = true;
       allData = list;
       renderMarkers(list);
       renderList(list);
       skipNextFetchOnce = true;
 
-      // 결과 0개 처리 + 뷰포트 복귀
-      if (!list || list.length === 0) {
-        alert('검색 결과가 없습니다.');
-        searchMode = false;
-        await fetchByViewport();
-        return;
-      }
-
-      // 결과가 있으면 지도 이동
-      fitMapToResults(list);
-
+      if (autoFit) fitMapToResults(list);
     } catch (e) {
       console.error(e);
-      // alert('검색에 실패했어요. 잠시 후 다시 시도해주세요.');
+      if (notify) alert('검색 중 오류가 발생했습니다.');
     } finally {
       $q.removeAttribute('aria-busy');
+      inflight = false;
     }
-  }, 300);
+  };
 
-  // 입력 시 디바운스 검색
-  $q.addEventListener('input', run);
+  // 디바운스 + 즉시 실행 래퍼
+  function smartDebounce(fn, delay){
+    let t = null;
+    const debounced = (opts) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(opts), delay);
+    };
+    debounced.now = (opts) => {
+      clearTimeout(t);
+      fn(opts);
+    };
+    return debounced;
+  }
 
-  // 엔터키 즉시 검색(디바운스 무시)
+  const run = smartDebounce(executeSearch, 300);
+
+  // 타이핑 중엔 조용히(silent) 검색: 알림/뷰 복귀/오토핏 없음
+  $q.addEventListener('input', () => run({ notify: false, autoFit: false }));
+
+  // 엔터키 → 즉시 실행 + 안내/오토핏
   $q.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      run.flush?.(); // 지원 안하면 아래 수동 실행
-      (async () => {
-        const query = $q.value.trim();
-        if (!query) { searchMode = false; await fetchByViewport(); return; }
-        $q.setAttribute('aria-busy','true');
-        try{
-          const list = await fetchSearchResults(query, currentType, 50);
-          allData = list;
-          renderMarkers(list);
-          renderList(list);
-          skipNextFetchOnce = true;
-
-          if (!list || list.length === 0) {
-            alert('검색 결과가 없습니다.');
-            searchMode = false;
-            await fetchByViewport();
-            return;
-          }
-
-          fitMapToResults(list);
-
-        } finally { $q.removeAttribute('aria-busy'); }
-      })();
+      run.now({ notify: true, autoFit: true });
     }
   });
+
+  // 돋보기 클릭 → 즉시 실행 + 안내/오토핏
+  if ($icon) {
+    $icon.addEventListener('click', () => run.now({ notify: true, autoFit: true }));
+  }
 }
 
 // 간단 디바운스
