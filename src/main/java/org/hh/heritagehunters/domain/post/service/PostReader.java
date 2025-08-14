@@ -44,12 +44,7 @@ public class PostReader {
         .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
   }
 
-  public Post getDetailWithImages(Long postId) {
-    return postRepository.findByIdWithImages(postId)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
-  }
-
-  public Post getForEditWithImages(Long postId) {
+  public Post getPostWithImages(Long postId) {
     return postRepository.findByIdWithImages(postId)
         .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
   }
