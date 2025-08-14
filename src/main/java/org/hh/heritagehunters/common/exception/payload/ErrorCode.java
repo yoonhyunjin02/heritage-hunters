@@ -15,6 +15,8 @@ public enum ErrorCode {
   EMPTY_IMAGE_FILE(HttpStatus.BAD_REQUEST, "이미지 파일이 비어 있습니다."),
   INVALID_IMAGE_FORMAT(HttpStatus.BAD_REQUEST, "지원하지 않는 이미지 형식입니다."),
   IMAGE_TOO_LARGE(HttpStatus.BAD_REQUEST, "이미지 파일이 너무 큽니다. 최대 크기는 50MB입니다."),
+  TOO_MANY_IMAGES(HttpStatus.BAD_REQUEST, "이미지는 최대 3장까지만 업로드할 수 있습니다."),
+  IMAGE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "이미지 업로드에 실패했습니다."),
 
   // 401 - Unauthorized
   LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),

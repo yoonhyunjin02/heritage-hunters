@@ -67,6 +67,7 @@
   z-index: 15;
   font-weight: bold;
   opacity: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .thumb:hover .thumb-delete-btn {
@@ -76,6 +77,19 @@
 .thumb-delete-btn:hover {
   background: #c82333;
   transform: scale(1.1);
+}
+
+.thumb-delete-btn:active {
+  transform: scale(0.95);
+}
+
+/* 새로 추가된 이미지의 삭제 버튼도 동일한 스타일 */
+.thumb .thumb-delete-btn[data-new-image] {
+  background: #fd7e14;
+}
+
+.thumb .thumb-delete-btn[data-new-image]:hover {
+  background: #e8590c;
 }
 
 /* 게시글 수정 전용: 이미지 추가 버튼 */

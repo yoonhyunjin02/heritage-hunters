@@ -410,6 +410,11 @@
           window.initializeImageGallery();
         }
 
+        // 이미지 관리 기능 초기화
+        if (window.PostEdit && typeof window.PostEdit.initializeImageManagement === 'function') {
+          window.PostEdit.initializeImageManagement();
+        }
+
         // thumb-add-btn 상태 업데이트
         if (typeof window.updateThumbAddButton === 'function') {
           window.updateThumbAddButton();
