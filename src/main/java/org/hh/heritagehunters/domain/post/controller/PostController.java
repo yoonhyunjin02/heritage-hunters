@@ -18,7 +18,6 @@ import org.hh.heritagehunters.domain.post.dto.response.PostCreateResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostListResponseDto;
 import org.springframework.data.domain.Page;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -49,7 +48,7 @@ public class PostController {
    * @param direction 정렬 방향 (기본값: desc)
    * @param page 페이지 번호 (기본값: 0)
    * @param size 페이지 크기 (기본값: 16)
-   * @param customUserDetails 현재 로그인한 사용자 정보
+   * @param currentUserDetails 현재 로그인한 사용자 정보
    * @param model 뷰에 전달할 데이터 모델
    * @return 게시글 목록 페이지 뷰 이름
    */
@@ -61,10 +60,10 @@ public class PostController {
       @RequestParam(value = "direction", defaultValue = "desc") String direction,
       @RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "size", defaultValue = "16") int size,
-      @AuthenticationPrincipal CustomUserDetails customUserDetails,
+      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
       Model model) {
 
-    User currentUser = (customUserDetails != null) ? customUserDetails.getUser() : null;
+    User currentUser = (currentUserDetails != null) ? currentUserDetails.getUser() : null;
 
     log.debug("게시글 리스트 요청 - keyword: {}, region: {}, sort: {}, direction: {}, page: {}, size: {}",
         keyword, region, sort, direction, page, size);
@@ -88,7 +87,7 @@ public class PostController {
 
   /**
    * 새로운 게시글을 작성합니다
-   * @param userDetails 현재 로그인한 사용자 정보
+   * @param currentUserDetails 현재 로그인한 사용자 정보
    * @param request 게시글 작성 요청 데이터
    * @param bindingResult 유효성 검증 결과
    * @param images 업로드할 이미지 파일 목록
@@ -97,14 +96,13 @@ public class PostController {
    */
   @PostMapping
   public String createPost(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
       @Valid @ModelAttribute PostCreateRequestDto request,
       BindingResult bindingResult,
       @RequestParam(value = "images") List<MultipartFile> images,
       RedirectAttributes redirectAttributes) {
 
-
-    if (userDetails == null || userDetails.getUser() == null) {
+    if (currentUserDetails == null || currentUserDetails.getUser() == null) {
       return redirectWithError(redirectAttributes, "로그인 후 게시글을 작성할 수 있습니다.", "/login");
     }
 
@@ -112,7 +110,7 @@ public class PostController {
       return redirectWithError(redirectAttributes, "입력값을 확인해주세요.", "/posts");
     }
 
-    PostCreateResponseDto response = postFacade.create(userDetails.getUser(), request, images);
+    PostCreateResponseDto response = postFacade.create(currentUserDetails.getUser(), request, images);
 
     if (response.getPointsEarned() > 0) {
       redirectAttributes.addFlashAttribute("pointsEarned", response.getPointsEarned());
@@ -124,21 +122,21 @@ public class PostController {
   /**
    * 게시글 수정 폼을 조회합니다
    * @param postId 수정할 게시글 ID
-   * @param userDetails 현재 로그인한 사용자 정보
+   * @param currentUserDetails 현재 로그인한 사용자 정보
    * @param model 뷰에 전달할 데이터 모델
    * @return 게시글 수정 페이지 뷰 이름
    */
   @GetMapping("/{id}/edit")
   public String getEditForm(
       @PathVariable("id") Long postId,
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
       Model model) {
 
-    if (userDetails == null || userDetails.getUser() == null) {
+    if (currentUserDetails == null || currentUserDetails.getUser() == null) {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
 
-    PostDetailResponseDto post = postFacade.forEdit(postId, userDetails.getUser());
+    PostDetailResponseDto post = postFacade.forEdit(postId, currentUserDetails.getUser());
 
     PostUpdateRequestDto updateForm = new PostUpdateRequestDto();
     updateForm.setContent(post.getContent());
@@ -153,7 +151,7 @@ public class PostController {
   /**
    * 게시글을 수정합니다
    * @param postId 수정할 게시글 ID
-   * @param userDetails 현재 로그인한 사용자 정보
+   * @param currentUserDetails 현재 로그인한 사용자 정보
    * @param postUpdateRequestDto 게시글 수정 요청 데이터
    * @param bindingResult 유효성 검증 결과
    * @param newImages 새로 업로드할 이미지 파일 목록
@@ -164,7 +162,7 @@ public class PostController {
   @PutMapping("/{id}")
   public String updatePost(
       @PathVariable("id") Long postId,
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
       @Valid @ModelAttribute PostUpdateRequestDto postUpdateRequestDto,
       BindingResult bindingResult,
       @RequestParam(value = "images", required = false) List<MultipartFile> newImages,
@@ -173,7 +171,7 @@ public class PostController {
       RedirectAttributes redirectAttributes,
       HttpServletRequest request) {
 
-    if (userDetails == null || userDetails.getUser() == null) {
+    if (currentUserDetails == null || currentUserDetails.getUser() == null) {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
 
@@ -181,7 +179,7 @@ public class PostController {
       return redirectWithError(redirectAttributes, "입력값을 확인해주세요.", "/posts/" + postId);
     }
 
-    postFacade.update(postId, userDetails.getUser(), postUpdateRequestDto, newImages, keepImageIds);
+    postFacade.update(postId, currentUserDetails.getUser(), postUpdateRequestDto, newImages, keepImageIds);
 
     // AJAX 요청인 경우 게시글 리스트로 리다이렉트 (모달에서 처리)
     if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
@@ -195,16 +193,16 @@ public class PostController {
   /**
    * 게시글 상세 정보를 조회합니다
    * @param postId 조회할 게시글 ID
-   * @param userDetails 현재 로그인한 사용자 정보
+   * @param currentUserDetails 현재 로그인한 사용자 정보
    * @param model 뷰에 전달할 데이터 모델
    * @return 게시글 상세 페이지 뷰 이름
    */
   @GetMapping("/{id}")
   public String getPostDetail(@PathVariable("id") Long postId,
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
       Model model) {
 
-    User currentUser = (userDetails != null) ? userDetails.getUser() : null;
+    User currentUser = (currentUserDetails != null) ? currentUserDetails.getUser() : null;
 
     PostDetailResponseDto post = postFacade.detail(postId, currentUser);
 
@@ -218,7 +216,7 @@ public class PostController {
   /**
    * 게시글에 댓글을 작성합니다
    * @param postId 댓글을 작성할 게시글 ID
-   * @param userDetails 현재 로그인한 사용자 정보
+   * @param currentUserDetails 현재 로그인한 사용자 정보
    * @param commentForm 댓글 작성 요청 데이터
    * @param bindingResult 유효성 검증 결과
    * @param redirectAttributes 리다이렉트 시 전달할 속성
@@ -227,43 +225,53 @@ public class PostController {
   @PostMapping("/{postId}/comments")
   public String createComment(
       @PathVariable Long postId,
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
       @Valid @ModelAttribute CommentCreateRequestDto commentForm,
       BindingResult bindingResult,
-      RedirectAttributes redirectAttributes) {
+      RedirectAttributes redirectAttributes,
+      HttpServletRequest request) {
 
-    if (userDetails == null || userDetails.getUser() == null) {
+    if (currentUserDetails == null || currentUserDetails.getUser() == null) {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
 
     if (bindingResult.hasErrors()) {
-      return redirectWithError(redirectAttributes, "댓글 내용을 입력해주세요.", "/posts/" + postId);
+      // AJAX 요청인 경우 상태 코드로 에러 전달
+      if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+        throw new BadRequestException(ErrorCode.INVALID_INPUT_VALUE);
+      }
+      return redirectWithError(redirectAttributes, "댓글 내용을 입력해주세요.", "/posts");
     }
 
     // 댓글 작성 및 카운트
-    postFacade.addComment(postId, userDetails.getUser(), commentForm);
+    postFacade.addComment(postId, currentUserDetails.getUser(), commentForm);
 
-    return redirectWithSuccess(redirectAttributes, "댓글이 등록되었습니다.", "/posts/" + postId);
+    // AJAX 요청인 경우 성공 응답
+    if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+      return "redirect:/posts/" + postId;
+    }
+
+    return redirectWithSuccess(redirectAttributes, "댓글이 등록되었습니다.", "/posts");
   }
 
   /**
    * 게시글 좋아요를 토글합니다
    * @param postId 좋아요를 토글할 게시글 ID
-   * @param userDetails 현재 로그인한 사용자 정보
+   * @param currentUserDetails 현재 로그인한 사용자 정보
    * @param redirectAttributes 리다이렉트 시 전달할 속성
    * @return 리다이렉트 URL
    */
   @PostMapping("/{id}/like")
   public String toggleLike(
       @PathVariable("id") Long postId,
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
       RedirectAttributes redirectAttributes) {
 
-    if (userDetails == null || userDetails.getUser() == null) {
+    if (currentUserDetails == null || currentUserDetails.getUser() == null) {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
 
-    boolean isLiked = postFacade.toggleLike(postId, userDetails.getUser());
+    boolean isLiked = postFacade.toggleLike(postId, currentUserDetails.getUser());
 
     String message = isLiked ? "좋아요를 눌렀습니다." : "좋아요를 취소했습니다.";
     return redirectWithSuccess(redirectAttributes, message, "/posts/" + postId);
@@ -272,22 +280,22 @@ public class PostController {
   /**
    * 게시글을 삭제합니다
    * @param postId 삭제할 게시글 ID
-   * @param userDetails 현재 로그인한 사용자 정보
+   * @param currentUserDetails 현재 로그인한 사용자 정보
    * @param redirectAttributes 리다이렉트 시 전달할 속성
    * @return 리다이렉트 URL
    */
   @DeleteMapping("/{id}")
   public String deletePost(
       @PathVariable("id") Long postId,
-      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
       RedirectAttributes redirectAttributes) {
 
-    if (userDetails == null || userDetails.getUser() == null) {
+    if (currentUserDetails == null || currentUserDetails.getUser() == null) {
       throw new BadRequestException(ErrorCode.LOGIN_REQUIRED);
     }
 
     // 작성자 검증 + 삭제
-    postFacade.delete(postId, userDetails.getUser());
+    postFacade.delete(postId, currentUserDetails.getUser());
 
     return redirectWithSuccess(redirectAttributes, "게시글이 삭제되었습니다.", "/posts");
   }

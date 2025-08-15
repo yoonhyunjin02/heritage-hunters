@@ -107,16 +107,19 @@
           <!-- 오른쪽: 수정 폼 -->
           <div class="compose-right">
             <section class="author-display" sec:authorize="isAuthenticated()">
-              <img th:if="${#authentication.principal.profileImage != null}"
+              <img th:if="${currentUser != null and currentUser.profileImage != null}"
+                   th:src="${currentUser.profileImage}"
+                   class="author-avatar" alt="프로필">
+              <img th:if="${currentUser == null and #authentication.principal.profileImage != null}"
                    th:src="${#authentication.principal.profileImage}"
                    class="author-avatar" alt="프로필">
-              <div th:unless="${#authentication.principal.profileImage != null}"
+              <div th:unless="${(currentUser != null and currentUser.profileImage != null) or (currentUser == null and #authentication.principal.profileImage != null)}"
                    class="author-avatar-placeholder">
                 <span
-                    th:text="${#strings.substring(#authentication.principal.nickname, 0, 1)}">U</span>
+                    th:text="${currentUser != null ? #strings.substring(currentUser.nickname, 0, 1) : (#authentication.principal.nickname != null ? #strings.substring(#authentication.principal.nickname, 0, 1) : 'U')}">U</span>
               </div>
               <div class="author-info">
-                <div class="author-name" th:text="${#authentication.principal.nickname}">사용자</div>
+                <div class="author-name" th:text="${currentUser != null ? currentUser.nickname : (#authentication.principal.nickname ?: '사용자')}">사용자</div>
                 <div class="author-time">게시글 수정 중</div>
               </div>
             </section>

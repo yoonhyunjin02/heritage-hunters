@@ -7,6 +7,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     initializePostDetail();
     initializeRelativeTime();
+    initializeCommentForm();
   });
 
   /**
@@ -482,6 +483,170 @@
       // 실패 시 기존 방식으로 폴백
       window.location.href = `/posts/${targetId}/edit`;
     }
+  }
+
+  /**
+   * 댓글 폼 AJAX 제출 처리를 초기화합니다.
+   * 
+   * @description
+   * - 댓글 폼 제출 시 AJAX로 처리하여 페이지 리로드 방지
+   * - 성공 시 댓글 목록 업데이트 및 토스트 메시지 표시
+   * - 실패 시 에러 메시지 표시
+   */
+  function initializeCommentForm() {
+    const commentForm = document.getElementById('commentForm');
+    if (!commentForm) return;
+
+    commentForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      const postId = getPostId();
+      
+      if (!postId) {
+        alert('게시글 ID를 찾을 수 없습니다.');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/posts/${postId}/comments`, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        if (response.ok) {
+          // 댓글 입력창 초기화
+          const textarea = document.getElementById('commentTextarea');
+          if (textarea) {
+            textarea.value = '';
+            updateCharCount(textarea);
+          }
+
+          // 댓글 목록 다시 불러오기
+          await refreshComments(postId);
+          
+          // 토스트 메시지 표시
+          showToastMessage('success', '댓글이 등록되었습니다.');
+        } else {
+          throw new Error('댓글 등록에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('댓글 등록 오류:', error);
+        showToastMessage('error', '댓글 등록에 실패했습니다.');
+      }
+    });
+
+    // 댓글 글자 수 카운터 초기화
+    const textarea = document.getElementById('commentTextarea');
+    if (textarea) {
+      textarea.addEventListener('input', function() {
+        updateCharCount(this);
+      });
+    }
+  }
+
+  /**
+   * 현재 게시글 ID를 가져옵니다.
+   */
+  function getPostId() {
+    const modal = document.getElementById('postDetailModal');
+    let postId = modal?.dataset.postId || modal?.getAttribute('data-post-id');
+    
+    // 모달에서 찾지 못한 경우 URL에서 추출
+    if (!postId) {
+      const urlPath = window.location.pathname;
+      const match = urlPath.match(/\/posts\/(\d+)/);
+      postId = match ? match[1] : null;
+    }
+    
+    return postId;
+  }
+
+  /**
+   * 댓글 목록을 새로고침합니다.
+   */
+  async function refreshComments(postId) {
+    try {
+      const response = await fetch(`/posts/${postId}`, {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+
+      if (response.ok) {
+        const html = await response.text();
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const newCommentsList = doc.querySelector('.comments-list');
+        
+        if (newCommentsList) {
+          const currentCommentsList = document.querySelector('.comments-list');
+          if (currentCommentsList) {
+            currentCommentsList.innerHTML = newCommentsList.innerHTML;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('댓글 목록 새로고침 오류:', error);
+    }
+  }
+
+  /**
+   * 글자 수 카운터를 업데이트합니다.
+   */
+  function updateCharCount(textarea) {
+    const charCount = document.getElementById('commentCharCount');
+    if (charCount) {
+      charCount.textContent = textarea.value.length;
+    }
+  }
+
+  /**
+   * 토스트 메시지를 표시합니다.
+   */
+  function showToastMessage(type, message) {
+    // 기존 토스트가 있으면 제거
+    const existingToast = document.getElementById('toast-message');
+    if (existingToast) {
+      existingToast.remove();
+    }
+
+    // 새 토스트 생성
+    const toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) return;
+
+    const toast = document.createElement('div');
+    toast.id = 'toast-message';
+    toast.className = `toast toast-${type}`;
+    
+    const iconMap = {
+      success: '✅',
+      error: '❌',
+      warning: '⚠️',
+      info: 'ℹ️'
+    };
+
+    toast.innerHTML = `
+      <div class="toast-content">
+        <span class="toast-icon">${iconMap[type] || '📢'}</span>
+        <span class="toast-text">${message}</span>
+      </div>
+      <button type="button" class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // 애니메이션 적용
+    setTimeout(() => {
+      toast.classList.add('show');
+    }, 10);
+
+    // 자동 제거
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
   }
 
   // 전역 내보내기

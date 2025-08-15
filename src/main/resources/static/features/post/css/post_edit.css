@@ -1,40 +1,64 @@
-/* features/post/css/post_edit.css */
-/* 게시글 수정 모달 전용 CSS — 상세 뷰와 동일한 갤러리/썸네일 스펙으로 오버라이드 */
-
 :root {
-  /* breakpoints (문서화용) */
+  /* breakpoints */
   --bp-mobile: 47.9375rem; /* 767px  */
   --bp-tablet: 64rem; /* 1024px */
   --bp-desktop: 64.0625rem; /* 1025px */
 }
 
-/* ===== 좌측 영역 크기(상세와 동일 비주얼) ===== */
-#postEditModal .compose-left {
-  position: relative;
-  height: 65vh;
-  min-height: 420px;
-  background: #f3f3f3;
-  overflow: hidden;
+/* 공통 레이아웃(있으면 사용, 없으면 무시) */
+.composer-grid {
+  display: grid;
+  grid-template-columns:1.4fr 1fr;
+  gap: 1.25rem;
 }
 
-/* ===== 갤러리(상세와 동일) ===== */
+#postEditModal * {
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   좌측 미디어 영역 — 항상 2행 그리드(메인 1fr / 썸네일 var(--thumb-h))
+   ========================================================= */
+#postEditModal {
+  --thumb-h: 78px;
+}
+
+#postEditModal .compose-left {
+  display: grid !important;
+  grid-template-rows:1fr var(--thumb-h) !important;
+  height: clamp(360px, 65dvh, 70dvh);
+  min-height: 360px;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  background: #111; /* 레터박스 배경 */
+}
+
+/* 메인 갤러리(그리드 1행 고정) */
 #postEditModal .gallery {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-  background: #f3f3f3;
+  grid-row: 1 !important;
+  position: relative !important; /* 다른 CSS의 absolute 방지 */
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  overflow: hidden !important;
 }
 
 #postEditModal .gallery-main {
   width: 100%;
   height: 100%;
-  position: relative;
-  overflow: hidden;
-  user-select: none;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  user-select: none;
   cursor: grab;
 }
 
@@ -42,104 +66,112 @@
   cursor: grabbing;
 }
 
-#postEditModal .gallery-main img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  display: block;
+/* 비율 유지 — 전역 img {height:auto} 등의 규칙을 무력화 */
+#postEditModal .gallery-main > img,
+#postEditModal .gallery-main > video {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important; /* 잘림 없이 레터박스 */
+  object-position: center !important;
+  display: block !important;
   transition: transform .3s ease, opacity .3s ease;
 }
 
-/* ===== 네비게이션(상세와 동일: 50px 원형 버튼) ===== */
+/* 좌/우 네비게이션(메인 뷰 기준 플로팅) */
 #postEditModal .gallery-nav {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, .5);
+  background: rgba(0, 0, 0, .45);
   color: #fff;
-  border: none;
-  width: 50px;
-  height: 50px;
+  border: 1px solid rgba(255, 255, 255, .25);
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  font-size: 24px;
+  font-size: 22px;
   cursor: pointer;
-  z-index: 10;
-  transition: all .3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  z-index: 6;
+  display: grid;
+  place-items: center;
   backdrop-filter: blur(5px);
+  transition: transform .2s ease, background .2s ease;
 }
 
 #postEditModal .gallery-nav:hover {
-  background: rgba(0, 0, 0, .7);
-  transform: translateY(-50%) scale(1.1);
+  background: rgba(0, 0, 0, .6);
+  transform: translateY(-50%) scale(1.06);
 }
 
 #postEditModal .gallery-nav.prev {
-  left: 20px;
+  left: 12px;
 }
 
 #postEditModal .gallery-nav.next {
-  right: 20px;
+  right: 12px;
 }
 
-/* ===== 썸네일(상세와 동일: 우하단 미니 스트립) ===== */
+/* 썸네일 스트립(그리드 2행 고정) */
 #postEditModal .gallery-thumbs {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
+  grid-row: 2 !important;
+  position: static !important; /* absolute 방지 */
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  height: var(--thumb-h) !important;
   display: flex;
+  align-items: center;
   gap: 8px;
-  z-index: 10;
-  max-width: 200px;
-  overflow-x: auto;
-  padding: 4px;
-  background: rgba(0, 0, 0, .3);
-  border-radius: 8px;
-  backdrop-filter: blur(5px);
+  padding: 6px 8px;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  background: rgba(0, 0, 0, .35);
+  border-radius: 10px;
+  backdrop-filter: saturate(1.2) blur(6px);
+  z-index: auto !important;
 }
 
-/* 스크롤바 감춤 */
+/* 스크롤바 */
 #postEditModal .gallery-thumbs::-webkit-scrollbar {
-  height: 4px;
+  height: 6px;
 }
 
 #postEditModal .gallery-thumbs::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, .2);
-  border-radius: 2px;
+  background: transparent;
 }
 
 #postEditModal .gallery-thumbs::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, .5);
-  border-radius: 2px;
+  background: rgba(255, 255, 255, .25);
+  border-radius: 999px;
 }
 
-/* ===== 썸네일 아이템(64x64) ===== */
+/* 썸네일 아이템(바 높이에 자동 연동) */
 #postEditModal .thumb {
-  flex-shrink: 0;
-  width: 64px;
-  height: 64px;
-  border: none;
-  border-radius: 4px;
+  --thumb-size: calc(var(--thumb-h) - 14px);
+  flex: 0 0 var(--thumb-size) !important;
+  width: var(--thumb-size) !important;
+  height: var(--thumb-size) !important;
+  border: 2px solid transparent;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  transition: all .3s ease;
-  opacity: .6;
-  background: transparent;
-  padding: 0;
-  position: relative; /* 삭제버튼 위치 기준 */
+  background: #222;
+  opacity: .85;
+  transition: opacity .2s ease, transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  position: relative; /* 삭제 버튼 기준 */
 }
 
 #postEditModal .thumb:hover {
-  opacity: .8;
+  opacity: 1;
 }
 
 #postEditModal .thumb.active {
+  border-color: #22c55e;
   opacity: 1;
-  outline: 2px solid #fff;
-  outline-offset: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
 }
 
 #postEditModal .thumb img {
@@ -149,7 +181,33 @@
   display: block;
 }
 
-/* ===== 썸네일 삭제 버튼(우상단 작고 선명) ===== */
+/* 썸네일 + 버튼 */
+#postEditModal .thumb-add-btn {
+  width: calc(var(--thumb-size) - 4px) !important;
+  height: calc(var(--thumb-size) - 4px) !important;
+  background: rgba(255, 255, 255, .2);
+  border: 2px dashed rgba(255, 255, 255, .5);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, .85);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+
+#postEditModal .thumb-add-btn:hover {
+  background: rgba(255, 255, 255, .3);
+  border-color: rgba(255, 255, 255, .8);
+  transform: scale(1.05);
+}
+
+#postEditModal .thumb-add-btn svg {
+  color: inherit;
+}
+
+/* 썸네일 삭제 버튼 */
 #postEditModal .thumb-delete-btn {
   position: absolute;
   top: -8px;
@@ -162,12 +220,12 @@
   border-radius: 50%;
   cursor: pointer;
   font-size: 14px;
-  line-height: 1;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  z-index: 10;
+  line-height: 1;
+  z-index: 8;
   transition: transform .15s ease, background .15s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
 }
@@ -181,7 +239,6 @@
   transform: scale(.95);
 }
 
-/* 새로 추가된 이미지 구분(선택) */
 #postEditModal .thumb-delete-btn[data-new-image] {
   background: #fd7e14;
 }
@@ -190,33 +247,7 @@
   background: #e8590c;
 }
 
-/* ===== 썸네일 + 버튼(맨 오른쪽) ===== */
-#postEditModal .thumb-add-btn {
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 255, 255, .2);
-  border: 2px dashed rgba(255, 255, 255, .5);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform .15s ease, background .15s ease, border-color .15s ease;
-  flex-shrink: 0;
-  color: rgba(255, 255, 255, .85);
-}
-
-#postEditModal .thumb-add-btn:hover {
-  background: rgba(255, 255, 255, .3);
-  border-color: rgba(255, 255, 255, .8);
-  transform: scale(1.05);
-}
-
-#postEditModal .thumb-add-btn svg {
-  color: inherit;
-}
-
-/* ===== 이미지 없음 placeholder ===== */
+/* 이미지 없음 placeholder */
 #postEditModal .no-image {
   width: 100%;
   height: 100%;
@@ -245,7 +276,17 @@
   transform: translateY(-1px);
 }
 
-/* ===== 오른쪽 패널(기존 스타일 유지) ===== */
+/* 부모 컨테이너들도 축소 허용(오버플로우로 밀림 방지) */
+#postEditModal .modal-body,
+#postEditModal .composer-grid,
+#postEditModal .compose-left,
+#postEditModal .gallery,
+#postEditModal .gallery-main {
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* ===== 오른쪽 폼 영역 ===== */
 .edit-form .form-section {
   margin: 0 0 16px 16px;
 }
@@ -270,7 +311,7 @@
   border-radius: 6px;
   font: inherit;
   background: #fff;
-  transition: border-color .2s ease;
+  transition: border-color .2s ease, box-shadow .2s ease;
 }
 
 .form-input:focus, .form-textarea:focus {
@@ -328,62 +369,86 @@
   background: #1e2b25;
 }
 
-/* ===== 반응형 (요청한 브레이크포인트) ===== */
+/* =========================================================
+   반응형(항상 파일의 맨 아래 위치)
+   ========================================================= */
 /* Desktop (≥1025px) */
 @media (min-width: 1025px) {
-  #postEditModal .compose-left {
-    height: 70vh;
-    min-height: 32rem;
+  .composer-grid {
+    grid-template-columns:1.5fr 1fr;
+    gap: 1.25rem;
   }
 
-  #postEditModal .gallery-thumbs {
-    right: 1.25rem;
-    bottom: 1.25rem;
+  #postEditModal .compose-left {
+    height: 70vh;
+    min-height: 560px;
   }
+
+  #postEditModal .gallery-nav {
+    width: 48px;
+    height: 48px;
+  }
+
+  #postEditModal {
+    --thumb-h: 84px;
+  }
+
+  /* 썸네일/그리드 자동 연동 */
 }
 
 /* Tablet (768~1024px) */
 @media (min-width: 768px) and (max-width: 1024px) {
   .composer-grid {
-    grid-template-columns: 1.2fr 1fr;
+    grid-template-columns:1.2fr 1fr;
     gap: 1rem;
   }
 
   #postEditModal .compose-left {
     height: 55vh;
-    min-height: 22rem;
+    min-height: 440px;
   }
 
-  #postEditModal .gallery-thumbs {
-    max-width: 14rem;
-    right: .75rem;
-    bottom: .75rem;
+  #postEditModal .gallery-nav {
+    width: 42px;
+    height: 42px;
   }
 
-  #postEditModal .thumb {
-    width: 56px;
-    height: 56px;
+  #postEditModal {
+    --thumb-h: 72px;
   }
 }
 
 /* Mobile (≤767px) */
 @media (max-width: 767px) {
   .composer-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns:1fr;
     gap: .75rem;
   }
 
   #postEditModal .compose-left {
     height: 48vh;
-    min-height: 18rem;
+    min-height: 360px;
   }
 
-  #postEditModal .gallery-thumbs {
-    display: none;
+  #postEditModal .gallery-nav {
+    width: 38px;
+    height: 38px;
   }
 
-  /* 시야 확보 */
-  .form-section {
+  #postEditModal .gallery-nav.prev {
+    left: 8px;
+  }
+
+  #postEditModal .gallery-nav.next {
+    right: 8px;
+  }
+
+  #postEditModal {
+    --thumb-h: 64px;
+  }
+
+  /* 폼 가독성 향상 */
+  .edit-form .form-section {
     margin: 0 0 1rem 0;
   }
 

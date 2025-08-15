@@ -25,10 +25,12 @@
     </div>
 
     <!-- 닫기 버튼 -->
-    <button type="button" class="toast-close" onclick="ToastManager.close()">&times;</button>
+    <button type="button" class="toast-close" onclick="toastManager.close()">&times;</button>
   </div>
 </div>
 
+<!-- Toast CSS -->
+<link rel="stylesheet" th:href="@{/common/css/toast.css}">
 <!-- ToastManager.js 포함 -->
 <script defer th:src="@{/common/js/toast_manager.js}"></script>
 </body>

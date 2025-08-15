@@ -26,8 +26,8 @@
     <div class="modal-header">
       <h1 id="postDetailTitle" class="modal-title">게시글 상세</h1>
       <div class="header-actions">
-        <!-- 디버그용: 조건 없이 항상 표시 -->
-        <div class="post-actions">
+        <!-- 자기 게시글인 경우에만 드롭다운 표시 -->
+        <div class="post-actions" th:if="${currentUser != null and currentUser.id == post.userId}">
           <div class="dropdown">
             <button class="icon-btn" aria-haspopup="menu" aria-expanded="false"
                     onclick="togglePostDropdown()">
@@ -89,16 +89,15 @@
         <!-- 오른쪽: 작성자/본문/액션/댓글 -->
         <div class="compose-right">
           <!-- 작성자 -->
-          <section class="author-display">
-            <img th:if="${post.userProfileImage != null}"
-                 th:src="${post.userProfileImage}"
-                 th:alt="${post.userNickname}"
-                 class="author-avatar">
-            <div th:unless="${post.userProfileImage != null}" class="author-avatar-placeholder"
-                 th:text="${#strings.substring(post.userNickname,0,1)}">U
+          <section class="author-display" sec:authorize="isAuthenticated()">
+            <img th:if="${currentUser != null and currentUser.profileImage != null}"
+                 th:src="${currentUser.profileImage}"
+                 class="author-avatar" alt="프로필">
+            <div th:unless="${currentUser != null and currentUser.profileImage != null}" class="author-avatar-placeholder"
+                 th:text="${currentUser != null ? #strings.substring(currentUser.nickname, 0, 1) :'U'}">U
             </div>
             <div class="author-info">
-              <div class="author-name" th:text="${post.userNickname}">닉네임</div>
+              <div class="author-name" th:text="${currentUser.nickname}">닉네임</div>
               <time class="author-time"
                     th:datetime="${post.createdAt}"
                     th:text="${#temporals.format(post.createdAt, 'yy/MM/dd')}">25/08/08
@@ -183,7 +182,7 @@
 
           <!-- 댓글 작성 -->
           <section class="comment-write" sec:authorize="isAuthenticated()">
-            <form class="comment-form" th:action="@{/posts/{id}/comments(id=${post.id})}"
+            <form class="comment-form" id="commentForm" th:action="@{/posts/{id}/comments(id=${post.id})}"
                   method="post">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
               <textarea id="commentTextarea" name="content" class="comment-input"
