@@ -89,15 +89,16 @@
         <!-- 오른쪽: 작성자/본문/액션/댓글 -->
         <div class="compose-right">
           <!-- 작성자 -->
-          <section class="author-display" sec:authorize="isAuthenticated()">
-            <img th:if="${currentUser != null and currentUser.profileImage != null}"
-                 th:src="${currentUser.profileImage}"
-                 class="author-avatar" alt="프로필">
-            <div th:unless="${currentUser != null and currentUser.profileImage != null}" class="author-avatar-placeholder"
-                 th:text="${currentUser != null ? #strings.substring(currentUser.nickname, 0, 1) :'U'}">U
+          <section class="author-display">
+            <img th:if="${post.userProfileImage != null}"
+                 th:src="${post.userProfileImage}"
+                 th:alt="${post.userNickname}"
+                 class="author-avatar">
+            <div th:unless="${post.userProfileImage != null}" class="author-avatar-placeholder"
+                 th:text="${post.userNickname != null ? #strings.substring(post.userNickname, 0, 1) : 'U'}">U
             </div>
             <div class="author-info">
-              <div class="author-name" th:text="${currentUser.nickname}">닉네임</div>
+              <div class="author-name" th:text="${post.userNickname}">닉네임</div>
               <time class="author-time"
                     th:datetime="${post.createdAt}"
                     th:text="${#temporals.format(post.createdAt, 'yy/MM/dd')}">25/08/08
