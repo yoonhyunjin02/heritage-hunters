@@ -1,5 +1,6 @@
 package org.hh.heritagehunters.domain.post.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -168,7 +169,9 @@ public class PostController {
       BindingResult bindingResult,
       @RequestParam(value = "images", required = false) List<MultipartFile> newImages,
       @RequestParam(value = "keepImages", required = false) List<Long> keepImageIds,
-      RedirectAttributes redirectAttributes) {
+      @RequestParam(value = "removedImages", required = false) String removedImageIds,
+      RedirectAttributes redirectAttributes,
+      HttpServletRequest request) {
 
     if (userDetails == null || userDetails.getUser() == null) {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
@@ -179,6 +182,11 @@ public class PostController {
     }
 
     postFacade.update(postId, userDetails.getUser(), postUpdateRequestDto, newImages, keepImageIds);
+
+    // AJAX 요청인 경우 게시글 리스트로 리다이렉트 (모달에서 처리)
+    if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+      return "redirect:/posts";
+    }
 
     return redirectWithSuccess(redirectAttributes, "게시글이 수정되었습니다.", "/posts/" + postId);
   }

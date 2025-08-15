@@ -91,7 +91,7 @@ public class PostFacade {
    */
   @Transactional
   public PostDetailResponseDto detail(Long postId, User currentUser) {
-    Post post = postReader.getDetailWithImages(postId);
+    Post post = postReader.getPostWithImages(postId);
 
     // 조회수 증가
     post.incrementViewCount();
@@ -110,7 +110,7 @@ public class PostFacade {
    */
   @Transactional(readOnly = true)
   public PostDetailResponseDto forEdit(Long postId, User user) {
-    Post post = postReader.getForEditWithImages(postId);
+    Post post = postReader.getPostWithImages(postId);
     if (!post.getUser().getId().equals(user.getId())) {
       throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
     }
