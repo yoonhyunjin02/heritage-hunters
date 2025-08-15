@@ -1,3 +1,4 @@
+<!-- features/post/post_edit.html -->
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
@@ -11,7 +12,6 @@
 </head>
 <body>
 
-<!-- Header Fragment -->
 <div th:replace="~{fragments/header :: common-header}"></div>
 
 <div id="postEditModal" class="modal show"
@@ -19,7 +19,6 @@
      th:data-post-id="${post.id}">
   <div class="modal-content">
 
-    <!-- 헤더 -->
     <div class="modal-header">
       <h1 id="postEditTitle" class="modal-title">게시글 수정</h1>
       <div class="header-actions">
@@ -27,92 +26,86 @@
       </div>
     </div>
 
-    <!-- 본문 -->
     <div class="modal-body">
       <form id="postEditForm" th:action="@{/posts/{id}(id=${post.id})}" method="post"
-            enctype="multipart/form-data"
-            class="edit-form">
+            enctype="multipart/form-data" class="edit-form">
         <input type="hidden" name="_method" value="PUT">
 
         <div class="composer-grid">
-          <!-- 왼쪽: 이미지 갤러리 (게시글 상세와 동일한 구조) -->
+          <!-- 왼쪽: 이미지 갤러리(상세와 동일 구조) -->
           <div class="compose-left" aria-label="게시글 이미지">
             <input type="file" name="images" id="imageInput"
                    multiple accept="image/*" class="visually-hidden">
 
             <div class="gallery" th:if="${post.images != null and !post.images.empty}">
               <div class="gallery-main" id="galleryMain">
-                <img id="mainImage"
-                     th:src="${post.images[0].url}"
-                     alt="게시글 이미지"
-                     draggable="false">
+                <img id="mainImage" th:src="${post.images[0].url}"
+                     alt="게시글 이미지" draggable="false">
 
                 <div th:if="${post.images.size() > 1}">
-                  <button type="button" class="gallery-nav prev" id="btnPrev" aria-label="이전 이미지">
-                    ‹
-                  </button>
-                  <button type="button" class="gallery-nav next" id="btnNext" aria-label="다음 이미지">
-                    ›
-                  </button>
+                  <button class="gallery-nav prev" id="editPrevBtn" aria-label="이전 이미지">‹</button>
+                  <button class="gallery-nav next" id="editNextBtn" aria-label="다음 이미지">›</button>
                 </div>
               </div>
 
-              <!-- 썸네일 영역 (게시글 상세와 완전히 동일 + 편집 기능) -->
-              <div class="gallery-thumbs" th:if="${post.images != null and post.images.size() > 1}">
-                <div class="thumbs-container">
-                  <!-- 기존 이미지 썸네일들 (게시글 상세와 동일한 구조 + 삭제 버튼) -->
-                  <button type="button" class="thumb"
-                          th:each="image, it : ${post.images}"
-                          th:data-image-id="${image.id}"
-                          th:data-index="${it.index}"
-                          th:classappend="${it.index == 0} ? ' active'">
-                    <img th:src="${image.url}" 
-                         th:attr="data-full=${image.url}"
-                         th:alt="'썸네일 ' + ${it.index + 1}">
-                    <button type="button" class="thumb-delete-btn"
-                            th:data-image-id="${image.id}"
-                            aria-label="이미지 삭제">×
-                    </button>
-                    <input type="hidden" name="keepImages" th:value="${image.id}"
-                           class="keep-image-input">
+              <!-- 썸네일(상세와 동일) + 삭제 버튼/keep 입력 -->
+              <div class="gallery-thumbs" th:if="${post.images.size() > 1}">
+                <button class="thumb"
+                        th:each="image, it : ${post.images}"
+                        th:classappend="${it.index == 0} ? ' active'"
+                        th:data-index="${it.index}">
+                  <img th:src="${image.url}" th:attr="data-full=${image.url}"
+                       th:alt="'썸네일 ' + ${it.index + 1}">
+                  <button type="button" class="thumb-delete-btn"
+                          th:data-image-id="${image.id}" aria-label="이미지 삭제">×
                   </button>
+                  <input type="hidden" name="keepImages" th:value="${image.id}"
+                         class="keep-image-input">
+                </button>
+                <!-- + 버튼은 JS ensureAddButton()이 항상 마지막에 유지 -->
+              </div>
 
-                  <!-- 이미지 추가 버튼 -->
-                  <button type="button" class="thumb-add-btn"
-                          onclick="document.getElementById('imageInput').click()"
-                          aria-label="이미지 추가">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="2">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
+              <!-- 1장일 때도 썸네일과 + 버튼 노출 -->
+              <div class="gallery-thumbs" th:if="${post.images.size() == 1}">
+                <button class="thumb active" th:data-index="0">
+                  <img th:src="${post.images[0].url}" th:attr="data-full=${post.images[0].url}"
+                       alt="썸네일 1">
+                  <button type="button" class="thumb-delete-btn"
+                          th:data-image-id="${post.images[0].id}" aria-label="이미지 삭제">×
                   </button>
-                </div>
+                  <input type="hidden" name="keepImages" th:value="${post.images[0].id}"
+                         class="keep-image-input">
+                </button>
+                <button type="button" class="thumb-add-btn"
+                        onclick="document.getElementById('imageInput').click()"
+                        aria-label="이미지 추가">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </button>
               </div>
             </div>
 
-            <!-- 이미지가 없을 때 플레이스홀더 -->
-            <div th:unless="${post.images != null and !post.images.empty}"
-                 class="no-image-placeholder">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
+            <!-- 이미지가 없을 때 -->
+            <div class="no-image" th:if="${post.images == null or post.images.empty}">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor"
+                   aria-hidden="true">
                 <path
                     d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
               </svg>
-              <p>게시글에 이미지가 없습니다</p>
-              <button type="button" class="upload-placeholder-btn"
-                      onclick="document.getElementById('imageInput').click()">
-                이미지 추가
+              <p>이미지를 추가해주세요</p>
+              <button type="button" class="upload-btn"
+                      onclick="document.getElementById('imageInput').click()">이미지 추가
               </button>
             </div>
 
-            <!-- hidden inputs for form submission -->
             <input type="hidden" id="removedImages" name="removedImages" value="">
-            <div id="keepImagesContainer"></div>
           </div>
 
           <!-- 오른쪽: 수정 폼 -->
           <div class="compose-right">
-            <!-- 작성자 정보 -->
             <section class="author-display" sec:authorize="isAuthenticated()">
               <img th:if="${#authentication.principal.profileImage != null}"
                    th:src="${#authentication.principal.profileImage}"
@@ -128,7 +121,6 @@
               </div>
             </section>
 
-            <!-- 위치 입력 -->
             <section class="form-section">
               <label for="locationInput" class="form-label">위치</label>
               <div class="location-input-wrapper">
@@ -141,19 +133,17 @@
               </div>
             </section>
 
-            <!-- 본문 입력 -->
             <section class="form-section">
               <label for="content" class="form-label">내용 <span class="required">*</span></label>
               <textarea id="content" name="content" class="form-textarea"
-                        placeholder="게시글 내용을 입력하세요..."
-                        maxlength="1000" required th:text="${post.content}"></textarea>
+                        placeholder="게시글 내용을 입력하세요..." maxlength="1000"
+                        required th:text="${post.content}"></textarea>
               <div class="char-count">
                 <span id="contentCharCount" th:text="${#strings.length(post.content)}">0</span> /
                 1000자
               </div>
             </section>
 
-            <!-- 수정 버튼 -->
             <section class="form-actions">
               <button type="button" class="btn-secondary" onclick="PostEdit.cancel()">취소</button>
               <button type="submit" class="btn-primary">수정 완료</button>
@@ -165,32 +155,24 @@
   </div>
 </div>
 
-<!-- Footer Fragment -->
 <div th:replace="~{fragments/footer :: common-footer}"></div>
-
-<!-- Toast 메시지 Fragment -->
 <div th:replace="~{fragments/toast :: toast}"></div>
 
 <script defer th:src="@{/features/post/js/modal_manager.js}"></script>
 <script defer th:src="@{/features/post/js/post_edit.js}"></script>
-<!-- Google Maps API for location autocomplete -->
+<!-- Google Maps API (위치 자동완성) -->
 <script defer
-        th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places&language=ko'"></script>
+        th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places&language=ko'">
+</script>
 
-<!-- Fragment: 게시글 수정 모달 -->
-<div th:fragment="postEditModal"
-     id="postEditModal"
-     class="modal"
-     style="display:none;"
-     role="dialog"
-     aria-modal="true"
-     aria-labelledby="postEditTitle">
+<!-- AJAX 모달용 프래그먼트(초기 로딩 뷰) -->
+<div th:fragment="postEditModal" id="postEditModal" class="modal" style="display:none;"
+     role="dialog" aria-modal="true" aria-labelledby="postEditTitle">
   <div class="modal-content">
     <div class="modal-loading">
       <div class="loading-spinner">Loading...</div>
     </div>
   </div>
 </div>
-
 </body>
 </html>
