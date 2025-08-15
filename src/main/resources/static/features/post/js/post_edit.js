@@ -1,32 +1,89 @@
-// 게시글 수정 모듈 (필요 부분만 발췌/정리)
+// features/post/js/post_edit.js
+// 게시글 수정 모듈 - 상세와 동일한 갤러리 UX + 편집(추가/삭제) + 전파 차단
 (function () {
   const $ = (id) => document.getElementById(id);
 
-  // 이미지 갤러리 상태
   let images = [];
   let current = 0;
 
   document.addEventListener('DOMContentLoaded', () => {
-    initializeImageGallery();
-    initializeImageManagement();
+    initializeEditGallery();
+    initializeEditImageManagement();
+    initializeEditFormSubmit();
   });
 
-  /**
-   * 게시글 수정 화면의 이미지 갤러리를 초기화합니다.
-   * 
-   * @description
-   * - 기존 이미지들을 스캔하여 images 배열 생성
-   * - 메인 이미지 설정 및 썸네일 이벤트 바인딩
-   * - 이미지 추가 버튼 상태 업데이트
-   * - 게시글 상세와 동일한 갤러리 기능 제공
-   */
-  function initializeImageGallery() {
-    const thumbs = document.querySelectorAll('.thumb img');
-    const main = document.getElementById('mainImage');
+  /** 갤러리 DOM이 없을 때(이미지 0장) 초기 구조 생성 */
+  function ensureGalleryStructure() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return null;
+    }
+
+    let gallery = editModal.querySelector('.gallery');
+    if (!gallery) {
+      const left = editModal.querySelector('.compose-left');
+      if (!left) {
+        return null;
+      }
+
+      gallery = document.createElement('div');
+      gallery.className = 'gallery';
+
+      const main = document.createElement('div');
+      main.className = 'gallery-main';
+      main.id = 'galleryMain';
+
+      const img = document.createElement('img');
+      img.id = 'mainImage';
+      img.alt = '게시글 이미지';
+      img.setAttribute('draggable', 'false');
+      main.appendChild(img);
+
+      // 편집 전용 네비게이션 (id로 바인딩하여 상세 전역과 충돌 방지)
+      const prev = document.createElement('button');
+      prev.className = 'gallery-nav prev';
+      prev.id = 'editPrevBtn';
+      prev.setAttribute('aria-label', '이전 이미지');
+      prev.textContent = '‹';
+
+      const next = document.createElement('button');
+      next.className = 'gallery-nav next';
+      next.id = 'editNextBtn';
+      next.setAttribute('aria-label', '다음 이미지');
+      next.textContent = '›';
+
+      main.appendChild(prev);
+      main.appendChild(next);
+
+      gallery.appendChild(main);
+
+      const thumbs = document.createElement('div');
+      thumbs.className = 'gallery-thumbs';
+      gallery.appendChild(thumbs);
+
+      const noImage = editModal.querySelector('.no-image');
+      if (noImage && noImage.parentNode) {
+        noImage.parentNode.insertBefore(gallery, noImage.nextSibling);
+      } else {
+        left.appendChild(gallery);
+      }
+    }
+    return gallery;
+  }
+
+  /** 초기화: 상세와 동일하게 상태 구성 */
+  function initializeEditGallery() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
+    }
+
+    const thumbs = editModal.querySelectorAll('.thumb img');
+    const main = editModal.querySelector('#mainImage');
 
     if (thumbs.length) {
       images = Array.from(thumbs).map((img, i) => ({
-        url: img.dataset.full || img.src,   // 상세와 동일: 원본 우선
+        url: img.dataset.full || img.src,
         alt: img.alt || `이미지 ${i + 1}`
       }));
     } else if (main?.src) {
@@ -34,60 +91,61 @@
     } else {
       images = [];
     }
+
     current = 0;
-    update();
-    bindGalleryEvents();
-    // 초기 로드 시에도 add-btn 상태 업데이트
-    updateThumbAddButton();
+    updateEditGallery();
+    bindEditGalleryEvents();
+    ensureAddButton();
   }
 
-  /**
-   * 갤러리 이벤트들을 바인딩합니다.
-   * 
-   * @description
-   * - 썸네일 클릭 시 이미지 전환 (삭제 버튼 제외)
-   * - 화살표 버튼 클릭 시 이미지 네비게이션
-   * - 게시글 상세와 동일한 이벤트 처리
-   */
-  function bindGalleryEvents() {
-    // 썸네일 클릭 이벤트 (게시글 상세와 동일)
-    document.querySelectorAll('.thumb').forEach((btn) => {
+  /** 이벤트(썸네일/화살표) — 전파 차단으로 상세와 충돌 방지 */
+  function bindEditGalleryEvents() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
+    }
+
+    editModal.querySelectorAll('.thumb').forEach((btn) => {
       btn.addEventListener('click', (e) => {
-        // 썸네일 안의 삭제 버튼을 눌렀을 때는 이미지 전환 금지
         if (e.target.closest('.thumb-delete-btn')) {
           return;
         }
         e.preventDefault();
+        e.stopPropagation();
         const index = parseInt(btn.dataset.index);
         if (!isNaN(index)) {
-          showImage(index);
+          showEditImage(index);
         }
       });
     });
 
-    // 화살표 버튼 이벤트 (게시글 상세와 동일)
-    document.querySelector('.gallery-nav.prev')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      prevImage();
-    });
-    document.querySelector('.gallery-nav.next')?.addEventListener('click', (e) => {
-      e.preventDefault();
-      nextImage();
-    });
+    const prevBtn = editModal.querySelector('#editPrevBtn');
+    const nextBtn = editModal.querySelector('#editNextBtn');
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        prevEditImage();
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        nextEditImage();
+      });
+    }
   }
 
-  /**
-   * 현재 선택된 이미지에 맞춰 UI를 업데이트합니다.
-   * 
-   * @description
-   * - 메인 이미지 교체 (페이드 효과 포함)
-   * - 썸네일 활성화 상태 업데이트
-   * - 화살표 버튼 표시/숨김 처리
-   * - 이미지 추가 버튼 상태 업데이트
-   * - 게시글 상세와 동일한 업데이트 로직
-   */
-  function update() {
-    const main = document.getElementById('mainImage');
+  /** UI 업데이트(메인/썸네일/네비/+버튼) */
+  function updateEditGallery() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
+    }
+
+    const main = editModal.querySelector('#mainImage');
     if (main && images[current]) {
       main.style.opacity = '0.5';
       setTimeout(() => {
@@ -97,342 +155,250 @@
       }, 120);
     }
 
-    // 썸네일 활성화 상태 업데이트 (게시글 상세와 동일)
-    document.querySelectorAll('.thumb').forEach(
-        (t, i) => t.classList.toggle('active', i === current));
+    editModal.querySelectorAll('.thumb').forEach(
+        (t, i) => t.classList.toggle('active', i === current)
+    );
 
-    // 화살표 버튼 표시/숨김 (게시글 상세와 동일)
-    const prev = document.querySelector('.gallery-nav.prev');
-    const next = document.querySelector('.gallery-nav.next');
+    const prev = editModal.querySelector('#editPrevBtn');
+    const next = editModal.querySelector('#editNextBtn');
     if (prev && next) {
       const multi = images.length > 1;
       prev.style.display = multi ? 'flex' : 'none';
       next.style.display = multi ? 'flex' : 'none';
     }
 
-    // 인디케이터 활성화 상태 업데이트 (게시글 상세와 동일)
-    document.querySelectorAll('.indicator').forEach(
-        (ind, i) => ind.classList.toggle('active', i === current));
-
-    // thumb-add-btn 표시/숨김 (최대 3장일 때 숨김)
-    updateThumbAddButton();
+    ensureAddButton();
   }
 
-  /**
-   * 이미지 추가 버튼의 표시/숨김 상태를 업데이트합니다.
-   * 
-   * @description
-   * - 현재 이미지 개수가 3장 이상이면 추가 버튼 숨김
-   * - 3장 미만이면 추가 버튼 표시
-   * - 최대 이미지 개수 제한 적용
-   */
-  function updateThumbAddButton() {
-    const addBtn = document.querySelector('.thumb-add-btn');
-    const currentImageCount = document.querySelectorAll('.thumb').length;
-
-    if (addBtn) {
-      if (currentImageCount >= 3) {
-        addBtn.style.display = 'none';
-      } else {
-        addBtn.style.display = 'flex';
-      }
-    }
-  }
-
-  function prevImage() {
+  function prevEditImage() {
     if (images.length > 1) {
       current = (current - 1 + images.length) % images.length;
-      update();
+      updateEditGallery();
     }
   }
 
-  function nextImage() {
+  function nextEditImage() {
     if (images.length > 1) {
       current = (current + 1) % images.length;
-      update();
+      updateEditGallery();
     }
   }
 
-  function showImage(i) {
+  function showEditImage(i) {
     if (i >= 0 && i < images.length) {
       current = i;
-      update();
+      updateEditGallery();
     }
   }
 
-  /**
-   * 이미지 관리 기능을 초기화합니다.
-   * 
-   * @description
-   * - 이미지 삭제 버튼 이벤트 바인딩
-   * - 이미지 추가 기능 설정
-   * - 파일 입력 이벤트 처리
-   */
-  function initializeImageManagement() {
-    // 이미지 삭제 버튼 이벤트 바인딩
-    bindDeleteButtons();
-    
-    // 파일 입력 이벤트
-    const imageInput = document.getElementById('imageInput');
-    if (imageInput) {
-      imageInput.addEventListener('change', handleImageAdd);
+  /** 이미지 추가/삭제 초기화 */
+  function initializeEditImageManagement() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
     }
-    
-    // 문자 카운터 초기화
-    const contentTextarea = document.getElementById('content');
-    const charCount = document.getElementById('contentCharCount');
+
+    bindEditDeleteButtons();
+
+    const imageInput = editModal.querySelector('#imageInput');
+    if (imageInput) {
+      imageInput.addEventListener('change', handleEditImageAdd);
+    }
+
+    // 글자수 카운트
+    const contentTextarea = editModal.querySelector('#content');
+    const charCount = editModal.querySelector('#contentCharCount');
     if (contentTextarea && charCount) {
+      charCount.textContent = String(contentTextarea.value?.length || 0);
       contentTextarea.addEventListener('input', () => {
         charCount.textContent = contentTextarea.value.length;
       });
     }
   }
 
-  /**
-   * 이미지 삭제 버튼 이벤트를 바인딩합니다.
-   * 
-   * @description
-   * - 모든 삭제 버튼에 클릭 이벤트 추가
-   * - 삭제 시 UI 업데이트 및 hidden input 처리
-   */
-  function bindDeleteButtons() {
-    document.querySelectorAll('.thumb-delete-btn').forEach(btn => {
-      btn.addEventListener('click', handleImageDelete);
+  function bindEditDeleteButtons() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
+    }
+    editModal.querySelectorAll('.thumb-delete-btn').forEach(btn => {
+      btn.addEventListener('click', handleEditImageDelete);
     });
   }
 
-  /**
-   * 이미지 삭제를 처리합니다.
-   * 
-   * @param {Event} e - 클릭 이벤트
-   * @description
-   * - 썸네일과 keep input을 DOM에서 제거
-   * - 갤러리 상태 업데이트
-   * - 이미지 추가 버튼 상태 업데이트
-   */
-  function handleImageDelete(e) {
+  /** 삭제 */
+  function handleEditImageDelete(e) {
     e.preventDefault();
     e.stopPropagation();
-    
+
+    const editModal = $('postEditModal');
     const deleteBtn = e.target;
     const imageId = deleteBtn.dataset.imageId;
     const thumbElement = deleteBtn.closest('.thumb');
-    
-    if (!thumbElement || !imageId) return;
-    
-    // DOM에서 썸네일 제거
-    thumbElement.remove();
-    
-    // images 배열에서도 제거
-    const thumbIndex = parseInt(thumbElement.dataset.index);
-    if (thumbIndex >= 0 && thumbIndex < images.length) {
-      images.splice(thumbIndex, 1);
-    }
-    
-    // 현재 인덱스 조정
-    if (current >= images.length && images.length > 0) {
-      current = images.length - 1;
-    } else if (images.length === 0) {
-      current = 0;
-    }
-    
-    // 남은 썸네일들의 인덱스 재정렬
-    document.querySelectorAll('.thumb').forEach((thumb, index) => {
-      thumb.dataset.index = index;
-      if (index === current) {
-        thumb.classList.add('active');
-      } else {
-        thumb.classList.remove('active');
-      }
-    });
-    
-    // 갤러리 업데이트
-    update();
-    updateThumbAddButton();
-    
-    // 이미지가 모두 삭제되었으면 플레이스홀더 표시
-    if (images.length === 0) {
-      showNoImagePlaceholder();
-    }
-  }
-
-  /**
-   * 새 이미지 추가를 처리합니다.
-   * 
-   * @param {Event} e - 파일 입력 이벤트
-   * @description
-   * - 선택된 파일들을 검증
-   * - 최대 3장 제한 확인
-   * - 새 썸네일 생성 및 갤러리 업데이트
-   */
-  function handleImageAdd(e) {
-    const files = Array.from(e.target.files);
-    const currentImageCount = document.querySelectorAll('.thumb').length;
-    
-    // 최대 3장 제한 확인
-    if (currentImageCount + files.length > 3) {
-      alert('이미지는 최대 3장까지만 업로드할 수 있습니다.');
-      e.target.value = ''; // 파일 입력 초기화
+    const isNewImage = deleteBtn.hasAttribute('data-new-image');
+    if (!thumbElement) {
       return;
     }
-    
-    // 파일 검증 및 썸네일 생성
-    files.forEach((file, index) => {
-      if (!validateImageFile(file)) {
-        return;
+
+    // 기존 이미지면 keep 제거 + removed 누적
+    if (imageId && !isNewImage) {
+      const keepInput = thumbElement.querySelector('.keep-image-input');
+      if (keepInput) {
+        keepInput.remove();
       }
-      
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        createNewThumbnail(event.target.result, currentImageCount + index);
-      };
-      reader.readAsDataURL(file);
-    });
-    
-    // 플레이스홀더 숨기기
-    hideNoImagePlaceholder();
-    updateThumbAddButton();
+
+      let removedInput = editModal.querySelector('input[name="removedImages"]');
+      if (!removedInput) {
+        removedInput = document.createElement('input');
+        removedInput.type = 'hidden';
+        removedInput.name = 'removedImages';
+        removedInput.value = '';
+        editModal.querySelector('form')?.appendChild(removedInput);
+      }
+      const currentRemoved = removedInput.value ? removedInput.value.split(',')
+          : [];
+      if (!currentRemoved.includes(imageId)) {
+        currentRemoved.push(imageId);
+        removedInput.value = currentRemoved.join(',');
+      }
+    }
+
+    // 상태/DOM 제거
+    const thumbIndex = parseInt(thumbElement.dataset.index);
+    thumbElement.remove();
+    if (!Number.isNaN(thumbIndex) && thumbIndex >= 0 && thumbIndex
+        < images.length) {
+      images.splice(thumbIndex, 1);
+    }
+
+    reindexEditThumbnails();
+    updateAfterEditDelete();
   }
 
-  /**
-   * 이미지 파일을 검증합니다.
-   * 
-   * @param {File} file - 검증할 파일
-   * @return {boolean} 유효한 파일 여부
-   */
-  function validateImageFile(file) {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    const maxSize = 50 * 1024 * 1024; // 50MB
-    
-    if (!allowedTypes.includes(file.type)) {
-      alert(`${file.name}: 지원하지 않는 파일 형식입니다.`);
+  /** 추가 */
+  function handleEditImageAdd(e) {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
+    }
+
+    const files = Array.from(e.target.files || []);
+    const currentCount = editModal.querySelectorAll('.thumb').length;
+
+    if (currentCount + files.length > 3) {
+      alert('이미지는 최대 3장까지만 업로드할 수 있습니다.');
+      e.target.value = '';
+      return;
+    }
+
+    ensureGalleryStructure();
+    hideEditNoImage();
+
+    files.forEach((file, index) => {
+      if (!validateEditImageFile(file)) {
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => createEditNewThumbnail(event.target.result);
+      reader.readAsDataURL(file);
+    });
+
+    ensureAddButton();
+  }
+
+  function validateEditImageFile(file) {
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif',
+      'image/webp'];
+    const max = 50 * 1024 * 1024;
+    if (!allowed.includes(file.type)) {
+      alert(`${file.name}: 지원하지 않는 형식입니다.`);
       return false;
     }
-    
-    if (file.size > maxSize) {
+    if (file.size > max) {
       alert(`${file.name}: 파일 크기가 50MB를 초과합니다.`);
       return false;
     }
-    
     return true;
   }
 
-  /**
-   * 새 썸네일을 생성합니다.
-   * 
-   * @param {string} imageSrc - 이미지 데이터 URL
-   * @param {number} index - 썸네일 인덱스
-   */
-  function createNewThumbnail(imageSrc, index) {
-    const thumbsContainer = document.querySelector('.thumbs-container');
-    const addBtn = document.querySelector('.thumb-add-btn');
-    
-    if (!thumbsContainer) return;
-    
-    // 새 썸네일 버튼 생성
+  /** 새 썸네일 생성(+ 삭제 버튼/클릭 바인딩 포함) */
+  function createEditNewThumbnail(imageSrc) {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
+    }
+
+    const gallery = ensureGalleryStructure();
+    if (!gallery) {
+      return;
+    }
+
+    let thumbsContainer = gallery.querySelector('.gallery-thumbs');
+    if (!thumbsContainer) {
+      thumbsContainer = document.createElement('div');
+      thumbsContainer.className = 'gallery-thumbs';
+      gallery.appendChild(thumbsContainer);
+    }
+
     const newThumb = document.createElement('button');
     newThumb.type = 'button';
     newThumb.className = 'thumb';
-    newThumb.dataset.index = index;
-    
-    // 이미지 요소 생성
+    newThumb.dataset.index = thumbsContainer.querySelectorAll('.thumb').length;
+
     const img = document.createElement('img');
     img.src = imageSrc;
-    img.alt = `썸네일 ${index + 1}`;
+    img.alt = `썸네일 ${Number(newThumb.dataset.index) + 1}`;
     img.setAttribute('data-full', imageSrc);
-    
-    // 삭제 버튼 생성 (새 이미지는 imageId가 없음)
+
     const deleteBtn = document.createElement('button');
     deleteBtn.type = 'button';
     deleteBtn.className = 'thumb-delete-btn';
     deleteBtn.textContent = '×';
     deleteBtn.setAttribute('aria-label', '이미지 삭제');
     deleteBtn.setAttribute('data-new-image', 'true');
-    deleteBtn.addEventListener('click', handleNewImageDelete);
-    
+    deleteBtn.addEventListener('click', handleEditImageDelete);
+
     newThumb.appendChild(img);
     newThumb.appendChild(deleteBtn);
-    
-    // 썸네일 클릭 이벤트
+
     newThumb.addEventListener('click', (e) => {
       if (e.target.closest('.thumb-delete-btn')) {
         return;
       }
       e.preventDefault();
+      e.stopPropagation();
       const index = parseInt(newThumb.dataset.index);
       if (!isNaN(index)) {
-        showImage(index);
+        showEditImage(index);
       }
     });
-    
-    // addBtn 앞에 삽입
+
+    const addBtn = thumbsContainer.querySelector('.thumb-add-btn');
     if (addBtn) {
       thumbsContainer.insertBefore(newThumb, addBtn);
     } else {
       thumbsContainer.appendChild(newThumb);
     }
-    
-    // images 배열에 추가
-    images.push({
-      url: imageSrc,
-      alt: `이미지 ${index + 1}`,
-      isNew: true
-    });
-    
-    // 첫 번째 이미지면 활성화
-    if (index === 0) {
+
+    images.push({url: imageSrc, alt: `이미지 ${images.length + 1}`, isNew: true});
+
+    if (images.length === 1) {
       current = 0;
       newThumb.classList.add('active');
-      update();
+      showEditGallery();
     }
-    
-    // 갤러리 표시
-    showGallery();
+
+    updateEditGallery();
+    reindexEditThumbnails();
+    ensureAddButton();
   }
 
-  /**
-   * 새로 추가된 이미지의 삭제를 처리합니다.
-   * 
-   * @param {Event} e - 클릭 이벤트
-   */
-  function handleNewImageDelete(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const deleteBtn = e.target;
-    const thumbElement = deleteBtn.closest('.thumb');
-    const thumbIndex = parseInt(thumbElement.dataset.index);
-    
-    // DOM에서 제거
-    thumbElement.remove();
-    
-    // images 배열에서 제거
-    if (thumbIndex >= 0 && thumbIndex < images.length) {
-      images.splice(thumbIndex, 1);
+  function reindexEditThumbnails() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
     }
-    
-    // 파일 입력에서도 해당 파일 제거 (FileList는 불변이므로 새로 생성)
-    const imageInput = document.getElementById('imageInput');
-    if (imageInput && imageInput.files) {
-      const dt = new DataTransfer();
-      Array.from(imageInput.files).forEach((file, index) => {
-        if (index !== thumbIndex) {
-          dt.items.add(file);
-        }
-      });
-      imageInput.files = dt.files;
-    }
-    
-    // 인덱스 재정렬 및 갤러리 업데이트
-    reindexThumbnails();
-    updateAfterDelete();
-  }
-
-  /**
-   * 썸네일 인덱스를 재정렬합니다.
-   */
-  function reindexThumbnails() {
-    document.querySelectorAll('.thumb').forEach((thumb, index) => {
+    editModal.querySelectorAll('.thumb').forEach((thumb, index) => {
       thumb.dataset.index = index;
       const img = thumb.querySelector('img');
       if (img) {
@@ -441,76 +407,191 @@
     });
   }
 
-  /**
-   * 삭제 후 갤러리 상태를 업데이트합니다.
-   */
-  function updateAfterDelete() {
-    const thumbCount = document.querySelectorAll('.thumb').length;
-    
+  function updateAfterEditDelete() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
+    }
+
+    const thumbCount = editModal.querySelectorAll('.thumb').length;
+
     if (thumbCount === 0) {
-      showNoImagePlaceholder();
+      showEditNoImage();
       current = 0;
     } else {
-      // 현재 인덱스 조정
       if (current >= thumbCount) {
         current = thumbCount - 1;
       }
-      
-      // 활성 상태 업데이트
-      document.querySelectorAll('.thumb').forEach((thumb, index) => {
+      editModal.querySelectorAll('.thumb').forEach((thumb, index) => {
         thumb.classList.toggle('active', index === current);
       });
-      
-      update();
+      updateEditGallery();
     }
-    
-    updateThumbAddButton();
+    ensureAddButton();
   }
 
-  /**
-   * 이미지 없음 플레이스홀더를 표시합니다.
-   */
-  function showNoImagePlaceholder() {
-    const gallery = document.querySelector('.gallery');
-    const placeholder = document.querySelector('.no-image-placeholder');
-    
-    if (gallery) gallery.style.display = 'none';
-    if (placeholder) placeholder.style.display = 'block';
+  function showEditNoImage() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
+    }
+    editModal.querySelector('.gallery')?.setAttribute('style', 'display:none');
+    const noImage = editModal.querySelector('.no-image');
+    if (noImage) {
+      noImage.style.display = 'block';
+    }
   }
 
-  /**
-   * 이미지 없음 플레이스홀더를 숨깁니다.
-   */
-  function hideNoImagePlaceholder() {
-    const placeholder = document.querySelector('.no-image-placeholder');
-    if (placeholder) placeholder.style.display = 'none';
+  function showEditGallery() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
+    }
+    const gallery = editModal.querySelector('.gallery');
+    if (gallery) {
+      gallery.style.display = 'block';
+    }
+    const noImage = editModal.querySelector('.no-image');
+    if (noImage) {
+      noImage.style.display = 'none';
+    }
   }
 
-  /**
-   * 갤러리를 표시합니다.
-   */
-  function showGallery() {
-    const gallery = document.querySelector('.gallery');
-    if (gallery) gallery.style.display = 'block';
+  function hideEditNoImage() {
+    showEditGallery();
   }
 
-  // 필요한 최소 전역만 유지 (기존 기능은 그대로)
+  /** 썸네일 맨 오른쪽 + 버튼 유지(3장 제한 시 숨김) */
+  function ensureAddButton() {
+    const editModal = $('postEditModal');
+    if (!editModal) {
+      return;
+    }
+
+    const gallery = ensureGalleryStructure();
+    if (!gallery) {
+      return;
+    }
+
+    let thumbs = gallery.querySelector('.gallery-thumbs');
+    if (!thumbs) {
+      thumbs = document.createElement('div');
+      thumbs.className = 'gallery-thumbs';
+      gallery.appendChild(thumbs);
+    }
+
+    let addBtn = thumbs.querySelector('.thumb-add-btn');
+    if (!addBtn) {
+      addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'thumb-add-btn';
+      addBtn.setAttribute('aria-label', '이미지 추가');
+      addBtn.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>`;
+      const input = $('imageInput');
+      addBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        input?.click();
+      });
+      thumbs.appendChild(addBtn);
+    }
+
+    // 항상 맨 끝
+    thumbs.appendChild(addBtn);
+
+    // 3장 제한
+    const thumbCount = thumbs.querySelectorAll('.thumb').length;
+    addBtn.style.display = thumbCount >= 3 ? 'none' : 'flex';
+  }
+
+  /** 폼 제출 */
+  function initializeEditFormSubmit() {
+    const form = $('postEditForm');
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const editModal = $('postEditModal');
+      const postId = editModal?.dataset.postId;
+      if (!postId) {
+        alert('게시글 ID를 찾을 수 없습니다.');
+        return;
+      }
+
+      try {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn?.textContent;
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = '수정 중...';
+        }
+
+        const formData = new FormData(form);
+        if (!formData.has('_method')) {
+          formData.append('_method', 'PUT');
+        }
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector(
+            'meta[name="_csrf_header"]')?.content;
+        const headers = {'X-Requested-With': 'XMLHttpRequest'};
+        if (csrfToken && csrfHeader) {
+          headers[csrfHeader] = csrfToken;
+        }
+
+        const res = await fetch(`/posts/${postId}`,
+            {method: 'POST', headers, body: formData});
+
+        if (res.ok) {
+          if (window.closePostEdit) {
+            window.closePostEdit();
+          }
+          setTimeout(() => {
+            if (window.openPostDetail) {
+              window.openPostDetail(postId);
+            } else {
+              window.location.href = `/posts/${postId}`;
+            }
+          }, 300);
+        } else {
+          throw new Error('수정 중 오류가 발생했습니다.');
+        }
+
+        if (submitBtn) {
+          submitBtn.textContent = originalText || '수정 완료';
+        }
+      } catch (err) {
+        console.error(err);
+        alert('게시글 수정 중 오류가 발생했습니다.');
+      } finally {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+        }
+      }
+    });
+  }
+
+  /** 모달 닫기 */
   function closePostEdit() {
-    // PostEdit 모드 비활성화 (원본 함수들 복원)
-    if (window.PostEdit && typeof window.PostEdit.restore === 'function') {
-      window.PostEdit.restore();
-    }
-    
     const modal = $('postEditModal');
     if (modal) {
-      // 모달인 경우 - 다른 모달들처럼 닫기만 하고 페이지는 그대로 유지
       modal.classList.remove('show');
+      modal.classList.add('closing');
       setTimeout(() => {
+        modal.classList.remove('closing');
         modal.style.display = 'none';
         modal.innerHTML = '';
-      }, 250);
+      }, 220);
     } else {
-      // 단독 페이지인 경우 - 기존 방식대로 페이지 이동
       window.history.back?.() || (window.location.href = '/posts');
     }
   }
@@ -519,61 +600,13 @@
     closePostEdit();
   }
 
-  // 기존 함수들 백업
-  const originalFunctions = {
-    prevImage: window.prevImage,
-    nextImage: window.nextImage,  
-    showImage: window.showImage,
-    update: window.update
-  };
-
-  // PostEdit 네임스페이스에 함수들 정의
   window.PostEdit = {
-    cancel: cancel,
+    cancel,
     close: closePostEdit,
-    closePostEdit: closePostEdit,
-    prevImage: prevImage,
-    nextImage: nextImage,
-    showImage: showImage,
-    update: update,
-    updateThumbAddButton: updateThumbAddButton,
-    initializeImageGallery: initializeImageGallery,
-    initializeImageManagement: initializeImageManagement,
-    bindDeleteButtons: bindDeleteButtons,
-    handleImageDelete: handleImageDelete,
-    handleImageAdd: handleImageAdd,
-    validateImageFile: validateImageFile,
-    createNewThumbnail: createNewThumbnail,
-    reindexThumbnails: reindexThumbnails,
-    updateAfterDelete: updateAfterDelete,
-    showNoImagePlaceholder: showNoImagePlaceholder,
-    hideNoImagePlaceholder: hideNoImagePlaceholder,
-    showGallery: showGallery,
-    // 원본 함수들 복원
-    restore: function() {
-      window.prevImage = originalFunctions.prevImage;
-      window.nextImage = originalFunctions.nextImage;
-      window.showImage = originalFunctions.showImage;
-      window.update = originalFunctions.update;
-    },
-    // 수정 모드 함수들로 변경
-    activate: function() {
-      window.prevImage = prevImage;
-      window.nextImage = nextImage;
-      window.showImage = showImage;
-      window.update = update;
-    }
+    closePostEdit,
+    initializeImageGallery: initializeEditGallery,
+    initializeImageManagement: initializeEditImageManagement,
+    initializeFormSubmit: initializeEditFormSubmit
   };
-
-  // 전역 함수들 (모달에서만 사용시 활성화)
   window.closePostEdit = closePostEdit;
-  window.updateThumbAddButton = updateThumbAddButton;
-  window.initializeImageGallery = initializeImageGallery;
-
-  // (안전장치) 이 페이지는 post_detail.js를 포함하지 않을 수 있으므로
-  // closeModal이 비어있을 때만 연결
-  if (typeof window.closeModal !== 'function' && document.getElementById(
-      'postEditModal')) {
-    window.closeModal = closePostEdit;
-  }
 })();

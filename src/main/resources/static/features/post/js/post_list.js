@@ -61,6 +61,18 @@
     }
   };
 
+  // 특정 게시글의 캐시를 무효화 (수정 후 즉시 반영을 위해)
+  window.PostListManager.clearPostCache = function clearPostCache(postId) {
+    try {
+      if (postId && postDataCache.has(postId)) {
+        postDataCache.delete(postId);
+        console.log(`게시글 ${postId} 캐시가 무효화되었습니다.`);
+      }
+    } catch (e) {
+      console.error('clearPostCache 오류:', e);
+    }
+  };
+
   // ---------------------------
   // 전역: 게시글 상세 모달 열기 (카드/댓글 버튼에서 inline 호출 가능)
   // ---------------------------
@@ -290,7 +302,7 @@
       window.openPostDetail(id, focusComments);
     });
 
-    // (4) 카드 내 좋아요 버튼 (like-manager.js 연동)
+    // (4) 카드 내 좋아요 버튼 (like_manager.js 연동)
     if (window.likeManager) {
       document.querySelectorAll('.like-button').forEach((btn) => {
         btn.addEventListener('click', (e) => {
