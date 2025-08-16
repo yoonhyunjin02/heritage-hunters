@@ -86,6 +86,24 @@ function buildIwContent(item){
     meta.textContent = metaLabel; // ← 매핑 적용된 라벨
     wrap.appendChild(meta);
   }
+
+  // 상세보기 버튼 추가
+    if (item.type === 'heritage' && item.id) {
+      const btn = document.createElement('button');
+      btn.className = 'iw-detail-btn'; // CSS에서 밑줄만 주면 깔끔
+      btn.textContent = '상세보기';
+      btn.style.background = 'none';
+      btn.style.border = 'none';
+      btn.style.padding = '0';
+      btn.style.color = '#007BFF';
+      btn.style.textDecoration = 'underline';
+      btn.style.cursor = 'pointer';
+      btn.onclick = () => {
+        window.location.href = `/posts/${item.id}`;
+      };
+      wrap.appendChild(btn);
+    }
+
   return wrap;
 }
 
@@ -233,6 +251,22 @@ function renderMarkers(list){
 
       row.appendChild(name);
       row.appendChild(meta);
+
+      // === 상세보기 버튼 ===
+      if (it.type === 'heritage' && it.id) {
+        const btn = document.createElement('a');
+        btn.textContent = '상세보기';
+        btn.href = `/posts/${it.id}`;
+        btn.className = 'iw-detail-btn';
+        btn.style.textDecoration = 'underline';
+        btn.style.background = 'none';
+        btn.style.border = 'none';
+        btn.style.cursor = 'pointer';
+        btn.style.color = '#0066cc';
+
+        row.appendChild(btn);
+      }
+
       listEl.appendChild(row);
     });
 

@@ -184,12 +184,12 @@
 }
 
 .legend-item { display: flex; align-items: center; gap: 8px; }
-.legend-divider { border: none; height: 1px; background: #e5e7eb; margin: 6px 0; }
 
 .legend-icon { display: inline-block; width: 18px; height: 18px; }
 /* location.svg 색상 필터 */
 .legend-museum  { filter: invert(31%) sepia(95%) saturate(2140%) hue-rotate(206deg) brightness(91%) contrast(89%); } /* 파랑 */
 .legend-heritage{ filter: invert(22%) sepia(94%) saturate(4567%) hue-rotate(353deg) brightness(89%) contrast(85%); } /* 빨강 */
+.legend-my{ filter: invert(39%) sepia(78%) saturate(1632%) hue-rotate(86deg) brightness(95%) contrast(90%); } /* 초록 */
 
 .legend-note { display: flex; align-items: center; gap: 6px; color: #6b7280; }
 .legend-footnote { color: #6b7280; font-size: 12px; margin-top: 2px; }
