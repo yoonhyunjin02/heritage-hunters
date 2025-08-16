@@ -51,6 +51,8 @@ public class SecurityConfig {
                 "/login",
                 "/logout",
                 "/map/**",
+                "/heritage/**",
+                "/posts/**",
                 "/search/**"
             )
             .permitAll()

@@ -99,7 +99,7 @@ function buildIwContent(item){
       btn.style.textDecoration = 'underline';
       btn.style.cursor = 'pointer';
       btn.onclick = () => {
-        window.location.href = `/posts/${item.id}`;
+        window.location.href = `/heritage/${item.id}`;
       };
       wrap.appendChild(btn);
     }
@@ -256,7 +256,7 @@ function renderMarkers(list){
       if (it.type === 'heritage' && it.id) {
         const btn = document.createElement('a');
         btn.textContent = '상세보기';
-        btn.href = `/posts/${it.id}`;
+        btn.href = `/heritage/${it.id}`;
         btn.className = 'iw-detail-btn';
         btn.style.textDecoration = 'underline';
         btn.style.background = 'none';
