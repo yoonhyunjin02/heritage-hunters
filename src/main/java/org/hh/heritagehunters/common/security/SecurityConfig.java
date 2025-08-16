@@ -49,12 +49,15 @@ public class SecurityConfig {
                 "/main",
                 "/register",
                 "/login",
-                "/logout"
+                "/logout",
+                "/map/**",
+                "/heritage/**",
+                "/posts/**",
+                "/search/**"
             )
             .permitAll()
             .anyRequest().authenticated()
         )
-        // 이하 기존 설정 그대로
         .formLogin(form -> form
             .loginPage("/login")
             .usernameParameter("email")

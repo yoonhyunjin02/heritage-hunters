@@ -5,9 +5,6 @@
   <link rel="stylesheet" th:href="@{/features/oauth/css/oauth.css}">
 </head>
 <body>
-<!--header-->
-<div th:replace="~{fragments/header :: common-header}"></div>
-
 <!--main-->
 <main class="auth-container">
   <section class="image-section" id="auth-bg-image" aria-hidden="true"></section>
@@ -49,10 +46,6 @@
     </p>
   </section>
 </main>
-
-<!--footer-->
-<div th:replace="~{fragments/footer :: common-footer}"></div>
-
 <!--js-->
 <script defer th:src="@{/features/oauth/js/oauth.js}"></script>
 </body>

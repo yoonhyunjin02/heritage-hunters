@@ -5,9 +5,6 @@
   <link rel="stylesheet" th:href="@{/features/oauth/css/oauth.css}">
 </head>
 <body>
-<!--header-->
-<div th:replace="~{fragments/header :: common-header}"></div>
-
 <!--main-->
 <main class="auth-container">
   <!-- 좌: 이미지 -->
@@ -54,9 +51,6 @@
     <p class="signin-text">회원이 아니신가요? <a th:href="@{/register}">회원가입</a></p>
   </section>
 </main>
-
-<!--footer-->
-<div th:replace="~{fragments/footer :: common-footer}"></div>
 
 <!--js-->
 <script defer th:src="@{/features/oauth/js/oauth.js}"></script>
