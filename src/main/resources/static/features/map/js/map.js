@@ -769,6 +769,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// 사이드바가 "다시 그려달라" 요청했을 때 실행되는 함수
+window.__requestSidebarRerender = function () {
+  if (!allData) return;
+  const filtered = (window.__sidebar?.updateSidebar)
+    ? window.__sidebar.updateSidebar(allData)
+    : allData;
+  renderMarkers(filtered);
+  renderList(filtered);
+};
+
 // ------- Viewport loader -------
 let aborter = null;
 let skipNextFetchOnce = false; // 클러스터 클릭 직후 1회 재조회 스킵
