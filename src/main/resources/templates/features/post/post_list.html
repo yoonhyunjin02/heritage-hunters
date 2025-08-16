@@ -24,7 +24,8 @@
         <div class="search-input-wrapper">
           <input type="text" name="keyword" th:value="${param.keyword}"
                  placeholder="문화유산 이름이나 지역을 검색하세요..." class="search-input" id="searchInput">
-          <button type="submit" class="search-btn" title="검색">🔍</button>
+          <button type="submit" class="search-btn" title="검색"><img
+              th:src="@{/images/icons/search.svg}" alt="검색 버튼"/></button>
         </div>
       </div>
 
@@ -33,24 +34,24 @@
           <input type="radio" name="sort" value="createdAt" id="sort-time"
                  th:checked="${param.sort == null or param.sort == 'createdAt'}"
                  onchange="submitForm()">
-          <label for="sort-time" class="sort-tab">⏰ 최신순</label>
+          <label for="sort-time" class="sort-tab"> 최신순</label>
 
           <input type="radio" name="sort" value="viewCount" id="sort-view"
                  th:checked="${param.sort == 'viewCount'}" onchange="submitForm()">
-          <label for="sort-view" class="sort-tab">👁️ 조회순</label>
+          <label for="sort-view" class="sort-tab">조회순</label>
 
           <input type="radio" name="sort" value="likeCount" id="sort-like"
                  th:checked="${param.sort == 'likeCount'}" onchange="submitForm()">
-          <label for="sort-like" class="sort-tab">❤️ 좋아요순</label>
+          <label for="sort-like" class="sort-tab">좋아요순</label>
 
           <input type="radio" name="sort" value="commentCount" id="sort-comment"
                  th:checked="${param.sort == 'commentCount'}" onchange="submitForm()">
-          <label for="sort-comment" class="sort-tab">💬 댓글순</label>
+          <label for="sort-comment" class="sort-tab">댓글순</label>
         </div>
 
         <div class="region-filter-container">
           <select name="region" class="region-filter-select" onchange="submitForm()">
-            <option value="">🌍 전체 지역</option>
+            <option value="">전체 지역</option>
             <option
                 th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
                 th:if="${entry.key != '00'}"
@@ -61,7 +62,7 @@
         </div>
 
         <div class="control-buttons">
-          <button type="button" id="clearFiltersBtn" class="control-btn reset-btn" title="필터 초기화">🔄
+          <button type="button" id="clearFiltersBtn" class="control-btn reset-btn" title="필터 초기화">
             초기화
           </button>
           <button type="button" id="openPostModal" class="control-btn new-post-btn"
@@ -161,7 +162,7 @@
     </div>
 
     <!-- 페이지네이션 -->
-    <nav class="pagination-nav" th:if="${posts != null and posts.totalPages > 1}">
+    <nav class="pagination-nav" th:if="${posts != null}">
       <div class="pagination">
         <a th:if="${posts.number > 0}"
            th:href="@{/posts(page=0, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
@@ -172,12 +173,11 @@
            class="page-btn prev-page">‹ 이전</a>
 
         <div class="page-numbers">
-          <span
-              th:each="i : ${#numbers.sequence(T(java.lang.Math).max(0, posts.number - 2), T(java.lang.Math).min(posts.totalPages - 1, posts.number + 2))}">
-            <a th:if="${i != posts.number}"
-               th:href="@{/posts(page=${i}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-               th:text="${i + 1}" class="page-btn page-number"></a>
-            <span th:if="${i == posts.number}" th:text="${i + 1}"
+          <span th:each="i : ${pageNumbers}">
+            <a th:if="${i != currentPage + 1}"
+               th:href="@{/posts(page=${i - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
+               th:text="${i}" class="page-btn page-number"></a>
+            <span th:if="${i == currentPage + 1}" th:text="${i}"
                   class="page-btn page-number active"></span>
           </span>
         </div>
