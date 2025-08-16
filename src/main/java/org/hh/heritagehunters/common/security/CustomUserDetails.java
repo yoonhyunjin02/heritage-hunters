@@ -1,6 +1,7 @@
 package org.hh.heritagehunters.common.security;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Map;
+import lombok.Getter;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -8,20 +9,33 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 /**
  * Spring Security의 인증 정보를 담는 클래스
  * 일반 로그인 및 향후 소셜 로그인 사용자까지 커버할 수 있도록 설계
  */
-@RequiredArgsConstructor
-public class CustomUserDetails implements UserDetails {
+@Getter
+public class CustomUserDetails implements UserDetails, OAuth2User {
 
   private final User user;
+  private final Map<String, Object> attributes;
 
-  /**
-   * 현재는 단일 권한만 부여
-   * 향후 소셜 사용자와 구분 필요 시 권한 변경 가능
-   */
+  public CustomUserDetails(User user) {
+    this.user = user;
+    this.attributes = null;
+  }
+
+  public CustomUserDetails(User user, Map<String, Object> attributes) {
+    this.user = user;
+    this.attributes = attributes;
+  }
+
+  @Override
+  public Map<String, Object> getAttributes() {
+    return attributes;
+  }
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"));
@@ -45,19 +59,31 @@ public class CustomUserDetails implements UserDetails {
     return user.getEmail();
   }
 
-  @Override public boolean isAccountNonExpired() { return true; }
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
 
-  @Override public boolean isAccountNonLocked() { return true; }
+  @Override
+  public boolean isAccountNonLocked() {
+    return true;
+  }
 
-  @Override public boolean isCredentialsNonExpired() { return true; }
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
+  }
 
-  @Override public boolean isEnabled() { return true; }
+  @Override
+  public boolean isEnabled() {
+    return true;
+  }
 
   /**
-   * 내부에서 User 엔티티 자체가 필요할 경우 접근할 수 있도록 getter 제공
+   * profile 페이지는 user id로 접근
    */
-  public User getUser() {
-    return this.user;
+  public Long getId() {
+    return user.getId();
   }
 
   /**
@@ -74,4 +100,8 @@ public class CustomUserDetails implements UserDetails {
     return user.getProfileImage();
   }
 
+  @Override
+  public String getName() {
+    return user.getNickname(); // OAuth2User의 getName() 구현
+  }
 }

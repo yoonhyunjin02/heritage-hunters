@@ -2,20 +2,23 @@ package org.hh.heritagehunters.common.security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.oauth.repository.UserRepository;
-import org.springframework.http.*;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -37,14 +40,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       String name = null;
       String picture = null;
 
+      // Provider별 데이터 파싱
       if ("google".equals(registrationId)) {
         email = (String) attributes.get("email");
         name = (String) attributes.get("name");
         picture = (String) attributes.get("picture");
 
       } else if ("github".equals(registrationId)) {
-        name = (String) attributes.get("name");
-        if (name == null) name = (String) attributes.get("login");
+        name = (String) attributes.getOrDefault("name", attributes.get("login"));
         picture = (String) attributes.get("avatar_url");
 
         // GitHub의 /user/emails API를 사용 -> primary, verified인 이메일을 강제로 직접 요청
@@ -73,20 +76,19 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 "GitHub 계정에 인증된(primary, verified) 이메일이 등록되어 있는지 확인해 주세요.");
       }
 
+      // DB 조회
       User user = userRepository.findByEmail(email).orElse(null);
 
+      // 신규 가입
       if (user == null) {
         String safeNickname = generateUniqueNickname(name);
         user = createNewUser(email, safeNickname, picture, registrationId);
       }
 
-      Map<String, Object> modifiedAttributes = new HashMap<>(attributes);
-      modifiedAttributes.put("email", email);
-
-      return new DefaultOAuth2User(
-          Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-          modifiedAttributes,
-          "email"
+      // CustomUserDetails로 감싸서 반환
+      return new CustomUserDetails(
+          user,
+          attributes// OAuth2 attributes를 보존
       );
 
     } catch (OAuth2AuthenticationException e) {
@@ -94,7 +96,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
       throw e;
 
     } catch (Exception e) {
-      e.printStackTrace(); // 콘솔 출력은 개발 중 참고용
+      e.printStackTrace();
       throw new OAuth2AuthenticationException("소셜 로그인 중 문제가 발생했습니다.");
     }
   }
