@@ -19,9 +19,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
    * @param pageable 페이지네이션 정보
    * @return 필터링된 게시글 목록
    */
-  @Query("SELECT p FROM Post p " +
+  @Query("SELECT DISTINCT p FROM Post p " +
       "LEFT JOIN FETCH p.user " +
       "LEFT JOIN FETCH p.heritage " +
+      "LEFT JOIN FETCH p.images " +
       "WHERE (:keyword IS NULL OR :keyword = '' OR " +
       "       LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
       "       LOWER(p.heritage.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
