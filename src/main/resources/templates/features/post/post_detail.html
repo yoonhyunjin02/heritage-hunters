@@ -111,6 +111,12 @@
             <p class="content-text" th:text="${post.content}">본문 내용</p>
           </section>
 
+          <!-- 위치 -->
+          <section class="location-box">
+            <h4>위치</h4>
+            <p class="location-text" th:text="${post.location}">장소</p>
+          </section>
+
           <!-- 액션/통계 -->
           <section class="actions-box" sec:authorize="isAuthenticated()">
             <button type="button"

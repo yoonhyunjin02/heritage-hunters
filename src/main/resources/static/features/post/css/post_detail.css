@@ -273,6 +273,20 @@
   white-space: pre-wrap;
 }
 
+.location-box {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f6f6f6;
+}
+
+.location-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+  margin: 0;
+  word-break: keep-all;
+  white-space: pre-wrap;
+}
+
 /* 액션 버튼들 */
 .actions-box {
   display: flex;

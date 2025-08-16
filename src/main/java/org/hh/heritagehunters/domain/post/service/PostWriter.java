@@ -1,6 +1,5 @@
 package org.hh.heritagehunters.domain.post.service;
 
-import java.util.Comparator;
 import lombok.RequiredArgsConstructor;
 import org.hh.heritagehunters.common.exception.BadRequestException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
@@ -25,7 +24,8 @@ public class PostWriter {
 
   /**
    * 새로운 게시글을 생성합니다
-   * @param user 게시글 작성자
+   *
+   * @param user    게시글 작성자
    * @param request 게시글 생성 요청 데이터
    * @return 생성된 게시글 엔티티
    */
@@ -47,8 +47,9 @@ public class PostWriter {
 
   /**
    * 게시글 정보를 수정합니다
+   *
    * @param post 수정할 게시글 엔티티
-   * @param dto 수정 데이터
+   * @param dto  수정 데이터
    */
   public void update(Post post, PostUpdateRequestDto dto) {
     post.setContent(dto.getContent());
@@ -57,6 +58,7 @@ public class PostWriter {
 
   /**
    * 게시글을 삭제합니다
+   *
    * @param post 삭제할 게시글 엔티티
    */
   public void delete(Post post) {
@@ -65,6 +67,7 @@ public class PostWriter {
 
   /**
    * 지정된 좌표에서 가장 가까운 문화유산을 찾습니다
+   *
    * @param lat 위도
    * @param lng 경도
    * @return 가장 가까운 문화유산 (없으면 null)
@@ -73,35 +76,32 @@ public class PostWriter {
     if (lat == null || lng == null) {
       return null;
     }
-    final double baseLat = lat;
-    final double baseLng = lng;
 
+    // 모든 문화유산을 검색하여 가장 가까운 것을 찾습니다
     return heritageRepository.findAll().stream()
         .filter(h -> h.getLatitude() != null && h.getLongitude() != null)
-        .min(Comparator.comparingDouble(h ->
-            distance(baseLat, baseLng, h.getLatitude().doubleValue(),
-                h.getLongitude().doubleValue())
-        ))
+        .min((h1, h2) -> {
+          double dist1 = calculateDistance(lat, lng, h1.getLatitude().doubleValue(),
+              h1.getLongitude().doubleValue());
+          double dist2 = calculateDistance(lat, lng, h2.getLatitude().doubleValue(),
+              h2.getLongitude().doubleValue());
+          return Double.compare(dist1, dist2);
+        })
         .orElse(null);
   }
 
   /**
-   * 두 좌표 간의 거리를 계산합니다 (Haversine 공식)
-   * @param lat1 첫 번째 위도
-   * @param lng1 첫 번째 경도
-   * @param lat2 두 번째 위도
-   * @param lng2 두 번째 경도
-   * @return 거리 (미터)
+   * Haversine 공식으로 두 좌표 간 거리를 계산합니다 (km 단위)
    */
-  private double distance(double lat1, double lng1, double lat2, double lng2) {
-    double R = 6371000;
-    double dLat = Math.toRadians(lat2 - lat1);
-    double dLon = Math.toRadians(lng2 - lng1);
-    double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+  private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+    final int R = 6371; // 지구 반지름 (km)
+    double latDistance = Math.toRadians(lat2 - lat1);
+    double lngDistance = Math.toRadians(lng2 - lng1);
+    double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
         + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-        + Math.sin(dLon / 2) * Math.sin(dLon / 2) - Math.cos(Math.toRadians(lat1)) * Math.cos(
-        Math.toRadians(lat2)); // 안전: 편미분 방지X
-    double c = 2 * Math.atan2(Math.sqrt(Math.max(a, 0)), Math.sqrt(Math.max(1 - a, 0)));
+        * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2);
+    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
+
 }
