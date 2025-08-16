@@ -123,6 +123,17 @@ function buildListCard(item){
   const desc = document.createElement('div');
   desc.className = 'desc';
   desc.textContent = getDisplayMeta(item); // ← 리스트에도 매핑 적용
+
+  // 거리 표시
+    if (SidebarState.myLocation && item.lat && item.lng) {
+      const d = distMeters(SidebarState.myLocation, { lat:item.lat, lng:item.lng });
+      const km = (d/1000).toFixed(1);
+      const distEl = document.createElement('div');
+      distEl.className = 'distance';
+      distEl.textContent = `${km}km`;
+      desc.appendChild(distEl);
+    }
+
   el.append(name, addr, desc);
   return el;
 }
@@ -490,11 +501,31 @@ function renderList(list){
     desc.className = 'desc';
     desc.textContent = `이 위치의 항목 ${group.items.length}개`;
 
+    // 거리 표시
+      if (SidebarState.myLocation) {
+        const d = distMeters(SidebarState.myLocation, group.pos);
+        const km = (d/1000).toFixed(1);
+        const distEl = document.createElement('div');
+        distEl.className = 'distance';
+        distEl.textContent = `${km}km`;
+        desc.appendChild(distEl);
+      }
+
     el.append(name, desc);
     return el;
   }
 
   const groups = groupByPosition(list, 6);
+
+  // 가까운 순 정렬 활성화 시
+  const btn = document.getElementById('sortByDistance');
+  if (btn && btn.dataset.active === 'true' && SidebarState.myLocation) {
+    groups.sort((a, b) => {
+      const da = distMeters(SidebarState.myLocation, a.pos);
+      const db = distMeters(SidebarState.myLocation, b.pos);
+      return da - db;
+    });
+  }
 
   groups.forEach(group => {
     const isSingle = group.items.length === 1;
