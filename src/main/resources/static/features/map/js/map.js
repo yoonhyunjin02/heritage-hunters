@@ -815,7 +815,7 @@ async function fetchByViewport() {
   const url = new URL('/map/points', window.location.origin);
   url.searchParams.set('bbox', reqStr);
   url.searchParams.set('type', currentType); // 'all' | 'heritage' | 'museum'
-  url.searchParams.set('limit', 800);
+  url.searchParams.set('limit', 250);
 
   // 사이드바 필터(있을 때만)
   const ss = window.__sidebar;
