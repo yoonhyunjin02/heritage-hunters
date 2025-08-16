@@ -13,7 +13,7 @@ import org.hh.heritagehunters.common.exception.BadRequestException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.post.entity.Post;
 import org.hh.heritagehunters.domain.post.entity.PostImage;
-import org.hh.heritagehunters.domain.post.util.ImageUploader;
+import org.hh.heritagehunters.domain.post.service.ImageUploadService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import jakarta.annotation.PreDestroy;
@@ -23,7 +23,7 @@ import jakarta.annotation.PreDestroy;
 @Slf4j
 public class ImageService {
 
-  private final ImageUploader imageUploader;
+  private final ImageUploadService imageUploadService;
   
   // 이미지 업로드용 스레드 풀 (CPU 코어 수만큼 스레드)
   private final ExecutorService imageUploadExecutor = Executors.newFixedThreadPool(
@@ -52,7 +52,7 @@ public class ImageService {
             try {
               MultipartFile image = images.get(i);
               log.debug("이미지 업로드 시작: {} ({}번째)", image.getOriginalFilename(), i);
-              String url = imageUploader.upload(image);
+              String url = imageUploadService.uploadImage(image);
               log.debug("이미지 업로드 완료: {} -> {}", image.getOriginalFilename(), url);
               return url;
             } catch (Exception e) {
@@ -143,7 +143,7 @@ public class ImageService {
               try {
                 MultipartFile image = validImages.get(i);
                 log.debug("수정 시 이미지 업로드 시작: {} ({}번째)", image.getOriginalFilename(), i);
-                String url = imageUploader.upload(image);
+                String url = imageUploadService.uploadImage(image);
                 log.debug("수정 시 이미지 업로드 완료: {} -> {}", image.getOriginalFilename(), url);
                 return url;
               } catch (Exception e) {
