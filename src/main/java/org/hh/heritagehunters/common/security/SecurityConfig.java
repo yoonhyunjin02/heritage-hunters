@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,26 +23,37 @@ public class SecurityConfig {
 
   private final CustomOAuth2UserService customOAuth2UserService;
 
+  // 정적 리소스는 Security 필터 체인에서 제외
+  @Bean
+  public WebSecurityCustomizer webSecurityCustomizer() {
+    return (web) -> web.ignoring().requestMatchers(
+        "/favicon.ico",
+        "/webjars/**",
+        "/css/**",
+        "/js/**",
+        "/images/**",
+        "/assets/**",
+        "/common/**",
+        "/features/**"
+    );
+  }
+
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
+                "/error",
+                "/error/**",
                 "/",
                 "/main",
                 "/register",
                 "/login",
                 "/logout",
                 "/map/**",
-
-                // static resource allowlist
-                "/css/**",
-                "/js/**",
-                "/images/**",
-                "/common/**",
-                "/features/**",
-                "/favicon.ico"
-            ).permitAll()
+                "/search/**"
+            )
+            .permitAll()
             .anyRequest().authenticated()
         )
         .formLogin(form -> form
@@ -53,24 +66,18 @@ public class SecurityConfig {
         )
         .oauth2Login(oauth2 -> oauth2
             .loginPage("/login")
-            .userInfoEndpoint(userInfo -> userInfo
-                .userService(customOAuth2UserService)
-            )
+            .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
             .failureHandler((request, response, exception) -> {
-              exception.printStackTrace(); // 개발 중 디버깅
+              exception.printStackTrace();
               String message = exception.getMessage();
-              if (message == null || message.trim().isEmpty()) {
-                message = "알 수 없는 오류가 발생했습니다.";
-              }
-              String encodedMessage = java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
-              response.sendRedirect("/login?error=" + encodedMessage);
+              if (message == null || message.isBlank()) message = "알 수 없는 오류가 발생했습니다.";
+              String encoded = java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
+              response.sendRedirect("/login?error=" + encoded);
             })
             .defaultSuccessUrl("/main", true)
         )
-        .logout(logout -> logout
-            .logoutSuccessUrl("/login?logout")
-            .permitAll()
-        );
+        .logout(logout -> logout.logoutSuccessUrl("/login?logout").permitAll())
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
     return http.build();
   }

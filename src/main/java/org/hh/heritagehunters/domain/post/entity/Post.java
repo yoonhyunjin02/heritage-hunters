@@ -11,17 +11,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.awt.Image;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import javax.print.attribute.standard.MediaSize.NA;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.search.entity.Heritage;
+import org.hibernate.annotations.CreationTimestamp;
 
 
 @Data
@@ -50,18 +49,19 @@ public class Post {
   private String location;
 
   @Column(name = "created_at", nullable = false)
+  @CreationTimestamp
   private LocalDateTime createdAt;
 
   @Column(name = "view_count", nullable = false)
-  private Integer viewCount;
+  private Integer viewCount = 0;
 
   @Column(name = "comment_count", nullable = false)
-  private Integer commentCount;
+  private Integer commentCount = 0;
 
   @Column(name = "like_count", nullable = false)
-  private Integer likeCount;
+  private Integer likeCount = 0;
 
-  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<PostImage> images = new ArrayList<>();
 
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -72,6 +72,18 @@ public class Post {
   private List<Like> likes = new ArrayList<>();
 
   // 비즈니스 메서드
+
+  /**
+   * Post 객체 생성(정적 메소드 팩토리)
+   */
+  public static Post create(User user, Heritage heritage, String content, String location) {
+    Post post = new Post();
+    post.user = user;
+    post.heritage = heritage;
+    post.content = content;
+    post.location = location;
+    return post;
+  }
 
   /**
    * 조회수 증가

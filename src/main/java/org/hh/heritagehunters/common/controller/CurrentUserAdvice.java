@@ -1,5 +1,6 @@
 package org.hh.heritagehunters.common.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.hh.heritagehunters.common.security.CustomUserDetails;
 import org.hh.heritagehunters.domain.oauth.service.CustomUserDetailsService;
@@ -7,6 +8,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -16,6 +19,11 @@ public class CurrentUserAdvice  {
 
   @ModelAttribute("currentUser")
   public CustomUserDetails addCurrentUser(@AuthenticationPrincipal Object principal) {
+    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+    String uri = request.getRequestURI();
+    if (uri.startsWith("/heritage/") && uri.endsWith("/ai")) {
+      return null; // AI 요청은 사용자 주입 불필요 → DB 조회 방지
+    }
     if (principal instanceof CustomUserDetails user) {
       return user; // 로컬 로그인 사용자
     }

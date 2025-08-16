@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <th:block th:insert="~{fragments/head :: common-head('게시글 작성')}"></th:block>
+  <link rel="stylesheet" th:href="@{/features/post/css/modal-common.css}">
+  <link rel="stylesheet" th:href="@{/features/post/css/post_write.css}">
+</head>
+<body>
+
+<!-- (기존 모달 구조 그대로) -->
+<div th:fragment="postWriteModal"
+     id="postModal" class="modal"
+     sec:authorize="isAuthenticated()">
+  <div class="modal-content">
+    <!-- 헤더 -->
+    <div class="modal-header">
+      <h2 class="modal-title">새 게시글 작성</h2>
+      <button type="button" class="modal-close" onclick="closePostWrite()" aria-label="닫기">&times;</button>
+    </div>
+
+    <!-- 본문 -->
+    <div class="modal-body">
+      <form id="postForm" class="post-form"
+            th:action="@{/posts}" method="post"
+            enctype="multipart/form-data">
+        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+
+        <div class="composer-grid">
+          <!-- 좌측: 이미지 -->
+          <div class="compose-left">
+            <div class="image-upload-section" id="imageUploadSection">
+              <input type="file" name="images" id="imageInput"
+                     multiple accept="image/*"
+                     class="visually-hidden" required>
+              <div class="upload-placeholder">
+                <div class="emoji">📷</div>
+                <div>사진을 추가하세요 (최대 3장)</div>
+                <div class="hint">클릭하거나 드래그하여 업로드</div>
+              </div>
+              <div id="imageStage"  class="image-stage"></div>
+              <div id="imageThumbs" class="thumb-strip"></div>
+            </div>
+          </div>
+
+          <!-- 우측: 작성 패널 -->
+          <div class="compose-right">
+            <!-- 작성자 -->
+            <div class="author-display" sec:authorize="isAuthenticated()">
+              <img th:if="${#authentication.principal.profileImage != null}"
+                   th:src="${#authentication.principal.profileImage}"
+                   class="author-avatar" alt="프로필">
+              <div th:unless="${#authentication.principal.profileImage != null}"
+                   class="author-avatar-placeholder">
+                <span th:text="${#strings.substring(#authentication.principal.nickname, 0, 1)}">U</span>
+              </div>
+              <span class="author-name"
+                    th:text="${#authentication.principal.nickname}">사용자</span>
+            </div>
+
+            <!-- 본문 -->
+            <div class="form-group">
+              <label for="postContent"  class="form-label">본문</label>
+              <textarea name="content" id="postContent"
+                        class="content-textarea"
+                        placeholder="문화유산에 대한 경험을 공유해주세요..."
+                        maxlength="200" required></textarea>
+              <div class="char-counter"><span id="charCount">0</span> / 200자</div>
+            </div>
+
+            <!-- 위치 -->
+            <div class="form-group">
+              <label for="locationInput" class="form-label">위치</label>
+              <input  type="text"  id="locationInput" name="location"
+                      class="location-input"
+                      autocomplete="off"
+                      placeholder="예: 경복궁, 서울 종로구 사직로 161"
+                      maxlength="255" required>
+              <div class="field-help">정확한 장소명을 입력해주세요.</div>
+
+              <!-- 📍 위·경도는 자동 주입 -->
+              <input type="hidden" name="lat" id="latHidden">
+              <input type="hidden" name="lng" id="lngHidden">
+            </div>
+
+            <!-- 액션 -->
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="cancelPost">취소</button>
+              <button type="submit" class="btn btn-primary" id="submitBtn">
+                <span id="submitBtnText">작성하기</span>
+                <div id="submitBtnLoader" class="btn-loader" style="display:none;">
+                  <div class="spinner"></div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
