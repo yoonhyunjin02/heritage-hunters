@@ -82,6 +82,18 @@ public class PostController {
     model.addAttribute("totalPages", posts.getTotalPages());
     model.addAttribute("totalElements", posts.getTotalElements());
 
+    // 페이지 번호 10개씩 그룹핑
+    int totalPages = posts.getTotalPages();
+    int groupSize = 10;
+    int start = (page / groupSize) * groupSize + 1;
+    int end = Math.min(start + groupSize - 1, Math.max(totalPages, 10));
+
+    List<Integer> pageNumbers = java.util.stream.IntStream.rangeClosed(start, end)
+        .boxed()
+        .collect(java.util.stream.Collectors.toList());
+
+    model.addAttribute("pageNumbers", pageNumbers);
+
     return "features/post/post_list";
   }
 
