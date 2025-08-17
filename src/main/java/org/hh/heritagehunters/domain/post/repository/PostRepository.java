@@ -6,6 +6,7 @@ import java.util.Set;
 import org.hh.heritagehunters.domain.post.entity.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,24 +47,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   boolean existsByUserIdAndPostId(@Param("userId") Long userId, @Param("postId") Long postId);
 
   // 특정 유저가 작성한 게시물 목록 (최신순)
-  @Query("""
-        select p from Post p
-         join fetch p.user
-         join fetch p.heritage
-        where p.user.id = :userId
-        order by p.id desc
-      """)
+  @EntityGraph(attributePaths = {"user", "heritage"})
+  @Query("select p from Post p where p.user.id = :userId order by p.id desc")
   Page<Post> findByUserIdOrderByIdDesc(@Param("userId") Long userId, Pageable pageable);
 
   // 특정 유저가 '좋아요'한 게시물 목록 (최신순)
-  @Query("""
-        select p from Like l
-         join l.post p
-         join fetch p.user
-         join fetch p.heritage
-        where l.user.id = :userId
-        order by p.id desc
-      """)
+  @EntityGraph(attributePaths = {"user", "heritage"})
+  @Query("select l.post from Like l where l.user.id = :userId order by l.post.id desc")
   Page<Post> findLikedPostsByUserId(@Param("userId") Long userId, Pageable pageable);
 
   // 스탬프 계산: 유저가 게시한 Heritage id 목록 (distinct)
@@ -88,4 +78,37 @@ public interface PostRepository extends JpaRepository<Post, Long> {
       """)
   List<Object[]> findFirstImageUrlsFor(@Param("postIds") List<Long> postIds);
 
+
+//  @Query(
+//      value = """
+//        select
+//          p.id as postId,
+//          p.title as title,
+//          p.thumbnailUrl as thumbnailUrl,
+//          p.createdAt as createdAt,
+//
+//          u.id as authorId,
+//          u.nickname as authorNickname,
+//
+//          h.id as heritageId,
+//          h.name as heritageName,
+//
+//          (select count(l) from Like l where l.post = p) as likeCount,
+//          (select count(c) from Comment c where c.post = p) as commentCount
+//        from Post p
+//          join p.user u
+//          join p.heritage h
+//        where u.id = :userId
+//        order by p.id desc
+//      """,
+//      countQuery = """
+//        select count(p)
+//        from Post p
+//        where p.user.id = :userId
+//      """
+//  )
+//  Page<PostListProjection> findPostListProjectionByUserId(
+//      @Param("userId") Long userId,
+//      Pageable pageable
+//  );
 }
