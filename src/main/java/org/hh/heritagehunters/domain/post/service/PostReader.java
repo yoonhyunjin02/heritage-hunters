@@ -44,12 +44,7 @@ public class PostReader {
         .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
   }
 
-  public Post getDetailWithImages(Long postId) {
-    return postRepository.findByIdWithImages(postId)
-        .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
-  }
-
-  public Post getForEditWithImages(Long postId) {
+  public Post getPostWithImages(Long postId) {
     return postRepository.findByIdWithImages(postId)
         .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
   }
@@ -60,6 +55,17 @@ public class PostReader {
 
   public Set<Long> findLikedPostIds(Long userId, List<Post> posts) {
     return likeRepository.findLikedPostIds(userId, posts);
+  }
+
+
+  public Page<Post> getUserPosts(Long userId, int page, int size) {
+    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+    return postRepository.findByUserIdOrderByIdDesc(userId, pageable);
+  }
+
+  public Page<Post> getLikedPosts(Long userId, int page, int size) {
+    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+    return postRepository.findLikedPostsByUserId(userId, pageable);
   }
 
   private Sort createSortCondition(String sort, String direction) {

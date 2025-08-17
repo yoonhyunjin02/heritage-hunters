@@ -104,4 +104,6 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
   public String getName() {
     return user.getNickname(); // OAuth2User의 getName() 구현
   }
+
 }
+

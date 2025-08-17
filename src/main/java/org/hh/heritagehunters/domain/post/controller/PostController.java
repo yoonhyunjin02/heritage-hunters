@@ -177,6 +177,23 @@ public class PostController {
   }
 
   /**
+   * 게시글 상세 모달 프래그먼트 반환
+   */
+  @GetMapping("/{id}/fragment")
+  public String getPostDetailFragment(@PathVariable Long id,
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      Model model) {
+    User currentUser = userDetails != null ? userDetails.getUser() : null;
+    PostDetailResponseDto post = postFacade.detail(id, currentUser);
+
+    model.addAttribute("post", post);
+    model.addAttribute("currentUser", currentUser);
+    model.addAttribute("commentForm", new CommentCreateRequestDto());
+
+    return "features/post/post_detail_fragment";
+  }
+
+  /**
    * 댓글 작성
    */
   @PostMapping("/{postId}/comments")

@@ -31,7 +31,8 @@ public class DesignationCodeMapper {
       Map.entry("55", "시도자연유산"),
       Map.entry("66", "시도자연유산자료"),
       Map.entry("79", "국가등록유산"),
-      Map.entry("80", "이북5도 무형유산")
+      Map.entry("80", "이북5도 무형유산"),
+      Map.entry("90", "유네스코 세계유산")
   );
 
   /**
