@@ -4,7 +4,7 @@
   <th:block th:insert="~{fragments/head :: common-head('Leaderboard')}"></th:block>
   <link rel="stylesheet" th:href="@{/features/leaderboard/css/leaderboard.css}">
 </head>
-<body class="leaderboard-page">
+<body>
 <!--header-->
 <div th:replace="~{fragments/header :: common-header}"></div>
 
@@ -55,6 +55,6 @@
 </main>
 
 <!--footer-->
-<!--<div th:replace="~{fragments/footer :: common-footer}"></div>-->
+<div th:replace="~{fragments/footer :: common-footer}"></div>
 </body>
 </html>
