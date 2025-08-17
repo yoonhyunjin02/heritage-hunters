@@ -3,21 +3,32 @@
     <div class="header-wrapper">
       <div class="header-container">
 
-        <!-- 로고 항상 표시 -->
-        <h1 class="logo">
-          <a th:href="@{/main}">
-            <img th:src="@{/images/logo/github.svg}" alt="로고" class="logo-image">
-          </a>
-        </h1>
+        <!-- 좌측 영역: 로고 + 음악버튼 -->
+        <div class="header-left">
+          <h1 class="logo">
+            <a th:href="@{/main}">
+              <img th:src="@{/images/logo/github.svg}" alt="로고" class="logo-image">
+            </a>
+          </h1>
 
-        <!-- 로그인 O -->
+          <button id="bgm-toggle" class="music-button">
+            <img th:src="@{/images/icons/music.svg}" alt="뮤직" class="icon">
+          </button>
+
+          <audio id="bgm" loop preload="auto">
+            <source th:src="@{/audio/BGM.mp3}" type="audio/mpeg">
+          </audio>
+        </div>
+
+        <!-- 우측 영역: 로그인/유저 -->
         <div class="header-user">
+          <!-- 로그인 O -->
           <div sec:authorize="isAuthenticated()" th:if="${currentUser != null}" class="user-dropdown">
             <div class="user-welcome" onclick="toggleDropdown(event)">
               <span class="welcome-text">어서오세요</span>
               <span class="user-name" th:text="${currentUser.nickname} ?: '사용자'">닉네임</span>
               <span class="welcome-text">님</span>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="dropdown-arrow">
+              <svg class="dropdown-arrow">
                 <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
               <img
@@ -27,10 +38,18 @@
               />
             </div>
             <div class="dropdown-menu">
-              <a th:href="@{/profile}" class="dropdown-item">👤 프로필</a>
+              <!-- 프로필 -->
+              <a th:href="@{/profile}" class="dropdown-item">
+                <img th:src="@{/images/icons/person.svg}" alt="프로필" class="icon">
+                <span>프로필</span>
+              </a>
               <hr class="dropdown-divider">
+              <!-- 로그아웃 -->
               <form class="dropdown-logout-form" th:action="@{/logout}" method="post">
-                <button type="submit" class="dropdown-item logout-item">🚪 로그아웃</button>
+                <button type="submit" class="dropdown-item logout-item">
+                  <img th:src="@{/images/icons/logout.svg}" alt="로그아웃" class="icon">
+                  <span>로그아웃</span>
+                </button>
               </form>
             </div>
           </div>
@@ -40,6 +59,7 @@
             <a th:href="@{/login}" class="login-button">로그인</a>
           </div>
         </div>
+
       </div>
     </div>
   </header>

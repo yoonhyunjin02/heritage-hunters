@@ -4,12 +4,11 @@
   <th:block th:insert="~{fragments/head :: common-head('Login')}"></th:block>
   <link rel="stylesheet" th:href="@{/features/oauth/css/oauth.css}">
 </head>
-<body>
+<body class="oauth-page">
 <!--main-->
 <main class="auth-container">
   <!-- 좌: 이미지 -->
-  <section class="image-section" id="auth-bg-image"
-           style="--auth-image:url('/images/main/main3.jpg');" aria-hidden="true"></section>
+  <section class="image-section" id="auth-bg-image" aria-hidden="true"></section>
 
   <!-- 우: 폼 카드 -->
   <section class="form-section">
