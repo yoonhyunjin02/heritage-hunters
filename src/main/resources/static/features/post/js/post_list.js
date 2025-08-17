@@ -66,7 +66,6 @@
     try {
       if (postId && postDataCache.has(postId)) {
         postDataCache.delete(postId);
-        console.log(`게시글 ${postId} 캐시가 무효화되었습니다.`);
       }
     } catch (e) {
       console.error('clearPostCache 오류:', e);
