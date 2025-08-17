@@ -1,0 +1,160 @@
+.main-container {
+  background-image: url("/images/top.png"), url("/images/ground.png");
+  background-repeat: no-repeat, repeat-y;
+  background-position: top center, top center;
+  background-size: contain, auto;
+  background-attachment: fixed, scroll;
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;  /* 세로 배치 */
+  align-items: center;     /* 중앙 정렬 */
+}
+
+/* 리더보드 전체 */
+.leaderboard {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-top: 60vh;
+  position: relative;
+}
+
+/* 중앙 세로 라인 */
+.leaderboard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: var(--gray-400);
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+/* 순위 아이템 묶음 */
+.rank-item {
+  position: relative;
+  display: flex;
+  justify-content: center;  /* 중앙에 순위 원 */
+  margin: 3rem 0;
+  z-index: 2;
+}
+
+/* 순위 원 */
+.rank-circle {
+  position: relative;
+  z-index: 2;
+}
+
+.rank-circle a {
+  display: inline-block;
+  width: 2.5rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+  border-radius: 50%;
+  background: var(--gray-800);
+  color: var(--gray-000);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 2px solid var(--gray-000);
+  text-align: center;
+  transition: background 0.2s ease;
+}
+
+.rank-circle a:hover {
+  background: var(--purple-500);
+  color: var(--gray-000);
+}
+
+/* 유저 카드 공통 */
+.user-box {
+  width: 220px;
+  padding: 10px 14px;
+  background: rgba(17, 17, 17, 0.75);
+  color: var(--gray-000);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: absolute;   /* 중앙 원 기준으로 좌우 배치 */
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.user-box .nickname {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.user-box .score {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--purple-200);
+}
+
+/* 왼쪽 / 오른쪽 카드 */
+.user-box.left {
+  right: 55%;  /* 중앙선 기준 왼쪽 */
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.user-box.right {
+  left: 55%;   /* 중앙선 기준 오른쪽 */
+  text-align: left;
+}
+
+/* 프로필 이미지 */
+.profile-img {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: #fff;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* 현재 로그인한 유저 영역 */
+/* 현재 로그인한 유저 영역 */
+.current-user {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  /* 순위 아이템 카드처럼 가운데 */
+  background: rgba(17, 17, 17, 0.75);
+  color: var(--gray-000);
+  padding: 10px 14px;
+  border-radius: 10px;
+
+  /* 크기 */
+  width: 240px;
+  margin: 40px auto 0;   /* 가운데 정렬 */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+
+  z-index: 5;
+}
+
+.current-user .profile-img {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: #fff;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.current-user .nickname {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--gray-000);
+}
+
+.current-user .score {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--purple-200);
+}

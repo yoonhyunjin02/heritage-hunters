@@ -54,7 +54,8 @@ public class SecurityConfig {
                 "/map/**",
                 "/heritage/**",
                 "/posts/**",
-                "/search/**"
+                "/search/**",
+                "/leaderboard/**"
             )
             .permitAll()
             .anyRequest().authenticated()
