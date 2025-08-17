@@ -367,6 +367,7 @@
     btn.appendChild(img);
     btn.appendChild(del);
 
+    // 새 이미지를 추가 버튼 앞에 삽입 (기존 이미지들 뒤, 추가 버튼 앞)
     const addBtn = thumbsContainer.querySelector('.thumb-add-btn');
     if (addBtn) {
       thumbsContainer.insertBefore(btn, addBtn);
@@ -374,7 +375,9 @@
       thumbsContainer.appendChild(btn);
     }
 
-    images.push({url: dataUrl, alt: img.alt, isNew: true, file: file}); // <-- Store the File object
+    // 새 이미지를 배열의 맨 뒤에 추가 (기존 이미지 순서 보장)
+    images.push({url: dataUrl, alt: img.alt, isNew: true, file: file});
+    
     if (images.length === 1) {
       current = 0;
     }
