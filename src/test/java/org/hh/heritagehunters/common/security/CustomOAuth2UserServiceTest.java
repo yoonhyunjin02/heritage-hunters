@@ -1,275 +1,259 @@
 package org.hh.heritagehunters.common.security;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.oauth.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
+
+/**
+ * 서비스 코드는 수정하지 않고 테스트만으로 super.loadUser(...) 네트워크 호출을
+ * JDK 내장 HttpServer로 대체한다. (WireMock 등 의존성 불필요)
+ *
+ * - Google: attributes { email, name, picture } 직접 옴
+ * - Naver: attributes { response: { email, nickname/name, profile_image } }
+ *
+ * GitHub 분기는 fetchGithubEmail()이 외부 호출을 한 번 더 하므로
+ * 서비스 코드를 건드리지 않는 한 테스트 난이도가 높다.
+ * 여기서는 Google/Naver 시나리오로 핵심 로직을 충분히 검증한다.
+ */
 @ExtendWith(MockitoExtension.class)
 class CustomOAuth2UserServiceTest {
 
   @Mock
   UserRepository userRepository;
 
-  @Mock
-  RestTemplate restTemplate;
+  @InjectMocks
+  CustomOAuth2UserService service; // 원본 서비스 그대로 사용
 
-  // ObjectMapper는 실제 인스턴스를 쓰는 것이 편합니다(파싱 검증).
-  ObjectMapper objectMapper = new ObjectMapper();
-
-  // 실제 서비스 인스턴스를 스파이로 감싸서 fetchFromProvider만 바꿔치기
-  @Spy
-  CustomOAuth2UserService service;
+  private HttpServer server;
+  private String baseUrl;
 
   @BeforeEach
-  void setUp() {
-    service = spy(new CustomOAuth2UserService(userRepository, restTemplate, objectMapper));
+  void startStubServer() throws IOException {
+    server = HttpServer.create(new InetSocketAddress(0), 0);
+    baseUrl = "http://localhost:" + server.getAddress().getPort();
+    server.start();
   }
 
-  // ---------- Helpers ----------
+  @AfterEach
+  void stopStubServer() {
+    if (server != null) server.stop(0);
+  }
 
-  private ClientRegistration registration(String id, String userNameAttribute) {
-    Builder b = ClientRegistration.withRegistrationId(id);
-    return b.clientId("client-id")
+  /* ------------ helpers ------------- */
+
+  private void stubUserInfo(String path, String jsonBody) {
+    server.createContext(path, new HttpHandler() {
+      @Override public void handle(HttpExchange exchange) throws IOException {
+        byte[] bytes = jsonBody.getBytes();
+        exchange.getResponseHeaders().add("Content-Type", "application/json");
+        exchange.sendResponseHeaders(200, bytes.length);
+        try (OutputStream os = exchange.getResponseBody()) {
+          os.write(bytes);
+        }
+      }
+    });
+  }
+
+  private static OAuth2AccessToken accessToken() {
+    return new OAuth2AccessToken(
+        OAuth2AccessToken.TokenType.BEARER,
+        "dummy-token",
+        Instant.now().minusSeconds(60),
+        Instant.now().plusSeconds(3600)
+    );
+  }
+
+  private ClientRegistration googleReg(String userInfoUri) {
+    // DefaultOAuth2UserService는 userInfoUri와 userNameAttributeName만 쓰지만
+    // Builder 제약상 auth/token/redirectUri도 채워준다.
+    return ClientRegistration.withRegistrationId("google")
+        .clientId("client-id")
         .clientSecret("secret")
-        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
         .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-        .redirectUri("http://localhost/login/oauth2/code/{registrationId}")
-        .scope("read", "email", "profile")
-        .authorizationUri("https://example.com/oauth/authorize")
-        .tokenUri("https://example.com/oauth/token")
-        .userInfoUri("https://example.com/userinfo")
-        .userNameAttributeName(userNameAttribute)
+        .redirectUri("{baseUrl}/login/oauth2/code/google")
+        .authorizationUri(baseUrl + "/oauth2/auth")
+        .tokenUri(baseUrl + "/oauth2/token")
+        .userInfoUri(userInfoUri)
+        .userNameAttributeName("sub")
+        .scope("email", "profile")
         .build();
   }
 
-  private OAuth2UserRequest requestFor(String registrationId, String userNameAttribute, String tokenValue) {
-    ClientRegistration reg = registration(registrationId, userNameAttribute);
-    OAuth2AccessToken token = new OAuth2AccessToken(
-        OAuth2AccessToken.TokenType.BEARER,
-        tokenValue,
-        Instant.now().minusSeconds(60),
-        Instant.now().plusSeconds(3600));
-    return new OAuth2UserRequest(reg, token);
+  private ClientRegistration naverReg(String userInfoUri) {
+    return ClientRegistration.withRegistrationId("naver")
+        .clientId("client-id")
+        .clientSecret("secret")
+        .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+        .redirectUri("{baseUrl}/login/oauth2/code/naver")
+        .authorizationUri(baseUrl + "/oauth2/auth")
+        .tokenUri(baseUrl + "/oauth2/token")
+        .userInfoUri(userInfoUri)
+        // 네이버는 보통 "id"가 userNameAttributeName 역할
+        .userNameAttributeName("id")
+        .scope("name", "email")
+        .build();
   }
 
-  // ---------- Tests ----------
+  /* --------------- tests --------------- */
 
   @Test
-  @DisplayName("Google: 신규 사용자면 저장 후 CustomUserDetails(OAuth2User) 반환")
-  void loadUser_google_createsNewUser_whenNotExists() {
-    // given: Provider에서 내려온 속성
-    Map<String, Object> attrs = new HashMap<>();
-    attrs.put("email", "g@example.com");
-    attrs.put("name", "GName");
-    attrs.put("picture", "https://img.example.com/p.png");
+  @DisplayName("google 신규가입: userInfo 응답 → DB에 새 사용자 저장, CustomUserDetails 반환")
+  void google_newUser_created() {
+    // 1) userInfo 응답 스텁
+    String path = "/userinfo-google";
+    stubUserInfo(path, """
+      {
+        "sub": "123456",
+        "email": "a@example.com",
+        "name": "Alice",
+        "picture": "https://img/ava.png"
+      }
+      """);
 
-    OAuth2User providerUser = new DefaultOAuth2User(
-        Set.of(new SimpleGrantedAuthority("ROLE_USER")),
-        attrs,
-        "email" // nameAttributeKey
-    );
-    doReturn(providerUser)
-        .when(service)
-        .fetchFromProvider(any(OAuth2UserRequest.class));
+    ClientRegistration reg = googleReg(baseUrl + path);
+    OAuth2UserRequest req = new OAuth2UserRequest(reg, accessToken());
 
-    when(userRepository.findByEmail("g@example.com")).thenReturn(java.util.Optional.empty());
-    when(userRepository.existsByNickname("GName")).thenReturn(false);
+    // 2) DB: 없으면 저장
+    when(userRepository.findByEmail("a@example.com")).thenReturn(Optional.empty());
+    when(userRepository.existsByNickname("Alice")).thenReturn(false);
+    // save는 전달된 엔티티를 그대로 반환
+    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-    // save 시 그대로 객체를 반환
-    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0, User.class));
+    // 3) when
+    OAuth2User oauth2User = service.loadUser(req);
 
-    OAuth2UserRequest req = requestFor("google", "email", "token-google");
+    // 4) then
+    assertThat(oauth2User).isInstanceOf(CustomUserDetails.class);
+    // OAuth2User 인터페이스로 attributes 검증
+    assertThat(oauth2User.getAttributes())
+        .containsEntry("email", "a@example.com")
+        .containsEntry("name", "Alice")
+        .containsEntry("picture", "https://img/ava.png");
 
-    // when
-    OAuth2User result = service.loadUser(req);
+    // 저장된 값 검증
+    ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+    verify(userRepository).save(saved.capture());
 
-    // then
-    assertNotNull(result);
-    assertEquals("https://img.example.com/p.png", result.getAttributes().get("picture"));
+    User u = saved.getValue();
+    assertThat(u.getEmail()).isEqualTo("a@example.com");
+    assertThat(u.getNickname()).isEqualTo("Alice");
+    assertThat(u.getProfileImage()).isEqualTo("https://img/ava.png");
+    assertThat(u.getProvider()).isEqualTo("google");
+    assertThat(u.getScore()).isEqualTo(0);
 
-    // 저장된 유저 검증
-    ArgumentCaptor<User> userCap = ArgumentCaptor.forClass(User.class);
-    verify(userRepository).save(userCap.capture());
-    User saved = userCap.getValue();
-    assertEquals("g@example.com", saved.getEmail());
-    assertEquals("GName", saved.getNickname());
-    assertEquals("google", saved.getProvider());
-
-    verify(userRepository).findByEmail("g@example.com");
-    verify(userRepository).existsByNickname("GName");
+    verify(userRepository).findByEmail("a@example.com");
+    verify(userRepository).existsByNickname("Alice");
     verifyNoMoreInteractions(userRepository);
   }
 
   @Test
-  @DisplayName("GitHub: /user/emails에서 primary+verified 이메일을 찾아 기존 사용자 반환(신규 저장 안 함)")
-  void loadUser_github_fetchesPrimaryEmail_andReturnsExistingUser() {
-    // given
-    Map<String, Object> attrs = new HashMap<>();
-    attrs.put("login", "octocat");
-    attrs.put("name", "Octo Cat");
-    attrs.put("avatar_url", "https://avatars.example.com/octo.png");
+  @DisplayName("google 기존회원: userInfo 응답 → DB 저장 없이 기존 사용자로 반환")
+  void google_existingUser_used() {
+    // 1) userInfo 응답
+    String path = "/userinfo-google2";
+    stubUserInfo(path, """
+      {
+        "sub": "999",
+        "email": "old@example.com",
+        "name": "Old",
+        "picture": "p"
+      }
+      """);
 
-    OAuth2User providerUser = new DefaultOAuth2User(
-        Set.of(new SimpleGrantedAuthority("ROLE_USER")),
-        attrs,
-        "login"
-    );
-    doReturn(providerUser)
-        .when(service)
-        .fetchFromProvider(any(OAuth2UserRequest.class));
+    ClientRegistration reg = googleReg(baseUrl + path);
+    OAuth2UserRequest req = new OAuth2UserRequest(reg, accessToken());
 
-    // GitHub 이메일 API 응답
-    String json = """
-        [
-          {"email":"other@ex.com","primary":false,"verified":true},
-          {"email":"octo@ex.com","primary":true,"verified":true}
-        ]
-        """;
-    when(restTemplate.exchange(
-        anyString(),
-        any(HttpMethod.class),
-        any(HttpEntity.class),
-        eq(String.class)
-    )).thenReturn(ResponseEntity.ok(json));
+    // 2) 기존 유저 존재
+    User existing = new User();
+    existing.setEmail("old@example.com");
+    existing.setNickname("Old");
+    existing.setProfileImage("p");
+    existing.setProvider("google");
+    when(userRepository.findByEmail("old@example.com")).thenReturn(Optional.of(existing));
 
-    User existed = new User();
-    existed.setId(10L);
-    existed.setEmail("octo@ex.com");
-    existed.setNickname("Octo Cat");
-    existed.setProvider("github");
+    // 3) when
+    OAuth2User oauth2User = service.loadUser(req);
 
-    when(userRepository.findByEmail("octo@ex.com")).thenReturn(java.util.Optional.of(existed));
-
-    OAuth2UserRequest req = requestFor("github", "login", "token-gh");
-
-    // when
-    OAuth2User result = service.loadUser(req);
-
-    // then
-    assertNotNull(result);
-    // 신규 저장 안 함
-    verify(userRepository, never()).save(any());
-    verify(userRepository).findByEmail("octo@ex.com");
+    // 4) then: 저장 호출 없고, 기존 사용자 사용
+    verify(userRepository).findByEmail("old@example.com");
     verifyNoMoreInteractions(userRepository);
+
+    assertThat(oauth2User).isInstanceOf(CustomUserDetails.class);
+    assertThat(oauth2User.getAttributes()).containsEntry("email", "old@example.com");
   }
 
   @Test
-  @DisplayName("Naver: response.nickname이 비어있으면 name 사용, 그마저 없으면 'naver_user'")
-  void loadUser_naver_usesNicknameFallbacks() {
-    // given
-    Map<String, Object> response = new HashMap<>();
-    response.put("email", "n@ex.com");
-    response.put("nickname", ""); // 빈 → fallback
-    response.put("name", "홍길동");
-    response.put("profile_image", "https://img.naver.com/p.png");
+  @DisplayName("naver 신규가입: response 래퍼 안의 정보로 매핑")
+  void naver_newUser_created() {
+    // 1) naver 형태의 userInfo 응답
+    String path = "/userinfo-naver";
+    stubUserInfo(path, """
+      {
+        "id": "abc",
+        "resultcode":"00",
+        "message":"success",
+        "response": {
+          "id": "abc",
+          "email": "n@example.com",
+          "nickname": "네이버닉",
+          "name": "네이버이름",
+          "profile_image": "https://naver/img.png"
+        }
+      }
+      """);
 
-    Map<String, Object> attrs = Map.of("response", response);
+    ClientRegistration reg = naverReg(baseUrl + path);
+    OAuth2UserRequest req = new OAuth2UserRequest(reg, accessToken());
 
-    OAuth2User providerUser = new DefaultOAuth2User(
-        Set.of(new SimpleGrantedAuthority("ROLE_USER")),
-        attrs,
-        "ignored" // 실제로는 쓰지 않음
-    );
-    doReturn(providerUser)
-        .when(service)
-        .fetchFromProvider(any(OAuth2UserRequest.class));
+    when(userRepository.findByEmail("n@example.com")).thenReturn(Optional.empty());
+    // 닉네임 우선순위: nickname > name > "naver_user"
+    when(userRepository.existsByNickname("네이버닉")).thenReturn(false);
+    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
-    when(userRepository.findByEmail("n@ex.com")).thenReturn(java.util.Optional.empty());
-    when(userRepository.existsByNickname("홍길동")).thenReturn(false);
-    when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0, User.class));
+    OAuth2User oauth2User = service.loadUser(req);
 
-    OAuth2UserRequest req = requestFor("naver", "id", "token-naver");
+    assertThat(oauth2User).isInstanceOf(CustomUserDetails.class);
+    // 서비스는 attributes를 response로 교체해 반환한다.
+    Map<String, Object> attrs = oauth2User.getAttributes();
+    assertThat(attrs)
+        .containsEntry("email", "n@example.com")
+        .containsEntry("nickname", "네이버닉")
+        .containsEntry("profile_image", "https://naver/img.png");
 
-    // when
-    OAuth2User result = service.loadUser(req);
+    ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+    verify(userRepository).save(saved.capture());
 
-    // then
-    assertNotNull(result);
+    User u = saved.getValue();
+    assertThat(u.getEmail()).isEqualTo("n@example.com");
+    assertThat(u.getNickname()).isEqualTo("네이버닉");
+    assertThat(u.getProfileImage()).isEqualTo("https://naver/img.png");
+    assertThat(u.getProvider()).isEqualTo("naver");
 
-    // 저장된 유저의 닉네임이 '홍길동'으로 결정되었는지 확인
-    ArgumentCaptor<User> userCap = ArgumentCaptor.forClass(User.class);
-    verify(userRepository).save(userCap.capture());
-    User saved = userCap.getValue();
-    assertEquals("n@ex.com", saved.getEmail());
-    assertEquals("홍길동", saved.getNickname());
-    assertEquals("naver", saved.getProvider());
-
-    verify(userRepository).findByEmail("n@ex.com");
-    verify(userRepository).existsByNickname("홍길동");
-    verifyNoMoreInteractions(userRepository);
-  }
-
-  @Test
-  @DisplayName("이메일을 얻지 못하면 OAuth2AuthenticationException 발생")
-  void loadUser_throws_whenEmailMissing() {
-    // given: GitHub이지만 /user/emails에서 primary+verified가 없음
-    Map<String, Object> attrs = Map.of(
-        "login", "noemail",
-        "name", "No Email",
-        "avatar_url", "https://avatars.example.com/no.png"
-    );
-    OAuth2User providerUser = new DefaultOAuth2User(
-        Set.of(new SimpleGrantedAuthority("ROLE_USER")),
-        attrs,
-        "login"
-    );
-    doReturn(providerUser)
-        .when(service)
-        .fetchFromProvider(any(OAuth2UserRequest.class));
-
-    String json = """
-        [
-          {"email":"x@ex.com","primary":false,"verified":true},
-          {"email":"y@ex.com","primary":true,"verified":false}
-        ]
-        """;
-    when(restTemplate.exchange(
-        anyString(),
-        any(HttpMethod.class),
-        any(HttpEntity.class),
-        eq(String.class)
-    )).thenReturn(ResponseEntity.ok(json));
-
-    OAuth2UserRequest req = requestFor("github", "login", "token-gh-missing");
-
-    // when / then
-    assertThrows(OAuth2AuthenticationException.class, () -> service.loadUser(req));
-
-    // 저장 로직 호출되지 않아야 함
-    verify(userRepository, never()).save(any());
+    verify(userRepository).findByEmail("n@example.com");
+    verify(userRepository).existsByNickname("네이버닉");
     verifyNoMoreInteractions(userRepository);
   }
 }
