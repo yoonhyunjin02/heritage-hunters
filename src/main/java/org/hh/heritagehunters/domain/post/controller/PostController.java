@@ -181,7 +181,6 @@ public class PostController {
       BindingResult bindingResult,
       @RequestParam(value = "images", required = false) List<MultipartFile> newImages,
       @RequestParam(value = "keepImages", required = false) List<Long> keepImageIds,
-      @RequestParam(value = "removedImages", required = false) String removedImageIds,
       RedirectAttributes redirectAttributes,
       HttpServletRequest request) {
 

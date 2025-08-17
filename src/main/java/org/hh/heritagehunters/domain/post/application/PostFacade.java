@@ -119,21 +119,6 @@ public class PostFacade {
   }
 
   /**
-   * 게시글 기본 정보를 수정합니다
-   * @param postId 수정할 게시글 ID
-   * @param user 수정 요청자
-   * @param dto 게시글 수정 데이터
-   */
-  @Transactional
-  public void update(Long postId, User user, PostUpdateRequestDto dto) {
-    Post post = postReader.getById(postId);
-    if (!post.getUser().getId().equals(user.getId())) {
-      throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
-    }
-    postWriter.update(post, dto);
-  }
-
-  /**
    * 게시글과 이미지를 함께 수정합니다
    * @param postId 수정할 게시글 ID
    * @param user 수정 요청자
@@ -173,6 +158,21 @@ public class PostFacade {
     if (!post.getUser().getId().equals(user.getId())) {
       throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
     }
+
+    // 1. S3에서 이미지 파일 삭제 (비동기 처리)
+    if (post.getImages() != null && !post.getImages().isEmpty()) {
+      log.info("게시글 삭제 시 S3에서 {}개의 이미지 파일을 삭제합니다.", post.getImages().size());
+      post.getImages().forEach(image -> {
+        try {
+          imageService.deleteImage(image.getUrl());
+        } catch (Exception e) {
+          // S3 파일 삭제에 실패하더라도 게시글 삭제는 계속 진행 (로그만 남김)
+          log.warn("게시글 삭제 중 S3 파일 삭제 실패: {}. 게시글은 DB에서 제거됩니다.", image.getUrl(), e);
+        }
+      });
+    }
+
+    // 2. DB에서 게시글 및 연관된 PostImage 엔티티 삭제 (orphanRemoval = true에 의해 자동 처리)
     postWriter.delete(post);
   }
 

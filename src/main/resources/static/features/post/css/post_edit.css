@@ -125,11 +125,12 @@
   font-weight: 700;
   font-size: 14px;
   text-align: center;
-  display: none;
+  display: inline-block; /* 항상 보이도록 변경 */
+  cursor: pointer;
 }
 
 #postEditModal .thumb:hover .thumb-delete-btn.edit-only {
-  display: inline-block;
+  background: rgba(220, 53, 69, 0.9); /* 호버 시 색상 변경 */
 }
 
 /* 편집 전용: 추가 + 버튼 */

@@ -109,16 +109,32 @@ public class ImageService {
    * @param keepImageIds 유지할 기존 이미지 ID 목록
    */
   public void updateImages(Post post, List<MultipartFile> newImages, List<Long> keepImageIds) {
-    // 1. 기존 이미지 중 삭제할 것들 제거
-    if (keepImageIds != null && !keepImageIds.isEmpty()) {
-      Set<Long> keepIds = Set.copyOf(keepImageIds);
+    // 1. 삭제될 이미지들의 실제 파일을 먼저 S3에서 삭제
+    Set<Long> keepIds = (keepImageIds == null) ? Set.of() : Set.copyOf(keepImageIds);
+    List<PostImage> imagesToDelete = post.getImages().stream()
+        .filter(image -> !keepIds.contains(image.getId()))
+        .toList();
+
+    if (!imagesToDelete.isEmpty()) {
+      log.info("S3에서 {}개의 이미지 파일을 삭제합니다.", imagesToDelete.size());
+      imagesToDelete.forEach(image -> {
+        try {
+          imageUploadService.deleteImage(image.getUrl());
+        } catch (Exception e) {
+          // S3 파일 삭제에 실패하더라도 DB는 업데이트 되어야 하므로, 로그만 남기고 계속 진행
+          log.warn("S3 파일 삭제 실패: {}. DB에서는 해당 이미지 정보가 제거됩니다.", image.getUrl(), e);
+        }
+      });
+    }
+
+    // 2. DB에서 PostImage 엔티티 제거 (JPA가 DB에서 삭제 처리)
+    if (keepImageIds != null) {
       post.getImages().removeIf(image -> !keepIds.contains(image.getId()));
     } else {
-      // keepImageIds가 null이거나 비어있으면 모든 기존 이미지 삭제
       post.getImages().clear();
     }
 
-    // 2. 새 이미지가 있으면 병렬로 업로드
+    // 3. 새 이미지가 있으면 병렬로 업로드
     if (newImages != null && !newImages.isEmpty()) {
       // 유효한 이미지만 필터링
       List<MultipartFile> validImages = newImages.stream()
@@ -178,15 +194,24 @@ public class ImageService {
       }
     }
 
-    // 3. 이미지 순서 재정렬
+    // 4. 이미지 순서 재정렬
     for (int i = 0; i < post.getImages().size(); i++) {
       post.getImages().get(i).updateOrder(i);
     }
     
-    // 4. 최소 1장 이미지 검증 (게시글에는 최소 1장의 이미지가 필요)
+    // 5. 최소 1장 이미지 검증 (게시글에는 최소 1장의 이미지가 필요)
     if (post.getImages().isEmpty()) {
       throw new BadRequestException(ErrorCode.EMPTY_IMAGE_FILE);
     }
+  }
+
+  /**
+   * S3에서 이미지 파일을 삭제합니다.
+   * 이 메서드는 PostFacade에서 호출됩니다.
+   * @param imageUrl 삭제할 이미지의 URL
+   */
+  public void deleteImage(String imageUrl) {
+    imageUploadService.deleteImage(imageUrl);
   }
 
   /**
