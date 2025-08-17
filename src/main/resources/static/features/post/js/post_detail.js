@@ -21,19 +21,50 @@
    * - 이벤트 리스너 바인딩
    */
   function initializePostDetail() {
+    const modal = document.getElementById('postDetailModal');
+    const imageOrderStr = modal?.dataset.imageOrder; // 서버에서 제공하는 이미지 순서 (예: "id1,id2,id3")
+    const orderedImageIds = imageOrderStr ? imageOrderStr.split(',') : [];
+
     const thumbs = document.querySelectorAll('.thumb img');
     const main = document.getElementById('mainImage');
 
+    let tempImages = [];
     if (thumbs.length) {
-      images = Array.from(thumbs).map((img, i) => ({
-        url: img.dataset.full || img.src, // 원본 경로 있으면 사용
-        alt: img.alt || `이미지 ${i + 1}`
-      }));
+      // DOM에서 현재 이미지 정보 수집 (ID를 포함하여)
+      const domImages = Array.from(thumbs).map((img, i) => {
+        const thumb = img.closest('.thumb');
+        return {
+          url: img.dataset.full || img.src,
+          alt: img.alt || `이미지 ${i + 1}`,
+          id: thumb?.dataset.imageId // 썸네일 요소에 이미지 ID가 있다고 가정
+        };
+      });
+
+      // orderedImageIds를 기반으로 이미지 배열 재정렬
+      if (orderedImageIds.length > 0) {
+        orderedImageIds.forEach(id => {
+          const found = domImages.find(img => img.id === id);
+          if (found) {
+            tempImages.push(found);
+          }
+        });
+        // 순서에 포함되지 않은 이미지 (새로 추가되었지만 아직 ID가 없는 경우 등)는 뒤에 추가
+        domImages.forEach(img => {
+          if (!tempImages.some(ti => ti.id === img.id)) {
+            tempImages.push(img);
+          }
+        });
+      } else {
+        // 순서 정보가 없으면 DOM 순서 그대로 사용
+        tempImages = domImages;
+      }
     } else if (main?.src) {
-      images = [{url: main.src, alt: '이미지 1'}];
+      tempImages = [{url: main.src, alt: '이미지 1'}];
     } else {
-      images = [];
+      tempImages = [];
     }
+
+    images = tempImages; // 전역 images 배열 업데이트
     current = 0;
     update();
     bindThumbClicks();
@@ -466,8 +497,9 @@
             updateCharCount(textarea);
           }
 
-          // 댓글 목록 다시 불러오기
-          await refreshComments(postId);
+          // 게시글 상세 모달 전체 새로고침 (댓글 포함)
+          // window.openPostDetail 함수는 이미 전역에 노출되어 있음
+          window.openPostDetail(postId);
           
           // 토스트 메시지 표시
           showToastMessage('success', '댓글이 등록되었습니다.');

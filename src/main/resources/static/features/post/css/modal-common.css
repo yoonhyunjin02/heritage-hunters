@@ -458,20 +458,20 @@
 /* 썸네일 삭제 버튼 (수정 모달용) */
 .thumb-delete-btn {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: 2px;
+  right: 2px;
   background: #dc3545;
   color: white;
   border: none;
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: 30%;
   font-size: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
+  opacity: 1;
   transition: all 0.2s ease;
 }
 

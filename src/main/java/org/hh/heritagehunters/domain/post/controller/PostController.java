@@ -261,7 +261,7 @@ public class PostController {
 
     // AJAX 요청인 경우 성공 응답
     if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
-      return "redirect:/posts/" + postId;
+      return "features/post/empty"; // 빈 뷰 반환하여 SPA처럼 동작
     }
 
     return redirectWithSuccess(redirectAttributes, "댓글이 등록되었습니다.", "/posts");
