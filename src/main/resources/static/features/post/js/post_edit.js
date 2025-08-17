@@ -361,27 +361,39 @@
         if (res.ok) {
           const postIdStr = String(postId);
 
+          // 1. 캐시 지우기
+          if (window.PostListManager && typeof window.PostListManager.clearPostCache === 'function') {
+            window.PostListManager.clearPostCache(postIdStr);
+          }
+
+          // 2. 수정 모달 닫기
           if (window.closePostEdit) {
             window.closePostEdit();
           }
-          window.closePostDetail?.();
-
-          window.location.href = `/posts?open=${encodeURIComponent(postIdStr)}`;
+          
+          // 3. 상세 모달 새로고침
+          if (window.openPostDetail) {
+            // 수정 모달이 닫히는 애니메이션 시간을 기다린 후, 상세 모달을 다시 로드
+            setTimeout(() => {
+              window.openPostDetail(postIdStr);
+              // 성공 토스트 메시지 표시
+              if(window.toastManager) {
+                window.toastManager.show('게시글이 성공적으로 수정되었습니다.', 'success');
+              }
+            }, 250);
+          }
 
         } else {
           throw new Error('수정 중 오류가 발생했습니다.');
         }
 
-        if (submitBtn) {
-          submitBtn.textContent = originalText || '수정 완료';
-        }
       } catch (err) {
         console.error(err);
         alert('게시글 수정 중 오류가 발생했습니다.');
-      } finally {
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
           submitBtn.disabled = false;
+          submitBtn.textContent = '수정 완료';
         }
       }
     };

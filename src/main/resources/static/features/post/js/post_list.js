@@ -106,8 +106,10 @@
       if (postDataCache.has(postId)) {
         html = postDataCache.get(postId);
       } else {
-        const res = await fetch(`/posts/${postId}`,
-            {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+        const res = await fetch(`/posts/${postId}`, {
+          headers: {'X-Requested-With': 'XMLHttpRequest'},
+          cache: 'no-cache' // 브라우저 캐시를 사용하지 않음
+        });
         if (!res.ok) {
           throw new Error('Failed to load post');
         }
@@ -311,6 +313,16 @@
           window.likeManager.toggleLike(btn, true);
         });
       });
+    }
+
+    // (5) 수정 후 리다이렉트 시 모달 열기
+    const urlParams = new URLSearchParams(window.location.search);
+    const postIdToOpen = urlParams.get('open');
+    if (postIdToOpen) {
+      window.openPostDetail(postIdToOpen);
+      // URL에서 파라미터 제거하여 새로고침 시 다시 열리지 않도록 함
+      const newUrl = window.location.pathname + window.location.search.replace(/&?open=\d+/, '');
+      window.history.replaceState({ path: newUrl }, '', newUrl);
     }
   });
 })();
