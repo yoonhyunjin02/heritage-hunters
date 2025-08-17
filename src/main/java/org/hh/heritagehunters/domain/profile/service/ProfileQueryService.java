@@ -1,18 +1,14 @@
 package org.hh.heritagehunters.domain.profile.service;
 
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hh.heritagehunters.common.exception.NotFoundException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.oauth.repository.UserRepository;
-import org.hh.heritagehunters.domain.post.repository.PostRepository;
 import org.hh.heritagehunters.domain.profile.dto.ProfileHeaderDto;
 import org.hh.heritagehunters.domain.profile.dto.StampItemDto;
-import org.hh.heritagehunters.domain.search.repository.HeritageRepository;
-import org.hh.heritagehunters.domain.search.repository.HeritageRepository.StampProjection;
+import org.hh.heritagehunters.domain.profile.repository.UserStampRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProfileQueryService {
 
   private final UserRepository userRepository;
-  private final HeritageRepository heritageRepository;
-  private final PostRepository postRepository;
+  private final UserStampRepository userStampRepository;
 
   public ProfileHeaderDto getHeader(Long userId) {
     User u = userRepository.findById(userId)
@@ -38,24 +33,13 @@ public class ProfileQueryService {
   }
 
   public List<StampItemDto> getStamps(Long userId) {
-    List<StampProjection> all = heritageRepository.findAllForStamp();
-
-    Set<Long> obtained = new HashSet<>(postRepository.findDistinctHeritageIdsByUserId(userId));
-
-    Map<Long, LocalDateTime> obtainedAt = postRepository.findFirstObtainedAtByHeritage(userId)
-        .stream()
-        .collect(Collectors.toMap(
-            r -> (Long) r[0],
-            r -> (LocalDateTime) r[1]
-        ));
-
-    return all.stream()
-        .map(h -> new StampItemDto(
-            h.getId(),
-            h.getName(),
-            h.getThumbnailUrl(),
-            obtained.contains(h.getId()),
-            obtainedAt.get(h.getId())
+    return userStampRepository.findObtainedStamps(userId).stream()
+        .map(p -> new StampItemDto(
+            p.getId(),
+            p.getName(),
+            p.getThumbnailUrl(),
+            true,                 // 어차피 얻은 목록만 오므로 항상 true
+            p.getEarnedAt()
         ))
         .toList();
   }
