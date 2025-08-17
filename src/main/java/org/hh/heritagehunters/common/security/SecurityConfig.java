@@ -34,7 +34,8 @@ public class SecurityConfig {
         "/images/**",
         "/assets/**",
         "/common/**",
-        "/features/**"
+        "/features/**",
+        "/audio/**"
     );
   }
 
