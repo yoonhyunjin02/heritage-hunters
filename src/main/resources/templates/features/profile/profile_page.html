@@ -2,9 +2,17 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
     <th:block th:insert="~{fragments/head :: common-head('Profile')}"></th:block>
+
+    <!-- POST 요청을 위한 CSRF 헤더 -->
+    <meta name="_csrf" content="[[${_csrf.token}]]" />
+    <meta name="_csrf_header" content="[[${_csrf.headerName}]]" />
+
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/features/profile/css/profile_page.css}" />
-    <link rel="stylesheet" href="/src/main/resources/static/features/profile/css/profile_page.css" />
+    <!-- 게시물 모달용 CSS -->
+    <link rel="stylesheet" th:href="@{/features/post/css/modal-common.css}" />
+    <link rel="stylesheet" th:href="@{/features/post/css/post_write.css}" />
+    <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}" />
   </head>
   <body>
     <!--header-->
@@ -18,7 +26,13 @@
 
         <div class="profile-header__left">
           <div class="avatar">
-            <img class="avatar__img" th:src="${user.profileImageUrl}" th:alt="${user.nickname} + '님의 프로필 사진'" alt="프로필 사진" />
+            <img
+              class="avatar__img"
+              th:src="${user.profileImage}"
+              th:alt="${user.nickname} + '님의 프로필 사진'"
+              alt="프로필 사진"
+              onerror="this.onerror=null;this.src='/images/placeholders/no-image.png'"
+            />
           </div>
 
           <div class="user-meta">
@@ -79,9 +93,16 @@
         <!-- 내가 올린 게시물 -->
         <div id="panel-posts" class="tab-panel" role="tabpanel" aria-labelledby="tab-posts">
           <ul class="post-grid" role="list" data-infinite="posts">
-            <li class="post-card" th:each="post : ${posts}" th:attr="data-post-id=${post.id}">
+            <li class="post-card" th:each="post : ${initialPosts}" th:attr="data-post-id=${post.id}">
               <a href="#" class="post-thumb js-open-lightbox" th:attr="data-post-id=${post.id}" aria-label="게시물 상세 보기">
-                <img class="post-thumb__img" th:src="${post.thumbnailUrl}" th:alt="${post.title}" alt="게시물 썸네일" loading="lazy" />
+                <img
+                  class="post-thumb__img"
+                  th:src="${post.mainImageUrl}"
+                  th:alt="${post.heritage != null ? post.heritage.name : '게시물 이미지'}"
+                  alt="게시물 썸네일"
+                  loading="lazy"
+                  onerror="this.onerror=null;this.src='/images/placeholders/no-image.png'"
+                />
                 <div class="post-thumb__overlay" aria-hidden="true">
                   <span class="overlay-item">
                     <span class="overlay-item__icon" aria-hidden="true">♥</span>
@@ -96,16 +117,28 @@
             </li>
           </ul>
 
-          <div class="infinite-sentinel" id="posts-sentinel" aria-hidden="true"></div>
-          <p class="empty-hint" th:if="${#lists.isEmpty(posts)}">아직 올린 게시물이 없어요.</p>
+          <div class="infinite-sentinel" id="posts-sentinel" aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/posts'}"></div>
+
+          <!-- 초기 페이지네이션 상태 -->
+          <input type="hidden" id="has-next-posts" th:value="${hasNextPosts}" />
+          <input type="hidden" id="current-page-posts" value="1" />
+
+          <p class="empty-hint" th:if="${#lists.isEmpty(initialPosts)}">아직 올린 게시물이 없어요.</p>
         </div>
 
         <!-- '좋아요' 누른 게시물 -->
         <div id="panel-liked" class="tab-panel" role="tabpanel" aria-labelledby="tab-liked" hidden>
           <ul class="post-grid" role="list" data-infinite="liked">
-            <li class="post-card" th:each="post : ${likedPosts}" th:attr="data-post-id=${post.id}">
+            <li class="post-card" th:each="post : ${initialLiked}" th:attr="data-post-id=${post.id}">
               <a href="#" class="post-thumb js-open-lightbox" th:attr="data-post-id=${post.id}" aria-label="게시물 상세 보기">
-                <img class="post-thumb__img" th:src="${post.thumbnailUrl}" th:alt="${post.title}" alt="게시물 썸네일" loading="lazy" />
+                <img
+                  class="post-thumb__img"
+                  th:src="${post.mainImageUrl}"
+                  th:alt="${post.heritage != null ? post.heritage.name : '게시물 이미지'}"
+                  alt="게시물 썸네일"
+                  loading="lazy"
+                  onerror="this.onerror=null;this.src='/images/placeholders/no-image.png'"
+                />
                 <div class="post-thumb__overlay" aria-hidden="true">
                   <span class="overlay-item">
                     <span class="overlay-item__icon" aria-hidden="true">♥</span>
@@ -120,8 +153,13 @@
             </li>
           </ul>
 
-          <div class="infinite-sentinel" id="liked-sentinel" aria-hidden="true"></div>
-          <p class="empty-hint" th:if="${#lists.isEmpty(likedPosts)}">아직 '좋아요' 누른 게시물이 없어요.</p>
+          <div class="infinite-sentinel" id="liked-sentinel" aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/likes'}"></div>
+
+          <!-- 초기 페이지네이션 상태 -->
+          <input type="hidden" id="has-next-liked" th:value="${hasNextLiked}" />
+          <input type="hidden" id="current-page-liked" value="1" />
+
+          <p class="empty-hint" th:if="${#lists.isEmpty(initialLiked)}">아직 '좋아요' 누른 게시물이 없어요.</p>
         </div>
       </section>
 
@@ -134,7 +172,7 @@
 
           <div class="lightbox__body">
             <div class="lightbox__media">
-              <img class="lightbox__img" src="" alt="게시물 이미지" />
+              <img class="lightbox__img" src="" onerror="this.onerror=null;this.src='/images/placeholders/no-image.png'" alt="게시물 이미지" />
             </div>
 
             <aside class="lightbox__side">
@@ -179,10 +217,17 @@
       </div>
     </main>
 
+    <!-- 모달 HTML이 동적으로 들어올 자리 -->
+    <div id="post-modal-root"></div>
+
     <!--footer-->
     <div th:replace="~{fragments/footer :: common-footer}"></div>
 
+    <!-- 게시물 모달용 JS -->
+    <script defer th:src="@{/features/post/js/modal_manager.js}"></script>
+    <script defer th:src="@{/features/post/js/like_manager.js}"></script>
+    <script defer th:src="@{/features/post/js/post_detail.js}"></script>
     <!-- JS -->
-    <script defer th:src="@{/features/profile/js/profile_main.js}"></script>
+    <script type="module" th:src="@{/features/profile/js/profile_main.js}"></script>
   </body>
 </html>
