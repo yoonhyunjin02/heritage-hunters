@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -60,10 +61,11 @@ public class PostController {
       @RequestParam(value = "direction", defaultValue = "desc") String direction,
       @RequestParam(value = "page", defaultValue = "0") int page,
       @RequestParam(value = "size", defaultValue = "16") int size,
-      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
+      @AuthenticationPrincipal CustomUserDetails currentUserDetails,
       Model model) {
 
     User currentUser = (currentUserDetails != null) ? currentUserDetails.getUser() : null;
+    model.addAttribute("currentUser", currentUserDetails);
 
     log.debug("게시글 리스트 요청 - keyword: {}, region: {}, sort: {}, direction: {}, page: {}, size: {}",
         keyword, region, sort, direction, page, size);
@@ -108,14 +110,14 @@ public class PostController {
    */
   @PostMapping
   public String createPost(
-      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
+      @AuthenticationPrincipal CustomUserDetails currentUserDetails,
       @Valid @ModelAttribute PostCreateRequestDto request,
       BindingResult bindingResult,
       @RequestParam(value = "images") List<MultipartFile> images,
       RedirectAttributes redirectAttributes) {
 
     if (currentUserDetails == null || currentUserDetails.getUser() == null) {
-      return redirectWithError(redirectAttributes, "로그인 후 게시글을 작성할 수 있습니다.", "/login");
+      throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
 
     if (bindingResult.hasErrors()) {
@@ -141,7 +143,7 @@ public class PostController {
   @GetMapping("/{id}/edit")
   public String getEditForm(
       @PathVariable("id") Long postId,
-      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
+      @AuthenticationPrincipal CustomUserDetails currentUserDetails,
       Model model) {
 
     if (currentUserDetails == null || currentUserDetails.getUser() == null) {
@@ -174,7 +176,7 @@ public class PostController {
   @PutMapping("/{id}")
   public String updatePost(
       @PathVariable("id") Long postId,
-      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
+      @AuthenticationPrincipal CustomUserDetails currentUserDetails,
       @Valid @ModelAttribute PostUpdateRequestDto postUpdateRequestDto,
       BindingResult bindingResult,
       @RequestParam(value = "images", required = false) List<MultipartFile> newImages,
@@ -211,7 +213,7 @@ public class PostController {
    */
   @GetMapping("/{id}")
   public String getPostDetail(@PathVariable("id") Long postId,
-      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
+      @AuthenticationPrincipal CustomUserDetails currentUserDetails,
       Model model) {
 
     User currentUser = (currentUserDetails != null) ? currentUserDetails.getUser() : null;
@@ -237,7 +239,7 @@ public class PostController {
   @PostMapping("/{postId}/comments")
   public String createComment(
       @PathVariable Long postId,
-      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
+      @AuthenticationPrincipal CustomUserDetails currentUserDetails,
       @Valid @ModelAttribute CommentCreateRequestDto commentForm,
       BindingResult bindingResult,
       RedirectAttributes redirectAttributes,
@@ -276,7 +278,7 @@ public class PostController {
   @PostMapping("/{id}/like")
   public String toggleLike(
       @PathVariable("id") Long postId,
-      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
+      @AuthenticationPrincipal CustomUserDetails currentUserDetails,
       RedirectAttributes redirectAttributes) {
 
     if (currentUserDetails == null || currentUserDetails.getUser() == null) {
@@ -299,11 +301,11 @@ public class PostController {
   @DeleteMapping("/{id}")
   public String deletePost(
       @PathVariable("id") Long postId,
-      @ModelAttribute("currentUser") CustomUserDetails currentUserDetails,
+      @AuthenticationPrincipal CustomUserDetails currentUserDetails,
       RedirectAttributes redirectAttributes) {
 
     if (currentUserDetails == null || currentUserDetails.getUser() == null) {
-      throw new BadRequestException(ErrorCode.LOGIN_REQUIRED);
+      throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
 
     // 작성자 검증 + 삭제
