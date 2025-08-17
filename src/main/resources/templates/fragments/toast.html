@@ -3,30 +3,17 @@
 <head></head>
 <body>
 <!-- 토스트 메시지 프래그먼트 -->
-<div th:fragment="toast" id="toast-container">
-  <!-- 토스트 메시지가 있을 때만 표시 -->
-  <div th:if="${toastMessage}"
-       th:class="'toast toast-' + ${toastType}"
-       id="toast-message"
-       th:attr="data-type=${toastType}, data-message=${toastMessage}">
+<div th:fragment="toast">
+  <!-- 토스트 메시지가 동적으로 추가될 컨테이너 -->
+  <div id="toast-container"></div>
 
-    <div class="toast-content">
-      <!-- 타입별 아이콘 -->
-      <span class="toast-icon" th:switch="${toastType}">
-                    <span th:case="'success'">✅</span>
-                    <span th:case="'error'">❌</span>
-                    <span th:case="'warning'">⚠️</span>
-                    <span th:case="'info'">ℹ️</span>
-                    <span th:case="*">📢</span>
-                </span>
-
-      <!-- 메시지 텍스트 -->
-      <span class="toast-text" th:text="${toastMessage}"></span>
-    </div>
-
-    <!-- 닫기 버튼 -->
-    <button type="button" class="toast-close" onclick="toastManager.close()">&times;</button>
-  </div>
+  <!-- 페이지 로드 시 서버에서 전달된 토스트 메시지가 있다면 표시 -->
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const initialToastMessage = /*[[${toastMessage}]]*/ null;
+    const initialToastType = /*[[${toastType}]]*/ null;
+    /*]]>*/
+  </script>
 </div>
 
 <!-- Toast CSS -->
@@ -34,3 +21,4 @@
 <!-- ToastManager.js 포함 -->
 <script defer th:src="@{/common/js/toast_manager.js}"></script>
 </body>
+</html>
