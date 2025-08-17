@@ -786,7 +786,7 @@ button:focus,
 .dropdown-item:focus,
 .form-input:focus,
 .form-textarea:focus {
-  outline: 2px solid #007bff;
+  outline: 2px solid #a7b1a7;
   outline-offset: 2px;
 }
 
@@ -794,11 +794,12 @@ button:focus,
 
 /* 썸네일 스트립: 스크롤 UI 완전 숨김 */
 #postEditModal .gallery-thumbs {
-  overflow: hidden;                 /* 가로 스크롤 자체 제거 */
-  max-width: 220px;                 /* 필요 시 살짝 여유 */
-  -ms-overflow-style: none;         /* IE/Edge(레거시) */
-  scrollbar-width: none;            /* Firefox */
+  overflow: hidden; /* 가로 스크롤 자체 제거 */
+  max-width: 220px; /* 필요 시 살짝 여유 */
+  -ms-overflow-style: none; /* IE/Edge(레거시) */
+  scrollbar-width: none; /* Firefox */
 }
+
 #postEditModal .gallery-thumbs::-webkit-scrollbar { /* Chrome/Safari */
   display: none;
   width: 0;
@@ -824,15 +825,16 @@ button:focus,
   flex-shrink: 0;
   cursor: pointer;
   box-sizing: border-box;
-  border: 0;                        /* 혹시 남아있는 기본 보더 제거 */
+  border: 0; /* 혹시 남아있는 기본 보더 제거 */
   background: transparent;
   padding: 0;
 }
+
 #postEditModal .thumb img {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;                /* 세로/가로 모두 꽉 차게 */
+  object-fit: cover; /* 세로/가로 모두 꽉 차게 */
 }
 
 /* 활성 썸네일 강조(상세와 비슷하게) */
