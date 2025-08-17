@@ -258,7 +258,8 @@
   border-bottom: 1px solid #f0f0f0;
 }
 
-.author-avatar, .author-avatar-placeholder {
+.author-avatar,
+.author-avatar-placeholder {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -289,7 +290,8 @@
 }
 
 /* 콘텐츠, 액션 섹션 */
-.content-box, .actions-box {
+.content-box,
+.actions-box {
   padding: 14px 16px;
   border-bottom: 1px solid #f6f6f6;
 }
@@ -301,6 +303,7 @@
   margin: 0;
   word-break: keep-all;
   white-space: pre-wrap;
+  text-align: left;
 }
 
 /* 액션 버튼들 */
@@ -524,6 +527,7 @@
   margin: 0;
   word-break: keep-all;
   white-space: pre-wrap;
+  text-align: left;
 }
 
 .no-comments {
@@ -580,7 +584,8 @@
 }
 
 @media (max-width: 560px) {
-  .avatar, .avatar-fallback {
+  .avatar,
+  .avatar-fallback {
     width: 32px;
     height: 32px;
   }
@@ -630,7 +635,8 @@
   margin-left: 2px;
 }
 
-.form-input, .form-textarea {
+.form-input,
+.form-textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #e2e2e2;
@@ -642,7 +648,8 @@
   transition: border-color 0.3s ease;
 }
 
-.form-input:focus, .form-textarea:focus {
+.form-input:focus,
+.form-textarea:focus {
   outline: none;
   border-color: #a7b1a7;
   box-shadow: 0 0 0 3px rgba(33, 81, 57, 0.12);
@@ -788,13 +795,13 @@
   width: min(1100px, 95vw);
   height: min(760px, 92vh);
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, .2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  animation: scaleIn .25s ease;
+  animation: scaleIn 0.25s ease;
 }
 
 .loading-spinner {
@@ -811,13 +818,13 @@
   width: min(1100px, 95vw);
   height: min(760px, 92vh);
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, .2);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #dc3545;
   font-size: 16px;
-  animation: scaleIn .25s ease;
+  animation: scaleIn 0.25s ease;
 }
 
 /* 축소/확대 기준을 중앙으로 고정 (닫힐 때 제자리 유지) */
@@ -832,13 +839,13 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  animation: modalFadeOut .20s ease forwards;
+  animation: modalFadeOut 0.2s ease forwards;
   pointer-events: none;
 }
 
 #postDetailModal.closing .modal-content,
 #postEditModal.closing .modal-content {
-  animation: modalScaleOut .20s ease forwards;
+  animation: modalScaleOut 0.2s ease forwards;
 }
 
 /* 접근성 */
@@ -875,8 +882,8 @@ button:focus,
 
 @keyframes scaleIn {
   from {
-    opacity: .95;
-    transform: scale(.98);
+    opacity: 0.95;
+    transform: scale(0.98);
   }
   to {
     opacity: 1;
@@ -910,6 +917,6 @@ button:focus,
   }
   to {
     opacity: 0;
-    transform: scale(.98);
+    transform: scale(0.98);
   }
 }
