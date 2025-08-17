@@ -13,10 +13,11 @@
   <!-- 현재 로그인한 유저 -->
   <section class="user-topbar" th:if="${currentUser != null}">
     <div class="topbar-content">
-      <div class="left-info">
+      <a th:href="@{/profile}" class="left-info" aria-label="내 프로필로 이동">
         <img th:src="${currentUser.profileImage}" alt="profile" class="profile-img"/>
         <span class="nickname" th:text="${currentUser.nickname}">닉네임</span>
-      </div>
+      </a>
+
       <div class="right-info">
         <span class="score" th:text="${currentUser.score}">0</span>
         <span class="rank">| <span th:text="${currentUser.rank}">01</span>등</span>
@@ -24,7 +25,6 @@
     </div>
   </section>
 
-  <!-- 🔹 배경 감싸는 래퍼 -->
   <div class="leaderboard-background">
     <section class="leaderboard">
       <div th:each="user, iterStat : ${users}" class="rank-item">
@@ -47,8 +47,6 @@
       </div>
     </section>
   </div>
-  <!-- 🔹 배경 끝 -->
-
 </main>
 
 <!--footer-->
