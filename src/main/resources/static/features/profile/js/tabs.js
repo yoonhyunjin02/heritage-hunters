@@ -1,3 +1,4 @@
+// tabs.js
 import { $, $$, setHidden } from "./utils.js";
 
 export function initTabs() {

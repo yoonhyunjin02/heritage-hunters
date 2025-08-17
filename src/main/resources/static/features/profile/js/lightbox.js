@@ -1,6 +1,7 @@
+// lightbox.js
 import { $, setHidden, fetchJSON, replaceId } from "./utils.js";
-import { InfiniteScroller } from "./infiniteScroller.js";
-import { renderCommentItem } from "./postRenderer.js";
+import { InfiniteScroller } from "./infinite_scroller.js";
+import { renderCommentItem } from "./post_renderer.js";
 
 export function initLightbox() {
   const lightbox = $("#post-lightbox");
