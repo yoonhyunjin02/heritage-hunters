@@ -13,6 +13,7 @@ public class LeaderboardUserDto {
   private String nickname;
   private String profileImage;
   private Integer score;
+  private Integer rank;
 
   // User 엔티티 -> DTO 변환 메서드
   public static LeaderboardUserDto fromEntity(User user) {
@@ -20,7 +21,8 @@ public class LeaderboardUserDto {
         user.getId(),
         user.getNickname(),
         user.getProfileImage(),
-        user.getScore()
+        user.getScore(),
+        null
     );
   }
 }

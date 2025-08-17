@@ -11,14 +11,19 @@
 <!--main-->
 <main class="main-container">
   <!-- 현재 로그인한 유저 -->
-  <section class="current-user container-max">
-    <div th:if="${currentUser != null}">
-      <img th:src="${currentUser.profileImage}" alt="profile" class="profile-img"/>
-      <span class="nickname" th:text="${currentUser.nickname}">닉네임</span>
-      <span class="score" th:text="${currentUser.score}">0</span>
-    </div>
-    <div th:if="${currentUser == null}">
-      <span>로그인 후 이용 가능합니다.</span>
+  <section class="user-topbar" th:if="${currentUser != null}">
+    <div class="topbar-content">
+      <!-- 왼쪽: 프로필 + 닉네임 -->
+      <div class="left-info">
+        <img th:src="${currentUser.profileImage}" alt="profile" class="profile-img"/>
+        <span class="nickname" th:text="${currentUser.nickname}">닉네임</span>
+      </div>
+
+      <!-- 오른쪽: 점수 + 등수 -->
+      <div class="right-info">
+        <span class="score" th:text="${currentUser.score}">0</span>
+        <span class="rank">| <span th:text="${currentUser.rank}">01</span>등</span>
+      </div>
     </div>
   </section>
 
