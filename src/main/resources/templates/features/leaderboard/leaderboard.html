@@ -4,7 +4,7 @@
   <th:block th:insert="~{fragments/head :: common-head('Leaderboard')}"></th:block>
   <link rel="stylesheet" th:href="@{/features/leaderboard/css/leaderboard.css}">
 </head>
-<body>
+<body class="leaderboard-page">
 <!--header-->
 <div th:replace="~{fragments/header :: common-header}"></div>
 
@@ -13,13 +13,10 @@
   <!-- 현재 로그인한 유저 -->
   <section class="user-topbar" th:if="${currentUser != null}">
     <div class="topbar-content">
-      <!-- 왼쪽: 프로필 + 닉네임 -->
       <div class="left-info">
         <img th:src="${currentUser.profileImage}" alt="profile" class="profile-img"/>
         <span class="nickname" th:text="${currentUser.nickname}">닉네임</span>
       </div>
-
-      <!-- 오른쪽: 점수 + 등수 -->
       <div class="right-info">
         <span class="score" th:text="${currentUser.score}">0</span>
         <span class="rank">| <span th:text="${currentUser.rank}">01</span>등</span>
@@ -27,31 +24,31 @@
     </div>
   </section>
 
-  <!-- 리더보드 -->
-  <section class="leaderboard">
-    <div th:each="user, iterStat : ${users}" class="rank-item">
-      <!-- 중앙 순위 번호 -->
-      <div class="rank-circle">
-        <!-- 본인 프로필 -->
-        <a th:if="${currentUser != null and user.id == currentUser.id}"
-           th:href="@{/profile}">
-          <span th:text="${#numbers.formatInteger(iterStat.index + 1, 2)}">01</span>
-        </a>
-        <!-- 다른 유저 프로필 -->
-        <a th:if="${currentUser == null or user.id != currentUser.id}"
-           th:href="@{/profile/{id}(id=${user.id})}">
-          <span th:text="${#numbers.formatInteger(iterStat.index + 1, 2)}">01</span>
-        </a>
-      </div>
+  <!-- 🔹 배경 감싸는 래퍼 -->
+  <div class="leaderboard-background">
+    <section class="leaderboard">
+      <div th:each="user, iterStat : ${users}" class="rank-item">
+        <div class="rank-circle">
+          <a th:if="${currentUser != null and user.id == currentUser.id}"
+             th:href="@{/profile}">
+            <span th:text="${#numbers.formatInteger(iterStat.index + 1, 2)}">01</span>
+          </a>
+          <a th:if="${currentUser == null or user.id != currentUser.id}"
+             th:href="@{/profile/{id}(id=${user.id})}">
+            <span th:text="${#numbers.formatInteger(iterStat.index + 1, 2)}">01</span>
+          </a>
+        </div>
 
-      <!-- 유저 카드 -->
-      <div th:class="'user-box ' + (${iterStat.index % 2 == 0} ? 'right' : 'left')">
-        <img th:src="${user.profileImage}" alt="profile" class="profile-img"/>
-        <span class="nickname" th:text="${user.nickname}">닉네임</span>
-        <span class="score" th:text="${user.score}">0</span>
+        <div th:class="'user-box ' + (${iterStat.index % 2 == 0} ? 'right' : 'left')">
+          <img th:src="${user.profileImage}" alt="profile" class="profile-img"/>
+          <span class="nickname" th:text="${user.nickname}">닉네임</span>
+          <span class="score" th:text="${user.score}">0</span>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
+  <!-- 🔹 배경 끝 -->
+
 </main>
 
 <!--footer-->

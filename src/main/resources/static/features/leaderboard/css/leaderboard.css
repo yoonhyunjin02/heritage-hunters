@@ -1,3 +1,13 @@
+html, body {
+  height: auto !important;
+  min-height: 100% !important;
+}
+
+body.leaderboard-page {
+  min-height: 100%;
+}
+
+/* 공통 메인 컨테이너 */
 .main-container {
   min-height: 100vh;
   display: flex;
@@ -5,8 +15,15 @@
   align-items: center;
 
   width: 100%;
-  max-width: 1000px; /* 탑바 content 영역과 동일한 최대 너비 */
-  margin: 0 auto;    /* 가운데 정렬 */
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* 🔹 배경을 리더보드 래퍼에만 적용 */
+.leaderboard-background {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
 
   background: url('/images/background.png') no-repeat center top;
   background-size: cover;
