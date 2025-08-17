@@ -195,9 +195,9 @@ public class PostController {
 
     postFacade.update(postId, currentUserDetails.getUser(), postUpdateRequestDto, newImages, keepImageIds);
 
-    // AJAX 요청인 경우 게시글 리스트로 리다이렉트 (모달에서 처리)
+    // AJAX 요청인 경우, 빈 뷰를 반환하여 페이지 리로드 방지
     if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
-      return "redirect:/posts";
+      return "features/post/empty";
     }
 
     return redirectWithSuccess(redirectAttributes, "게시글이 수정되었습니다.", "/posts/" + postId);
