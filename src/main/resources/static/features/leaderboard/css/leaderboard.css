@@ -15,8 +15,9 @@ body.leaderboard-page {
   align-items: center;
 
   width: 100%;
-  max-width: 1000px;
+  max-width: var(--section-max);   /* ← 헤더와 같은 폭 */
   margin: 0 auto;
+  padding: 0 1rem;                 /* ← 좌우 16px 여백 */
 }
 
 /* 🔹 배경을 리더보드 래퍼에만 적용 */
