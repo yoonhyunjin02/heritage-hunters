@@ -1,4 +1,4 @@
-package org.hh.heritagehunters.domain.leaderboard.entity;
+package org.hh.heritagehunters.domain.profile.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
