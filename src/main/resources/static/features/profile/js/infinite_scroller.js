@@ -1,3 +1,4 @@
+// infinite_scroller.js
 import { fetchJSON } from "./utils.js";
 
 export class InfiniteScroller {
@@ -19,6 +20,9 @@ export class InfiniteScroller {
   }
 
   buildURL() {
+    if (!this.endpoint || this.endpoint.includes("/undefined")) {
+      throw new Error(`잘못된 endpoint: ${this.endpoint}`);
+    }
     const url = new URL(this.endpoint, window.location.origin);
     Object.entries(this.params).forEach(([k, v]) => v != null && url.searchParams.set(k, v));
     return url.toString();
@@ -26,9 +30,9 @@ export class InfiniteScroller {
 
   parsePaging(data) {
     const items = data.items || data.content || [];
-    const nextCursor = data.nextCursor ?? null;
-    const hasMore = data.hasMore ?? nextCursor != null;
-    return { items, nextCursor, hasMore };
+    const hasMore = data.hasMore ?? data.last === false;
+    const nextPage = (this.params.page ?? 0) + 1;
+    return { items, nextCursor: nextPage, hasMore };
   }
 
   async loadMore() {
@@ -42,7 +46,7 @@ export class InfiniteScroller {
         this.done = true;
         this.observer.disconnect();
       } else {
-        this.params.cursor = nextCursor;
+        this.params.page = nextCursor;
       }
     } finally {
       this.loading = false;
