@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/users/{userId}")
+@RequestMapping("/profile/{userId}")
 public class ProfileApiController {
 
   private final PostReader postReader;
@@ -26,7 +26,7 @@ public class ProfileApiController {
   public Page<PostListResponseDto> userPosts(
       @PathVariable Long userId,
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "30") int size,
+      @RequestParam(defaultValue = "9") int size,
       @AuthenticationPrincipal CustomUserDetails principal) {
     User current = principal != null ? principal.getUser() : null;
     return postFacade.userPosts(userId, current, page, size);
@@ -36,7 +36,7 @@ public class ProfileApiController {
   public Page<PostListResponseDto> likedPosts(
       @PathVariable Long userId,
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "30") int size,
+      @RequestParam(defaultValue = "9") int size,
       @AuthenticationPrincipal CustomUserDetails principal) {
     User current = principal != null ? principal.getUser() : null;
     return postFacade.likedPosts(userId, current, page, size);
