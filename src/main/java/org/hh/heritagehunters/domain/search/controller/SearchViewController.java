@@ -88,5 +88,4 @@ public class SearchViewController {
 
     return "features/search/search_page";
   }
-
 }
