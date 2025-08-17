@@ -6,9 +6,9 @@
   const loadingPosts = new Set();
   const postDataCache = new Map();
 
-  // ---------------------------
+  // --------------------------->
   // 전역: 검색/정렬/필터 submit
-  // ---------------------------
+  // --------------------------->
   window.submitForm = function submitForm() {
     try {
       const f = document.getElementById('searchForm');
@@ -20,9 +20,9 @@
     }
   };
 
-  // ---------------------------
+  // --------------------------->
   // 전역 네임스페이스
-  // ---------------------------
+  // --------------------------->
   window.PostListManager = window.PostListManager || {};
 
   // PostEdit 전역 객체 정의 (모달에서 사용)
@@ -73,9 +73,9 @@
     }
   };
 
-  // ---------------------------
+  // --------------------------->
   // 전역: 게시글 상세 모달 열기 (카드/댓글 버튼에서 inline 호출 가능)
-  // ---------------------------
+  // --------------------------->
   window.openPostDetail = async function openPostDetail(postId, focusComments) {
     try {
       if (!postId) {
@@ -176,9 +176,9 @@
     }
   };
 
-  // ---------------------------
+  // --------------------------->
   // 전역: 게시글 상세 모달 닫기 (AJAX 모달용)
-  // ---------------------------
+  // --------------------------->
   window.closePostDetail = function closePostDetail() {
     const modal = document.getElementById('postDetailModal');
     if (!modal) {
@@ -191,9 +191,9 @@
     }, 250);
   };
 
-  // ---------------------------
+  // --------------------------->
   // 전역: 게시글 수정 모달 닫기 (AJAX 모달용)
-  // ---------------------------
+  // --------------------------->
   window.closePostEdit = function closePostEdit() {
     const modal = document.getElementById('postEditModal');
     if (!modal) {
@@ -212,9 +212,9 @@
     }, 250);
   };
 
-  // ---------------------------
+  // --------------------------->
   // 전역: 카드 하단 좋아요 토글(낙관적 업데이트)
-  // ---------------------------
+  // --------------------------->
   window.PostListManager.toggleLike = async function toggleLike(e, btn) {
     e.preventDefault();
     e.stopPropagation();
@@ -251,9 +251,9 @@
     }
   };
 
-  // ---------------------------
+  // --------------------------->
   // 초기 바인딩(문서 로드 후)
-  // ---------------------------
+  // --------------------------->
   document.addEventListener('DOMContentLoaded', () => {
     // (1) 필터 초기화 버튼
     const clearBtn = document.getElementById('clearFiltersBtn');

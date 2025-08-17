@@ -396,86 +396,27 @@
       editModal.setAttribute('data-post-id', targetId);
       editModal.dataset.postId = targetId;
 
-      // post_edit.js 스크립트 동적 로드 (중복 로드 방지)
-      const existingScript = document.querySelector('script[src="/features/post/js/post_edit.js"]');
+      // post_edit.js 스크립트 동적 로드 및 초기화
+      const scriptSrc = '/features/post/js/post_edit.js';
+      const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
+
+      const initialize = () => {
+        if (typeof window.initializePostEdit === 'function') {
+          window.initializePostEdit();
+        } else {
+          console.error('initializePostEdit function not found.');
+        }
+      };
+
       if (!existingScript) {
         const script = document.createElement('script');
-        script.src = '/features/post/js/post_edit.js';
+        script.src = scriptSrc;
         script.defer = true;
-        script.onload = () => {
-          initializePostEditModal();
-        };
+        script.onload = initialize;
         document.head.appendChild(script);
       } else {
-        // 이미 로드된 경우 바로 초기화
-        initializePostEditModal();
-      }
-
-      // PostEdit 모달 초기화 함수
-      function initializePostEditModal() {
-        // PostEdit 객체가 없으면 기본 함수들을 정의
-        if (!window.PostEdit) {
-          window.PostEdit = {
-            cancel: function() {
-              window.closePostEdit();
-            },
-            close: function() {
-              window.closePostEdit();
-            },
-            closePostEdit: function() {
-              window.closePostEdit();
-            }
-          };
-        }
-        
-        // 시간을 두고 DOM이 완전히 로드된 후 초기화
-        setTimeout(() => {
-          // PostEdit 모드 활성화 (함수 충돌 방지)
-          if (window.PostEdit && typeof window.PostEdit.activate === 'function') {
-            window.PostEdit.activate();
-          }
-
-          // 이미지 갤러리 초기화 (PostEdit 함수 사용)
-          if (window.PostEdit && typeof window.PostEdit.initializeImageGallery === 'function') {
-            window.PostEdit.initializeImageGallery();
-          } else if (typeof window.initializeImageGallery === 'function') {
-            window.initializeImageGallery();
-          }
-
-          // 갤러리 이벤트 바인딩 (새로 추가)
-          if (window.PostEdit && typeof window.PostEdit.bindGalleryEvents === 'function') {
-            window.PostEdit.bindGalleryEvents();
-          }
-
-          // 이미지 관리 기능 초기화 (핵심: 새로 생성된 DOM에 이벤트 바인딩)
-          if (window.PostEdit && typeof window.PostEdit.initializeImageManagement === 'function') {
-            window.PostEdit.initializeImageManagement();
-          }
-
-          // 폼 제출 기능 초기화 (AJAX 제출)
-          if (window.PostEdit && typeof window.PostEdit.initializeFormSubmit === 'function') {
-            window.PostEdit.initializeFormSubmit();
-          }
-
-          // 삭제 버튼 이벤트 바인딩 (새로 추가)
-          if (window.PostEdit && typeof window.PostEdit.bindDeleteButtons === 'function') {
-            window.PostEdit.bindDeleteButtons();
-          }
-
-
-          // thumb-add-btn 상태 업데이트
-          if (window.PostEdit && typeof window.PostEdit.updateThumbAddButton === 'function') {
-            window.PostEdit.updateThumbAddButton();
-          } else if (typeof window.updateThumbAddButton === 'function') {
-            window.updateThumbAddButton();
-          }
-
-          // 모달 공통 초기화(ESC, 배경클릭 등)
-          if (typeof window.initModal === 'function') {
-            window.initModal();
-          }
-
-        }, 150);
+        // 이미 스크립트가 로드된 경우, DOM이 준비된 후 초기화 함수를 호출
+        setTimeout(initialize, 0);
       }
 
     } catch (err) {

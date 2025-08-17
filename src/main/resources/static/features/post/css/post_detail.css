@@ -148,8 +148,7 @@
   display: flex;
   gap: 8px;
   z-index: 10;
-  max-width: 200px;
-  overflow-x: auto;
+  overflow-x: visible;
   padding: 4px;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
