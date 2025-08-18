@@ -110,6 +110,12 @@
   height: 12px;
   fill: none;
   flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+/* 열릴 때 (active 클래스 붙었을 때) */
+.user-dropdown.active .dropdown-arrow {
+  transform: rotate(180deg);
 }
 
 .dropdown-menu {
