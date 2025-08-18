@@ -4,33 +4,41 @@
   --bp-tablet: 64rem; /* 1024px */
   --bp-desktop: 64.0625rem; /* 1025px */
 
-  /* 공통 컨테이너 폭: 로그인 오른쪽 카드와 메인 사진 동일 */
+  /* 공통 컨테이너 폭 */
   --section-max: 62.5rem; /* 1000px */
 
   /* Color Palette */
-  --gray-000: #ffffff;
-  --gray-050: #f8f9fa;
-  --gray-100: #f2f3f6;
-  --gray-200: #dbdce2;
-  --gray-300: #d0d1da;
-  --gray-400: #bdbec8;
-  --gray-500: #aaabb4;
-  --gray-600: #898a93;
-  --gray-700: #686971;
-  --gray-800: #525359;
-  --gray-900: #111111;
-  --red-700: #ff1010;
+  --stone-800: #4B4742; /* 테두리 색, 카테고리 배경색(진한 갈색) */
+  --blue-800: #1F354C;  /* 헤더, 풋터 색(진한 파랑) */
+  --sand-600: #A89C8C;  /* 버튼색 (모래 색) */
+  --beige-50: #F6EEE7;  /* 배경색 (밝은 크림색) */
+  --golden-50: #C59D5F  /* 금색 */
+  --gray-300: #D9D9D9;  /* 밝은 회색 */
+  --white: #FFFFFF;     /* 흰색 */
+  --black: #000000;     /* 검정색 */
 
-  --purple-000: #f5f0ff;
-  --purple-100: #e0ccff;
-  --purple-200: #caaaff;
-  --purple-300: #b388ff;
-  --purple-400: #9c66ff;
-  --purple-500: #8544ff;
-  --purple-600: #6e22e6;
-  --purple-700: #5700cc;
-  --purple-800: #420099;
-  --purple-900: #2d0066;
+  --gray-000: #ffffff;
+    --gray-050: #f8f9fa;
+    --gray-100: #f2f3f6;
+    --gray-200: #dbdce2;
+    --gray-400: #bdbec8;
+    --gray-500: #aaabb4;
+    --gray-600: #898a93;
+    --gray-700: #686971;
+    --gray-800: #525359;
+    --gray-900: #111111;
+    --red-700: #ff1010;
+
+    --purple-000: #f5f0ff;
+    --purple-100: #e0ccff;
+    --purple-200: #caaaff;
+    --purple-300: #b388ff;
+    --purple-400: #9c66ff;
+    --purple-500: #8544ff;
+    --purple-600: #6e22e6;
+    --purple-700: #5700cc;
+    --purple-800: #420099;
+    --purple-900: #2d0066;
 }
 
 /* ==================================
@@ -56,6 +64,7 @@ body {
   color: var(--gray-900);
   display: flex;
   flex-direction: column;
+  background-color: var(--beige-50);
 }
 
 main {
