@@ -2,6 +2,11 @@
 .main-container{
   text-align:center;
   padding:1rem 0;
+
+  border-top: none;
+  border-bottom: none;
+  border-left: 0.625rem solid var(--stone-800);
+  border-right: 0.625rem solid var(--stone-800);
 }
 
 /* ========= Slideshow ========= */

@@ -5,6 +5,11 @@ html, body {
 
 body.leaderboard-page {
   min-height: 100%;
+
+  border-top: none;
+  border-bottom: none;
+  border-left: 0.625rem solid var(--stone-800);
+  border-right: 0.625rem solid var(--stone-800);
 }
 
 /* 공통 메인 컨테이너 */
