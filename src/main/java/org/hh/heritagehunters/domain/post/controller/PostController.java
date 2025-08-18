@@ -226,7 +226,7 @@ public class PostController {
     return "features/post/post_detail";
   }
 
-  /**
+ /**
    * 게시글에 댓글을 작성합니다
    * @param postId 댓글을 작성할 게시글 ID
    * @param currentUserDetails 현재 로그인한 사용자 정보

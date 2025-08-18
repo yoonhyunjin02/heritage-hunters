@@ -1,5 +1,6 @@
 package org.hh.heritagehunters.domain.post.application;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -58,13 +59,6 @@ public class PostFacade {
     return posts.map(p -> PostListResponseDto.from(p, likedIds.contains(p.getId())));
   }
 
-  /**
-   * 새로운 게시글을 생성합니다
-   * @param user 게시글 작성자
-   * @param req 게시글 생성 요청 데이터
-   * @param images 업로드할 이미지 파일 목록
-   * @return 게시글 생성 결과
-   */
   @Transactional
   public PostCreateResponseDto create(User user, PostCreateRequestDto req,
       List<MultipartFile> images) {
@@ -196,6 +190,30 @@ public class PostFacade {
   @Transactional
   public void addComment(Long postId, User user, CommentCreateRequestDto dto) {
     commentService.add(postId, user, dto);
+  }
+
+
+  // PostFacade
+  @Transactional(readOnly = true)
+  public Page<PostListResponseDto> userPosts(Long targetUserId, User currentUser, int page, int size) {
+    Page<Post> posts = postReader.getUserPosts(targetUserId, page, size);
+    return mapWithLikeFlag(posts, currentUser);
+  }
+
+  @Transactional(readOnly = true)
+  public Page<PostListResponseDto> likedPosts(Long targetUserId, User currentUser, int page, int size) {
+    Page<Post> posts = postReader.getLikedPosts(targetUserId, page, size);
+    return mapWithLikeFlag(posts, currentUser);
+  }
+
+  private Page<PostListResponseDto> mapWithLikeFlag(Page<Post> posts, User currentUser) {
+    Set<Long> likedIds = Collections.emptySet();
+    if (currentUser != null && !posts.isEmpty()) {
+//      List<Long> postIds = posts.getContent().stream().map(Post::getId).toList();
+      likedIds = postReader.findLikedPostIds(currentUser.getId(), posts.stream().toList());
+    }
+    Set<Long> finalLiked = likedIds; // effectively final
+    return posts.map(p -> PostListResponseDto.from(p, finalLiked.contains(p.getId())));
   }
 
 }

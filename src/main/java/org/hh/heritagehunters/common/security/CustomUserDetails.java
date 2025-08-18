@@ -1,7 +1,6 @@
 package org.hh.heritagehunters.common.security;
 
-import java.util.Collection;
-import java.util.Collections;
+
 import java.util.Map;
 import lombok.Getter;
 import org.hh.heritagehunters.domain.oauth.entity.User;
@@ -103,4 +102,6 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
   public String getName() {
     return user.getNickname(); // OAuth2User의 getName() 구현
   }
+
 }
+

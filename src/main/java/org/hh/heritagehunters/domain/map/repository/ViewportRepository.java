@@ -1,0 +1,286 @@
+package org.hh.heritagehunters.domain.map.repository;
+
+import static org.hh.heritagehunters.common.util.HtmlSanitizer.sanitize;
+
+import org.hh.heritagehunters.domain.map.dto.MapMarkerDto;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
+
+@Repository
+public class ViewportRepository {
+
+  private final NamedParameterJdbcTemplate jdbc; // 네이티브 SQL(PostGIS 포함)을 실행
+
+  public ViewportRepository(NamedParameterJdbcTemplate jdbc) {
+    this.jdbc = jdbc;
+  }
+
+  // MapMarkerDto(id, type, name, lat, lng, address, category, distanceMeters)
+  private static final RowMapper<MapMarkerDto> MAPPER = (rs, i) -> new MapMarkerDto(
+      rs.getLong("id"),
+      rs.getString("type"),
+      sanitize(rs.getString("name")),
+      rs.getDouble("lat"),
+      rs.getDouble("lng"),
+      sanitize(rs.getString("address")),
+      sanitize(rs.getString("category")),
+      rs.getObject("distanceMeters") != null ? rs.getDouble("distanceMeters") : 0.0
+  );
+
+  /**
+   * 뷰포트(bbox) 내 포인트 조회
+   * @param south 남위도
+   * @param west  서경도
+   * @param north 북위도
+   * @param east  동경도
+   * @param limit 최대 반환 개수
+   * @param type  museum | heritage | all
+   */
+  public List<MapMarkerDto> findByViewport(
+      double south, double west, double north, double east,
+      int limit, String type, List<String> museumCats, List<String> designations
+  ) {
+    return switch (type == null ? "all" : type) {
+      case "museum"   -> findMuseums(south, west, north, east, limit, museumCats);
+      case "heritage" -> findHeritagesExcludingExhibited(south, west, north, east, limit, designations);
+      default         -> findAllMixed(south, west, north, east, limit, museumCats, designations);
+    };
+  }
+
+  // 박물관/미술관만
+  public List<MapMarkerDto> findMuseums(double s, double w, double n, double e, int limit, List<String> cats) {
+    final String sql = """
+    SELECT
+      m.id                                   AS id,
+      'museum'                               AS type,
+      m.name                                 AS name,
+      ST_Y(m.geom)                           AS lat,
+      ST_X(m.geom)                           AS lng,
+      COALESCE(m.address, m.region, '')      AS address,
+      COALESCE(m.category, '')               AS category,
+      NULL                                   AS distanceMeters
+    FROM museums m
+    WHERE m.geom IS NOT NULL
+      AND ST_X(m.geom) <> 0 AND ST_Y(m.geom) <> 0
+      AND ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
+      -- 선택한 카테고리가 있을 때만 필터 (btrim으로 안전 비교)
+      AND (:catsEmpty OR btrim(m.category) = ANY(:cats))
+    LIMIT :limit
+  """;
+
+    String[] catsArr = (cats == null) ? new String[0] : cats.stream().map(String::trim).toArray(String[]::new);
+
+    var params = new MapSqlParameterSource()
+        .addValue("s", s).addValue("w", w).addValue("n", n).addValue("e", e)
+        .addValue("limit", limit)
+        .addValue("cats", catsArr)                     // text[]
+        .addValue("catsEmpty", catsArr.length == 0);   // boolean
+
+    return jdbc.query(sql, params, MAPPER);
+  }
+
+  // 전시 중(=exhibited_at에 존재)인 문화재는 숨김
+  public List<MapMarkerDto> findHeritagesExcludingExhibited(
+      double s, double w, double n, double e, int limit, List<String> desigs) {
+
+    final String sql = """
+    SELECT
+      h.id                                   AS id,
+      'heritage'                             AS type,
+      h.name                                 AS name,
+      ST_Y(h.geom)                           AS lat,
+      ST_X(h.geom)                           AS lng,
+      COALESCE(h.address, h.region, '')      AS address,
+      COALESCE(h.designation, h.era, '')     AS category,
+      NULL                                   AS distanceMeters
+    FROM heritages h
+    WHERE h.geom IS NOT NULL
+      AND ST_X(h.geom) <> 0 AND ST_Y(h.geom) <> 0
+      AND ST_Intersects(h.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
+      AND NOT EXISTS (SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id)
+      -- 선택 종목이 있을 때만 필터: designation을 분해해서 ANY(:desigs)와 매칭
+      AND (
+        :desigsEmpty
+        OR EXISTS (
+             SELECT 1
+             FROM regexp_split_to_table(COALESCE(h.designation,''), '[|,/]') AS d(code)
+             WHERE btrim(d.code) = ANY(:desigs)
+           )
+      )
+    LIMIT :limit
+  """;
+
+    String[] desigsArr = (desigs == null) ? new String[0] : desigs.stream().map(String::trim).toArray(String[]::new);
+
+    var params = new MapSqlParameterSource()
+        .addValue("s", s).addValue("w", w).addValue("n", n).addValue("e", e)
+        .addValue("limit", limit)
+        .addValue("desigs", desigsArr)                   // text[]
+        .addValue("desigsEmpty", desigsArr.length == 0); // boolean
+
+    return jdbc.query(sql, params, MAPPER);
+  }
+
+  // 둘 다(UNION ALL)
+  public List<MapMarkerDto> findAllMixed(
+      double s, double w, double n, double e, int limit,
+      List<String> cats, List<String> desigs) {
+
+    final String sql = """
+    (
+      SELECT
+        m.id                             AS id,
+        'museum'                         AS type,
+        m.name                           AS name,
+        ST_Y(m.geom)                     AS lat,
+        ST_X(m.geom)                     AS lng,
+        COALESCE(m.address, m.region,'') AS address,
+        COALESCE(m.category,'')          AS category,
+        NULL                             AS distanceMeters
+      FROM museums m
+      WHERE m.geom IS NOT NULL
+        AND ST_X(m.geom) <> 0 AND ST_Y(m.geom) <> 0
+        AND ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
+        AND (:catsEmpty OR btrim(m.category) = ANY(:cats))
+    )
+    UNION ALL
+    (
+      SELECT
+        h.id                             AS id,
+        'heritage'                       AS type,
+        h.name                           AS name,
+        ST_Y(h.geom)                     AS lat,
+        ST_X(h.geom)                     AS lng,
+        COALESCE(h.address, h.region,'') AS address,
+        COALESCE(h.designation, h.era,'')AS category,
+        NULL                             AS distanceMeters
+      FROM heritages h
+      WHERE h.geom IS NOT NULL
+        AND ST_X(h.geom) <> 0 AND ST_Y(h.geom) <> 0
+        AND ST_Intersects(h.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
+        AND NOT EXISTS (SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id)
+        AND (
+          :desigsEmpty
+          OR EXISTS (
+               SELECT 1
+               FROM regexp_split_to_table(COALESCE(h.designation,''), '[|,/]') AS d(code)
+               WHERE btrim(d.code) = ANY(:desigs)
+             )
+        )
+    )
+    LIMIT :limit
+  """;
+
+    String[] catsArr   = (cats   == null) ? new String[0] : cats.stream().map(String::trim).toArray(String[]::new);
+    String[] desigsArr = (desigs == null) ? new String[0] : desigs.stream().map(String::trim).toArray(String[]::new);
+
+    var params = new MapSqlParameterSource()
+        .addValue("s", s).addValue("w", w).addValue("n", n).addValue("e", e)
+        .addValue("limit", limit)
+        .addValue("cats", catsArr)
+        .addValue("catsEmpty", catsArr.length == 0)
+        .addValue("desigs", desigsArr)
+        .addValue("desigsEmpty", desigsArr.length == 0);
+
+    return jdbc.query(sql, params, MAPPER);
+  }
+
+  /**
+   * 내 위치 주변 반경 m 이내 지점 조회 (거리순)
+   */
+  public List<MapMarkerDto> findNearby(double lat, double lng, double radiusMeters, int limit, String type) {
+    return switch (type == null ? "all" : type) {
+      case "museum"   -> findNearbyMuseums(lat, lng, radiusMeters, limit);
+      case "heritage" -> findNearbyHeritagesExcludingExhibited(lat, lng, radiusMeters, limit);
+      default         -> findNearbyAllMixed(lat, lng, radiusMeters, limit);
+    };
+  }
+
+  private List<MapMarkerDto> findNearbyMuseums(double lat, double lng, double radius, int limit) {
+    final String sql = """
+      SELECT
+        m.id                                   AS id,
+        'museum'                               AS type,
+        m.name                                 AS name,
+        ST_Y(m.geom)                           AS lat,
+        ST_X(m.geom)                           AS lng,
+        COALESCE(m.address, m.region, '')      AS address,
+        COALESCE(m.category, '')               AS category,
+        ST_DistanceSphere(ST_SetSRID(ST_MakePoint(:lng,:lat),4326), m.geom) AS distanceMeters
+      FROM museums m
+      WHERE m.geom IS NOT NULL
+        AND ST_X(m.geom) <> 0 AND ST_Y(m.geom) <> 0
+        AND ST_DWithin(m.geom::geography, ST_SetSRID(ST_MakePoint(:lng,:lat),4326)::geography, :radius)
+      ORDER BY distanceMeters ASC
+      LIMIT :limit
+      """;
+    return jdbc.query(sql, Map.of("lat", lat, "lng", lng, "radius", radius, "limit", limit), MAPPER);
+  }
+
+  private List<MapMarkerDto> findNearbyHeritagesExcludingExhibited(double lat, double lng, double radius, int limit) {
+    final String sql = """
+      SELECT
+        h.id                                   AS id,
+        'heritage'                             AS type,
+        h.name                                 AS name,
+        ST_Y(h.geom)                           AS lat,
+        ST_X(h.geom)                           AS lng,
+        COALESCE(h.address, h.region, '')      AS address,
+        COALESCE(h.designation, h.era, '')     AS category,
+        ST_DistanceSphere(ST_SetSRID(ST_MakePoint(:lng,:lat),4326), h.geom) AS distanceMeters
+      FROM heritages h
+      WHERE h.geom IS NOT NULL
+        AND ST_X(h.geom) <> 0 AND ST_Y(h.geom) <> 0
+        AND NOT EXISTS (SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id)
+        AND ST_DWithin(h.geom::geography, ST_SetSRID(ST_MakePoint(:lng,:lat),4326)::geography, :radius)
+      ORDER BY distanceMeters ASC
+      LIMIT :limit
+      """;
+    return jdbc.query(sql, Map.of("lat", lat, "lng", lng, "radius", radius, "limit", limit), MAPPER);
+  }
+
+  private List<MapMarkerDto> findNearbyAllMixed(double lat, double lng, double radius, int limit) {
+    final String sql = """
+      (
+        SELECT
+          m.id                                   AS id,
+          'museum'                               AS type,
+          m.name                                 AS name,
+          ST_Y(m.geom)                           AS lat,
+          ST_X(m.geom)                           AS lng,
+          COALESCE(m.address, m.region, '')      AS address,
+          COALESCE(m.category, '')               AS category,
+          ST_DistanceSphere(ST_SetSRID(ST_MakePoint(:lng,:lat),4326), m.geom) AS distanceMeters
+        FROM museums m
+        WHERE m.geom IS NOT NULL
+          AND ST_X(m.geom) <> 0 AND ST_Y(m.geom) <> 0
+          AND ST_DWithin(m.geom::geography, ST_SetSRID(ST_MakePoint(:lng,:lat),4326)::geography, :radius)
+      )
+      UNION ALL
+      (
+        SELECT
+          h.id                                   AS id,
+          'heritage'                             AS type,
+          h.name                                 AS name,
+          ST_Y(h.geom)                           AS lat,
+          ST_X(h.geom)                           AS lng,
+          COALESCE(h.address, h.region, '')      AS address,
+          COALESCE(h.designation, h.era, '')     AS category,
+          ST_DistanceSphere(ST_SetSRID(ST_MakePoint(:lng,:lat),4326), h.geom) AS distanceMeters
+        FROM heritages h
+        WHERE h.geom IS NOT NULL
+          AND ST_X(h.geom) <> 0 AND ST_Y(h.geom) <> 0
+          AND NOT EXISTS (SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id)
+          AND ST_DWithin(h.geom::geography, ST_SetSRID(ST_MakePoint(:lng,:lat),4326)::geography, :radius)
+      )
+      ORDER BY distanceMeters ASC
+      LIMIT :limit
+      """;
+    return jdbc.query(sql, Map.of("lat", lat, "lng", lng, "radius", radius, "limit", limit), MAPPER);
+  }
+}

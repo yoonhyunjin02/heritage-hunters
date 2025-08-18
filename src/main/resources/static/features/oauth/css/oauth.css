@@ -1,185 +1,191 @@
-/* 전체 레이아웃 */
+/* body: 중앙 정렬 + 상하 여백 */
+body.oauth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;     /* 화면 세로 중앙 */
+  min-height: 100vh;
+  background: #f7f7f7;
+  margin: 0;
+  padding: 5rem 0;         /* 위아래 살짝 여백 */
+}
+
+/* 전체 로그인 박스 */
 .auth-container {
-  max-width: var(--section-max);       /* ★ 공통 폭: 메인 사진과 동일 */
-  margin: 2.5rem auto;                 /* 40px */
-  padding: 1.5rem;                     /* 24px */
-  border-radius: 1.75rem;              /* 28px */
-  background: rgba(255,255,255,0.85);
-  box-shadow: 0 0.75rem 1.875rem rgba(0,0,0,0.08);
   display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  gap: 1.75rem;
-  font-family: sans-serif;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  max-width: 960px;
+  height: 600px;           /* ⬅ 빨간 박스 높이처럼 고정 */
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 0.75rem 2rem rgba(0,0,0,0.1);
+  background: #fff;
 }
 
 /* 좌측 이미지 */
 .image-section {
-  border-radius: 1.25rem; /* 20px */
   background-size: cover;
   background-position: center;
   background-image: var(--auth-image);
-  min-height: 43.75rem; /* 700px */
+  height: 100%;         /* 컨테이너에 맞춤 */
 }
 
 /* 우측 폼 영역 */
 .form-section {
-  background: rgba(255,255,255,0.9);
-  border-radius: 1.25rem; /* 20px */
-  padding: 1.75rem;       /* 28px */
+  padding: 3rem 2.5rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  background: #f5f3f0;
 }
 
 .form-section h1 {
-  font-size: 2.25rem;       /* 36px */
+  font-size: 2rem;
   font-weight: 800;
-  margin: 0.375rem 0 1.125rem; /* 6px 0 18px */
+  margin-bottom: 1.5rem;
 }
 
-/* 소셜 버튼 행 (3개 가로) */
+/* ===== 소셜 로그인 버튼 ===== */
 .social-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;         /* 12px */
-  margin-bottom: 1.125rem; /* 18px */
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .btn-social {
+  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;              /* 8px */
-  height: 2.625rem;         /* 42px */
-  border-radius: 0.625rem;  /* 10px */
+  gap: 0.5rem;
+  height: 2.75rem;
+  border-radius: 0.5rem;
   background: #fff;
-  border: 0.0625rem solid #e5e7eb; /* 1px */
+  border: 1px solid #e5e7eb;
   font-weight: 600;
-  text-decoration: none;
   color: #444;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.btn-social:hover { background-color: #f0f0f0; }
-
-.btn-social img {
-  width: 1.125rem;  /* 18px */
-  height: 1.125rem; /* 18px */
+.btn-social:hover {
+  background-color: #f5f5f5;
 }
 
-/* OR 구분선 */
+.btn-social img {
+  width: 18px;
+  height: 18px;
+}
+
+/* ===== OR 구분선 ===== */
 .divider {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 0.75rem;               /* 12px */
+  gap: 0.75rem;
   color: #8f8f8f;
-  margin: 0.625rem 0 0.875rem; /* 10px 0 14px */
+  margin: 1rem 0 1.5rem;
 }
+
 .divider::before,
 .divider::after {
   content: "";
-  height: 0.0625rem; /* 1px */
+  height: 1px;
   background: #d1d5db;
 }
 
-/* 입력폼 */
+/* ===== 입력폼 ===== */
 .auth-form label {
   display: block;
-  font-size: 0.875rem;      /* 14px */
-  margin: 1rem 0 0.5rem;    /* 16px 0 8px */
+  font-size: 0.875rem;
+  margin: 0.75rem 0 0.5rem;
   color: #333;
 }
 
-.auth-form .form-group {
-  margin-bottom: 0.875rem;  /* 14px */
-}
-
-input {
+.auth-form input {
   width: 100%;
-  height: 2.75rem;          /* 44px */
-  padding: 0.625rem 0.875rem; /* 10px 14px */
-  font-size: 0.875rem;      /* 14px */
-  border: 0.0625rem solid #e5e7eb; /* 1px */
-  border-radius: 0.75rem;   /* 12px */
+  height: 2.75rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
   background: #fff;
   outline: none;
   transition: box-shadow .15s, border-color .15s;
 }
 
-input:focus {
+.auth-form input:focus {
   border-color: #a7b1a7;
-  box-shadow: 0 0 0 0.1875rem rgba(33, 81, 57, 0.12); /* 3px */
+  box-shadow: 0 0 0 3px rgba(33, 81, 57, 0.12);
 }
 
-/* 에러 메시지 */
-.error-message {
-  margin-top: 0.5rem;   /* 8px */
-  color: #d14343;
-  font-size: 0.8125rem; /* 13px */
-}
-
-/* 버튼 */
+/* ===== 로그인 버튼 ===== */
 .btn-submit {
-  margin-top: 1rem;     /* 16px */
+  margin-top: 1rem;
   width: 100%;
-  height: 2.875rem;     /* 46px */
-  border-radius: 0.75rem; /* 12px */
-  background: #2b3f33;
+  height: 2.875rem;
+  border-radius: 0.5rem;
+  background: #162d48;
   color: #fff;
   font-weight: 700;
   border: none;
   cursor: pointer;
   transition: transform .06s ease, filter .15s;
 }
-.btn-submit:hover { filter: brightness(1.04); }
-.btn-submit:active { transform: translateY(0.0625rem); } /* 1px */
 
-/* 하단 링크 */
-.signin-text {
-  text-align: right;
-  margin-top: 1rem;     /* 16px */
-  color: #7a7a7a;
-  font-size: 0.875rem;  /* 14px */
+.btn-submit:hover {
+  filter: brightness(1.05);
 }
+
+.btn-submit:active {
+  transform: translateY(1px);
+}
+
+/* ===== 하단 링크 ===== */
+.signin-text {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #666;
+}
+
 .signin-text a {
-  color: #d16a4b;
-  font-weight: 700;
+  color: #222;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.signin-text a:hover {
+  text-decoration: underline;
 }
 
 /* ===== 반응형 ===== */
-
-/* ===== Tablet (≤ bp-tablet) ===== */
-@media (max-width: var(--bp-tablet)) {
-  /* 컨테이너: 한 열 레이아웃으로 변경 */
+@media (max-width: 1024px) {
   .auth-container {
     grid-template-columns: 1fr;
-    padding: 1.125rem; /* 18px */
+    max-width: 600px;
+    height: auto;
   }
 
-  /* 이미지 섹션: 높이 축소 */
   .image-section {
-    min-height: 16.25rem; /* 260px */
+    min-height: 250px;
   }
 }
 
-/* ===== Mobile (≤ bp-mobile) ===== */
-@media (max-width: var(--bp-mobile)) {
-  /* 컨테이너: 블록 레이아웃 + 패딩 축소 */
+@media (max-width: 640px) {
   .auth-container {
     display: block;
-    padding: 1rem; /* 16px */
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
   }
 
-  /* 이미지 섹션: 모바일에서 제거 */
   .image-section {
     display: none;
   }
 
-  /* 폼 섹션: 패딩/라운드 축소 */
   .form-section {
-    padding: 1.25rem;    /* 20px */
-    border-radius: 1rem; /* 16px */
+    padding: 1.5rem;
+    border-radius: 0;
   }
 }
