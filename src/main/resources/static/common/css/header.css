@@ -77,6 +77,10 @@
   text-decoration: none;
 }
 
+.login-button:hover {
+  background-color: var(--beige-50);
+}
+
 .profile-image {
   width: 2rem; /* 32px */
   height: 2rem; /* 32px */
@@ -113,7 +117,6 @@
   top: 100%;
   right: 0;
   background: var(--blue-800);
-  border: 0.0625rem solid var(--gray-200); /* 1px */
   padding: 0.75rem; /* 12px */
   display: none;
   z-index: 10;
@@ -147,8 +150,15 @@
   vertical-align: middle;
 }
 
+.dropdown-item .profile-icon {
+  width: 14px;
+  height: 14px;
+}
+
 .dropdown-item:hover {
   background-color: var(--sand-600);
+  border-radius: 0.625rem;
+  color: var(--black);
 }
 
 .dropdown-item:focus-visible {
@@ -160,7 +170,7 @@
 .dropdown-divider {
   margin: 0.5rem 0;
   border: none;
-  border-top: 0.0625rem solid #eee; /* 1px */
+  border-top: 0.0625rem solid var(--gray-400);
 }
 
 .dropdown-logout-form { margin: 0; }
