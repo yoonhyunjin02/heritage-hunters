@@ -258,7 +258,8 @@ const PostModal = {
       const lat = EXIF.getTag(this, 'GPSLatitude');
       const lng = EXIF.getTag(this, 'GPSLongitude');
       if (!lat || !lng) {
-        return (PostModal.gpsFromImg = null);
+        PostModal.gpsFromImg = null;
+        return;
       }
       const toDec = (dms, ref) => (dms[0] + dms[1] / 60 + dms[2] / 3600)
           * (['S', 'W'].includes(ref) ? -1 : 1);
@@ -335,10 +336,16 @@ const PostModal = {
     if (this.imageInput.files.length === 0) {
       return alert('이미지를 최소 1장 업로드하세요.');
     }
+    
+    // GPS 메타데이터 필수 검증
+    if (!this.gpsFromImg) {
+      return alert('업로드한 사진에 위치 정보가 없습니다.\nGPS 기능이 켜진 상태에서 촬영한 사진을 업로드해주세요.');
+    }
+    
     const latV = parseFloat(lat.value), lngV = parseFloat(lng.value);
-    if (this.gpsFromImg && !isNaN(latV) && !isNaN(lngV)) {
+    if (!isNaN(latV) && !isNaN(lngV)) {
       if (this.haversine(this.gpsFromImg, {lat: latV, lng: lngV}) > 200) {
-        return alert('사진 GPS와 선택 위치가 200 m 이상 차이납니다.');
+        return alert('사진 GPS와 선택 위치가 200m 이상 차이납니다.\n사진이 촬영된 위치와 일치하는 장소를 선택해주세요.');
       }
     }
     return true;
