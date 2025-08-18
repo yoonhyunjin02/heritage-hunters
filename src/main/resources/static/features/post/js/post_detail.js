@@ -467,16 +467,46 @@
    */
   function initializeCommentForm() {
     const commentForm = document.getElementById('commentForm');
-    if (!commentForm) return;
+    if (!commentForm) {
+      console.warn('댓글 폼을 찾을 수 없습니다.');
+      return;
+    }
 
+    console.log('댓글 폼 AJAX 이벤트 리스너 등록됨');
+    
+    // 폼 제출 이벤트
     commentForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      
-      const formData = new FormData(this);
+      console.log('댓글 폼 AJAX 제출 시작');
+      await handleCommentSubmit();
+    });
+
+    // Enter 키 이벤트 (댓글 입력창)
+    const commentTextarea = document.getElementById('commentTextarea');
+    if (commentTextarea) {
+      commentTextarea.addEventListener('keydown', (evt) => {
+        if (evt.key === 'Enter' && !evt.shiftKey && !evt.ctrlKey) {
+          evt.preventDefault();
+          handleCommentSubmit();
+        }
+      });
+    }
+
+    // 댓글 제출 처리 함수
+    async function handleCommentSubmit() {
+      const formData = new FormData(commentForm);
       const postId = getPostId();
       
       if (!postId) {
         alert('게시글 ID를 찾을 수 없습니다.');
+        return;
+      }
+
+      // 댓글 내용 검증
+      const textarea = document.getElementById('commentTextarea');
+      if (!textarea || !textarea.value.trim()) {
+        alert('댓글 내용을 입력해주세요.');
+        textarea?.focus();
         return;
       }
 
@@ -490,27 +520,27 @@
         });
 
         if (response.ok) {
+          console.log('댓글 등록 성공');
           // 댓글 입력창 초기화
-          const textarea = document.getElementById('commentTextarea');
           if (textarea) {
             textarea.value = '';
             updateCharCount(textarea);
           }
 
-          // 게시글 상세 모달 전체 새로고침 (댓글 포함)
-          // window.openPostDetail 함수는 이미 전역에 노출되어 있음
-          window.openPostDetail(postId);
+          // 모달을 유지하면서 댓글 목록만 업데이트
+          await refreshComments(postId);
           
           // 토스트 메시지 표시
           showToastMessage('success', '댓글이 등록되었습니다.');
         } else {
+          console.error('댓글 등록 실패:', response.status, response.statusText);
           throw new Error('댓글 등록에 실패했습니다.');
         }
       } catch (error) {
         console.error('댓글 등록 오류:', error);
         showToastMessage('error', '댓글 등록에 실패했습니다.');
       }
-    });
+    }
 
     // 댓글 글자 수 카운터 초기화
     const textarea = document.getElementById('commentTextarea');
@@ -543,6 +573,7 @@
    */
   async function refreshComments(postId) {
     try {
+      console.log('댓글 목록 새로고침 시작, postId:', postId);
       const response = await fetch(`/posts/${postId}`, {
         headers: {
           'X-Requested-With': 'XMLHttpRequest'
@@ -550,16 +581,30 @@
       });
 
       if (response.ok) {
+        console.log('댓글 목록 새로고침 성공');
         const html = await response.text();
         const doc = new DOMParser().parseFromString(html, 'text/html');
-        const newCommentsList = doc.querySelector('.comments-list');
         
+        // 댓글 목록 업데이트
+        const newCommentsList = doc.querySelector('.comments-list');
         if (newCommentsList) {
-          const currentCommentsList = document.querySelector('.comments-list');
+          const currentCommentsList = document.querySelector('#postDetailModal .comments-list');
           if (currentCommentsList) {
             currentCommentsList.innerHTML = newCommentsList.innerHTML;
           }
         }
+        
+        // 댓글 개수 업데이트
+        const newCommentCount = doc.querySelector('.comment-count');
+        if (newCommentCount) {
+          const currentCommentCount = document.querySelector('#postDetailModal .comment-count');
+          if (currentCommentCount) {
+            currentCommentCount.textContent = newCommentCount.textContent;
+          }
+        }
+        
+        // 상대시간 업데이트
+        initializeRelativeTime();
       }
     } catch (error) {
       console.error('댓글 목록 새로고침 오류:', error);
@@ -632,4 +677,5 @@
   window.openPostEdit = openPostEdit;
   window.closeModal = closeModal;           // ← 상세 모달 닫기
   window.initializePostDetail = initializePostDetail;
+  window.initializeCommentForm = initializeCommentForm;
 })();
