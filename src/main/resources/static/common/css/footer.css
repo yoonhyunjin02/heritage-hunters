@@ -3,8 +3,8 @@
    =============================== */
 
 .footer {
-  background-color: var(--gray-050);
-  color: var(--gray-900);
+  background-color: var(--blue-800);
+  color: var(--white);
   border-top: 0.0625rem solid var(--gray-200);     /* 1px */
   padding: 1.25rem 1rem 1rem;                      /* 20px 16px 16px */
   font-size: 0.875rem;                              /* 14px */
@@ -35,14 +35,14 @@
 
 .footer-right a {
   text-decoration: none;
-  color: var(--gray-900);
+  color: var(--white);
   font-weight: 600;
   line-height: 1;
 }
 
 .footer-right a:hover,
 .footer-right a:focus-visible {
-  color: var(--primary-600, #007BFF);
+  color: var(--gray-300);
   outline: none;
   text-decoration: underline;
 }
@@ -52,7 +52,7 @@
   max-width: var(--section-max);
   margin: 0.75rem auto 0;                           /* 12px 상단 간격 */
   line-height: 1.6;
-  color: var(--gray-700);
+  color: var(--white);
 }
 
 /* 하단: 선 + 저작권(우측 정렬) */
@@ -64,13 +64,13 @@
 
 .footer-bottom hr {
   border: 0;
-  border-top: 0.0625rem solid var(--gray-200);
+  border-top: 0.0625rem solid var(--gray-300);
   margin: 0 0 0.625rem;                              /* 0 0 10px */
 }
 
 .footer-copy {
   font-size: 0.8125rem;                              /* 13px */
-  color: var(--gray-600);
+  color: var(--white);
 }
 
 /* 키보드 포커스 접근성 */
