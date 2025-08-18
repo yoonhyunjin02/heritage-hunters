@@ -47,13 +47,31 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         picture = (String) attributes.get("picture");
 
       } else if ("github".equals(registrationId)) {
-        name = (String) attributes.getOrDefault("name", attributes.get("login"));
+        String rawName = (String) attributes.get("name");
+        String login   = (String) attributes.get("login");
         picture = (String) attributes.get("avatar_url");
 
-        // GitHub의 /user/emails API를 사용 -> primary, verified인 이메일을 강제로 직접 요청
-        // 비공개된 이메일도 받을 수 있음
+        // name이 null/빈문자면 login으로 폴백
+        if (rawName != null && !rawName.isBlank()) {
+          name = rawName;
+        } else if (login != null && !login.isBlank()) {
+          name = login;
+        } else {
+          name = null; // 최후 폴백은 아래에서 처리
+        }
+
+        // GitHub 이메일 가져오기(스코프에 user:email 필요)
         email = fetchGithubEmail(userRequest.getAccessToken().getTokenValue());
 
+        // 최후 폴백: email 로컬파트 → gh_{id}
+        if (name == null || name.isBlank()) {
+          if (email != null && email.contains("@")) {
+            name = email.substring(0, email.indexOf('@'));
+          } else {
+            Object id = attributes.get("id");
+            name = "gh_" + String.valueOf(id);
+          }
+        }
       } else if ("naver".equals(registrationId)) {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
@@ -102,11 +120,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
   }
 
   private String generateUniqueNickname(String base) {
-    String nickname = base;
-    while (userRepository.existsByNickname(nickname)) {
-      nickname = base + "_" + UUID.randomUUID().toString().substring(0, 6);
+    String seed = (base != null && !base.isBlank())
+        ? base.trim()
+        : "user_" + UUID.randomUUID().toString().substring(0, 6);
+    String candidate = seed;
+    while (userRepository.existsByNickname(candidate)) {
+      candidate = seed + "_" + UUID.randomUUID().toString().substring(0, 6);
     }
-    return nickname;
+    return candidate;
   }
 
   private User createNewUser(String email, String nickname, String picture, String provider) {
