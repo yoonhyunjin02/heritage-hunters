@@ -74,7 +74,12 @@ public class Post {
   // 비즈니스 메서드
 
   /**
-   * Post 객체 생성(정적 메소드 팩토리)
+   * 새로운 게시글을 생성합니다
+   * @param user 게시글 작성자
+   * @param heritage 연결된 문화유산
+   * @param content 게시글 내용
+   * @param location 위치 정보
+   * @return 생성된 게시글 엔티티
    */
   public static Post create(User user, Heritage heritage, String content, String location) {
     Post post = new Post();
@@ -86,21 +91,21 @@ public class Post {
   }
 
   /**
-   * 조회수 증가
+   * 게시글 조회수를 1 증가시킵니다
    */
   public void incrementViewCount() {
     this.viewCount++;
   }
 
   /**
-   * 좋아요 수 증가
+   * 게시글 좋아요 수를 1 증가시킵니다
    */
   public void incrementLikeCount() {
     this.likeCount++;
   }
 
   /**
-   * 좋아요 수 감소
+   * 게시글 좋아요 수를 1 감소시킵니다
    */
   public void decrementLikeCount() {
     if (this.likeCount > 0) {
@@ -109,14 +114,15 @@ public class Post {
   }
 
   /**
-   * 댓글 수 동기화
+   * 댓글 수를 실제 댓글 목록 크기와 동기화합니다
    */
   public void syncCommentCount() {
     this.commentCount = this.comments.size();
   }
 
   /**
-   * 메인 이미지 URL 반환
+   * 게시글의 메인 이미지 URL을 반환합니다
+   * @return 메인 이미지 URL (없으면 null)
    */
   public String getMainImageUrl() {
     return images.stream()

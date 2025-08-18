@@ -26,8 +26,8 @@
     <div class="modal-header">
       <h1 id="postDetailTitle" class="modal-title">게시글 상세</h1>
       <div class="header-actions">
-        <!-- 디버그용: 조건 없이 항상 표시 -->
-        <div class="post-actions">
+        <!-- 자기 게시글인 경우에만 드롭다운 표시 -->
+        <div class="post-actions" th:if="${currentUser != null and currentUser.id == post.userId}">
           <div class="dropdown">
             <button class="icon-btn" aria-haspopup="menu" aria-expanded="false"
                     onclick="togglePostDropdown()">
@@ -95,7 +95,7 @@
                  th:alt="${post.userNickname}"
                  class="author-avatar">
             <div th:unless="${post.userProfileImage != null}" class="author-avatar-placeholder"
-                 th:text="${#strings.substring(post.userNickname,0,1)}">U
+                 th:text="${post.userNickname != null ? #strings.substring(post.userNickname, 0, 1) : 'U'}">U
             </div>
             <div class="author-info">
               <div class="author-name" th:text="${post.userNickname}">닉네임</div>
@@ -109,6 +109,12 @@
           <!-- 본문 -->
           <section class="content-box">
             <p class="content-text" th:text="${post.content}">본문 내용</p>
+          </section>
+
+          <!-- 위치 -->
+          <section class="location-box">
+            <h4>위치</h4>
+            <p class="location-text" th:text="${post.location}">장소</p>
           </section>
 
           <!-- 액션/통계 -->
@@ -183,7 +189,7 @@
 
           <!-- 댓글 작성 -->
           <section class="comment-write" sec:authorize="isAuthenticated()">
-            <form class="comment-form" th:action="@{/posts/{id}/comments(id=${post.id})}"
+            <form class="comment-form" id="commentForm" th:action="@{/posts/{id}/comments(id=${post.id})}"
                   method="post">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
               <textarea id="commentTextarea" name="content" class="comment-input"

@@ -6,9 +6,9 @@
   const loadingPosts = new Set();
   const postDataCache = new Map();
 
-  // ---------------------------
+  // --------------------------->
   // 전역: 검색/정렬/필터 submit
-  // ---------------------------
+  // --------------------------->
   window.submitForm = function submitForm() {
     try {
       const f = document.getElementById('searchForm');
@@ -20,9 +20,9 @@
     }
   };
 
-  // ---------------------------
+  // --------------------------->
   // 전역 네임스페이스
-  // ---------------------------
+  // --------------------------->
   window.PostListManager = window.PostListManager || {};
 
   // PostEdit 전역 객체 정의 (모달에서 사용)
@@ -61,9 +61,20 @@
     }
   };
 
-  // ---------------------------
+  // 특정 게시글의 캐시를 무효화 (수정 후 즉시 반영을 위해)
+  window.PostListManager.clearPostCache = function clearPostCache(postId) {
+    try {
+      if (postId && postDataCache.has(postId)) {
+        postDataCache.delete(postId);
+      }
+    } catch (e) {
+      console.error('clearPostCache 오류:', e);
+    }
+  };
+
+  // --------------------------->
   // 전역: 게시글 상세 모달 열기 (카드/댓글 버튼에서 inline 호출 가능)
-  // ---------------------------
+  // --------------------------->
   window.openPostDetail = async function openPostDetail(postId, focusComments) {
     try {
       if (!postId) {
@@ -94,8 +105,10 @@
       if (postDataCache.has(postId)) {
         html = postDataCache.get(postId);
       } else {
-        const res = await fetch(`/posts/${postId}`,
-            {headers: {'X-Requested-With': 'XMLHttpRequest'}});
+        const res = await fetch(`/posts/${postId}`, {
+          headers: {'X-Requested-With': 'XMLHttpRequest'},
+          cache: 'no-cache' // 브라우저 캐시를 사용하지 않음
+        });
         if (!res.ok) {
           throw new Error('Failed to load post');
         }
@@ -164,9 +177,9 @@
     }
   };
 
-  // ---------------------------
+  // --------------------------->
   // 전역: 게시글 상세 모달 닫기 (AJAX 모달용)
-  // ---------------------------
+  // --------------------------->
   window.closePostDetail = function closePostDetail() {
     const modal = document.getElementById('postDetailModal');
     if (!modal) {
@@ -179,9 +192,9 @@
     }, 250);
   };
 
-  // ---------------------------
+  // --------------------------->
   // 전역: 게시글 수정 모달 닫기 (AJAX 모달용)
-  // ---------------------------
+  // --------------------------->
   window.closePostEdit = function closePostEdit() {
     const modal = document.getElementById('postEditModal');
     if (!modal) {
@@ -200,9 +213,9 @@
     }, 250);
   };
 
-  // ---------------------------
+  // --------------------------->
   // 전역: 카드 하단 좋아요 토글(낙관적 업데이트)
-  // ---------------------------
+  // --------------------------->
   window.PostListManager.toggleLike = async function toggleLike(e, btn) {
     e.preventDefault();
     e.stopPropagation();
@@ -239,9 +252,9 @@
     }
   };
 
-  // ---------------------------
+  // --------------------------->
   // 초기 바인딩(문서 로드 후)
-  // ---------------------------
+  // --------------------------->
   document.addEventListener('DOMContentLoaded', () => {
     // (1) 필터 초기화 버튼
     const clearBtn = document.getElementById('clearFiltersBtn');
@@ -290,7 +303,7 @@
       window.openPostDetail(id, focusComments);
     });
 
-    // (4) 카드 내 좋아요 버튼 (like-manager.js 연동)
+    // (4) 카드 내 좋아요 버튼 (like_manager.js 연동)
     if (window.likeManager) {
       document.querySelectorAll('.like-button').forEach((btn) => {
         btn.addEventListener('click', (e) => {
@@ -299,6 +312,16 @@
           window.likeManager.toggleLike(btn, true);
         });
       });
+    }
+
+    // (5) 수정 후 리다이렉트 시 모달 열기
+    const urlParams = new URLSearchParams(window.location.search);
+    const postIdToOpen = urlParams.get('open');
+    if (postIdToOpen) {
+      window.openPostDetail(postIdToOpen);
+      // URL에서 파라미터 제거하여 새로고침 시 다시 열리지 않도록 함
+      const newUrl = window.location.pathname + window.location.search.replace(/&?open=\d+/, '');
+      window.history.replaceState({ path: newUrl }, '', newUrl);
     }
   });
 })();

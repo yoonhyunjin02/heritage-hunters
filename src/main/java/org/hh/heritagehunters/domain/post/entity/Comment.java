@@ -42,6 +42,13 @@ public class Comment {
   @CreationTimestamp
   private LocalDateTime createdAt;
 
+  /**
+   * 새로운 댓글을 생성합니다
+   * @param user 댓글 작성자
+   * @param post 댓글이 달릴 게시글
+   * @param content 댓글 내용
+   * @return 생성된 댓글 엔티티
+   */
   public static Comment create(User user, Post post, String content) {
     Comment comment = new Comment();
     comment.setUser(user);

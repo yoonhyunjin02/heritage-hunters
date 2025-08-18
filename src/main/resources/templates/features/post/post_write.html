@@ -47,15 +47,15 @@
           <div class="compose-right">
             <!-- 작성자 -->
             <div class="author-display" sec:authorize="isAuthenticated()">
-              <img th:if="${#authentication.principal.profileImage != null}"
-                   th:src="${#authentication.principal.profileImage}"
+              <img th:if="${currentUser != null and currentUser.profileImage != null}"
+                   th:src="${currentUser.profileImage}"
                    class="author-avatar" alt="프로필">
-              <div th:unless="${#authentication.principal.profileImage != null}"
+              <div th:unless="${currentUser != null and currentUser.profileImage != null}"
                    class="author-avatar-placeholder">
-                <span th:text="${#strings.substring(#authentication.principal.nickname, 0, 1)}">U</span>
+                <span th:text="${currentUser != null ? #strings.substring(currentUser.nickname, 0, 1) :'U'}">U</span>
               </div>
               <span class="author-name"
-                    th:text="${#authentication.principal.nickname}">사용자</span>
+                    th:text="${currentUser != null ? currentUser.nickname : '사용자'}">사용자</span>
             </div>
 
             <!-- 본문 -->
