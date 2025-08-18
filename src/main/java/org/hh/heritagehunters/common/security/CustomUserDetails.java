@@ -1,6 +1,8 @@
 package org.hh.heritagehunters.common.security;
 
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import lombok.Getter;
 import org.hh.heritagehunters.domain.oauth.entity.User;

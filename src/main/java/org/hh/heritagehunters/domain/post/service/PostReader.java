@@ -104,4 +104,14 @@ public class PostReader {
       default -> Sort.by(dir, "createdAt");
     };
   }
+
+  public Page<Post> getUserPosts(Long userId, int page, int size) {
+    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+    return postRepository.findByUserIdOrderByIdDesc(userId, pageable);
+  }
+
+  public Page<Post> getLikedPosts(Long userId, int page, int size) {
+    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+    return postRepository.findLikedPostsByUserId(userId, pageable);
+  }
 }

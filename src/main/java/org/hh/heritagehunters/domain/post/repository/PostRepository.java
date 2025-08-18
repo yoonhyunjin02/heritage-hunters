@@ -46,4 +46,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         where p.id = :postId
       """)
   Optional<Post> findByIdWithImages(@Param("postId") Long postId);
+
+  // 특정 유저가 작성한 게시물 목록 (최신순)
+  @EntityGraph(attributePaths = {"user", "heritage"})
+  @Query("select p from Post p where p.user.id = :userId order by p.id desc")
+  Page<Post> findByUserIdOrderByIdDesc(@Param("userId") Long userId, Pageable pageable);
+
+  // 특정 유저가 '좋아요'한 게시물 목록 (최신순)
+  @EntityGraph(attributePaths = {"user", "heritage"})
+  @Query("select l.post from Like l where l.user.id = :userId order by l.post.id desc")
+  Page<Post> findLikedPostsByUserId(@Param("userId") Long userId, Pageable pageable);
 }
