@@ -95,7 +95,7 @@
                  class="post-image" loading="lazy">
             <div class="image-count-badge"
                  th:if="${post.images != null and #lists.size(post.images) > 1}">
-              📷 <span th:text="${#lists.size(post.images)}">2</span>
+              <img class="camera-svg" th:src="@{/images/icons/cards.svg}" /> <span th:text="${#lists.size(post.images)}">2</span>
             </div>
           </div>
 
