@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.hh.heritagehunters.common.security.CustomUserDetails;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.post.application.PostFacade;
+import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostListResponseDto;
 import org.hh.heritagehunters.domain.post.service.PostReader;
 import org.springframework.data.domain.Page;
@@ -41,4 +42,18 @@ public class ProfileApiController {
     User current = principal != null ? principal.getUser() : null;
     return postFacade.likedPosts(userId, current, page, size);
   }
+
+  /**
+   * 프로필에서 게시물 모달 호출용 엔드포인트
+   */
+  @GetMapping("/posts/{postId}")
+  public PostDetailResponseDto getProfilePostDetail(
+      @PathVariable Long userId,
+      @PathVariable Long postId,
+      @AuthenticationPrincipal CustomUserDetails currentUserDetails) {
+
+    User currentUser = currentUserDetails != null ? currentUserDetails.getUser() : null;
+    return postFacade.detail(postId, currentUser);
+  }
+
 }
