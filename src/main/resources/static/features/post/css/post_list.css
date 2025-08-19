@@ -16,7 +16,7 @@
   margin: 0 auto;
   padding: 20px;
   font-family: sans-serif;
-  background-color: #fff;
+  background-color: var(--white);
 }
 
 /* 검색/필터 */
@@ -69,14 +69,20 @@
 .post-filter-controls {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   gap: 8px;
   margin: 2rem 1rem 0;
   flex-wrap: wrap;
 }
 
 .post-action-btn {
-  padding: 0.3rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 31px;
+  line-height: 1;
+  vertical-align: middle;
+  padding: 0 1rem;
   border: 1px solid var(--border-color);
   border-bottom: none;
   background: var(--light-color);
@@ -85,6 +91,8 @@
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
   font-size: 14px;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .post-action-btn:hover {
@@ -93,7 +101,7 @@
 
 .post-filters-left {
   display: flex;
-  align-its: flex-end;
+  align-items: center;
   gap: 12px;
 }
 
@@ -101,6 +109,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  height: 31px;
 }
 
 .post-filter {
@@ -121,7 +130,13 @@
 }
 
 .sort-tab {
-  padding: 0.3rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 31px;
+  line-height: 1;
+  vertical-align: middle;
+  padding: 0 1rem;
   font-size: 14px;
   color: var(--white);
   cursor: pointer;
@@ -159,7 +174,11 @@
 }
 
 .region-filter-select {
-  padding: 0.3rem 1rem;
+  box-sizing: border-box;
+  height: 31px;
+  line-height: 1;
+  vertical-align: middle;
+  padding: 0 1rem;
   border: 1px solid var(--sand-600);
   border-bottom: none;
   border-radius: 4px 4px 0 0;
@@ -263,13 +282,23 @@
 
 .image-count-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 0, 0, .7);
+  display: flex;
+  align-items: center;
+  text-align: center;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0, 0, 0, .6);
   color: var(--white);
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-size: 10px;
+  padding: 3px 5px;
+  border-radius: 5px;
+  font-size: 0.7rem;
+}
+
+.image-count-badge .camera-svg {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.25rem;
+  filter: brightness(0) invert(1);
 }
 
 /* 카드 정보(유물 종류) */
@@ -298,8 +327,8 @@
 .post-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0.875rem 1rem;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
 }
 
 .like-form {
@@ -346,6 +375,7 @@
 .stat {
   font-size: 13px;
   color: #6c757d;
+  white-space: nowrap;
 }
 
 .stat b {
