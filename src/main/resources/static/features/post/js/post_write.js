@@ -65,8 +65,11 @@ const PostModal = {
 
     // 이미지 선택/드롭
     this.imageInput.addEventListener('change', e => {
+      // GPS는 첫 번째 사진이 없을 때만 추출 (덮어쓰기 방지)
+      if (this.files.length === 0 && e.target.files?.length > 0) {
+        this.extractGps(e.target.files[0]);
+      }
       this.handleFileSelect(e.target.files);
-      this.extractGps(e.target.files?.[0]);
     });
     const upload = document.getElementById('imageUploadSection');
     if (upload) {
@@ -88,8 +91,11 @@ const PostModal = {
       upload.addEventListener('drop', e => {
         e.preventDefault();
         upload.classList.remove('drag-over');
+        // GPS는 첫 번째 사진이 없을 때만 추출 (덮어쓰기 방지)
+        if (this.files.length === 0 && e.dataTransfer.files?.length > 0) {
+          this.extractGps(e.dataTransfer.files[0]);
+        }
         this.handleFileSelect(e.dataTransfer.files);
-        this.extractGps(e.dataTransfer.files?.[0]);
       });
     }
 
@@ -246,7 +252,7 @@ const PostModal = {
    * @description
    * - EXIF 데이터에서 GPS 위도/경도 정보 추출
    * - DMS(도분초) 형식을 십진수 형식으로 변환
-   * - GPS 정보가 없으면 gpsFromImg를 null로 설정
+   * - 첫 번째 사진의 GPS만 사용 (이후 사진은 무시)
    * - 추출된 GPS는 위치 검증에 사용
    */
   extractGps(file) {
@@ -254,11 +260,19 @@ const PostModal = {
       this.gpsFromImg = null;
       return;
     }
+    
+    // 이미 GPS가 설정되어 있으면 덮어쓰지 않음 (첫 번째 사진 우선)
+    if (this.gpsFromImg !== null) {
+      console.log('GPS 이미 설정됨. 첫 번째 사진의 GPS 유지:', this.gpsFromImg);
+      return;
+    }
+    
     EXIF.getData(file, function () {
       const lat = EXIF.getTag(this, 'GPSLatitude');
       const lng = EXIF.getTag(this, 'GPSLongitude');
       if (!lat || !lng) {
         PostModal.gpsFromImg = null;
+        console.log('첫 번째 사진에 GPS 메타데이터가 없음');
         return;
       }
       const toDec = (dms, ref) => (dms[0] + dms[1] / 60 + dms[2] / 3600)
@@ -267,6 +281,7 @@ const PostModal = {
         lat: toDec(lat, EXIF.getTag(this, 'GPSLatitudeRef') || 'N'),
         lng: toDec(lng, EXIF.getTag(this, 'GPSLongitudeRef') || 'E')
       };
+      console.log('첫 번째 사진에서 GPS 추출됨:', PostModal.gpsFromImg);
     });
   },
 
