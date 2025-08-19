@@ -619,7 +619,7 @@
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #2b3f33;
+  border-color: var(--stone-800);
   box-shadow: 0 0 0 3px rgba(43, 63, 51, 0.1);
 }
 
@@ -647,9 +647,9 @@
 }
 
 .btn-primary {
-  background: var(--blue-800);
+  background: var(--sand-600);
   color: white;
-  border: 1px solid var(--blue-800);
+  border: 1px solid var(--sand-600);
   padding: 12px 24px;
   border-radius: 8px;
   font-weight: 600;
