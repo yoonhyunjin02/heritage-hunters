@@ -21,6 +21,21 @@ function distMeters(a, b){
   return 2*R*Math.asin(Math.min(1, Math.sqrt(A)));
 }
 
+/* ==== 문화재 종목 토큰 정규화: "11"도, "국보"도 코드 배열로 환원 ==== */
+function normalizeDesigToken(token){
+  const t = String(token || '').trim();
+  if (!t) return [];
+  // 숫자라면 그대로 코드 취급
+  if (/^\d+$/.test(t)) return [t];
+  // 한글 라벨이면 designationMap에서 역매핑
+  const dm = window.designationMap || {}; // 예: { "11":"국보", "12":"보물", ... }
+  const codes = [];
+  for (const code of Object.keys(dm)) {
+    if (String(dm[code]).trim() === t) codes.push(String(code));
+  }
+  return codes;
+}
+
 /* ===== 가시성: 타입(all/museum/heritage)에 따라 필터 보이기/숨기기 ===== */
 function syncFilterVisibility(){
   const t = (window.currentType || 'all').toLowerCase();
@@ -34,6 +49,18 @@ function syncFilterVisibility(){
   else { m.style.display = ''; h.style.display = ''; } // 예외는 all처럼
 }
 
+/* ===== 필터 변경 시 서버에서 새로 가져오도록 트리거 ===== */
+function triggerServerRefetch(){
+  try { window.lastBboxKey = ''; } catch(e) {}
+  if (!window.searchMode && typeof window.fetchByViewport === 'function'){
+    window.fetchByViewport();
+  } else if (window.searchMode && typeof window.__forceSearchRefresh === 'function'){
+    window.__forceSearchRefresh();
+  } else if (typeof window.__requestSidebarRerender === 'function'){
+    window.__requestSidebarRerender();
+  }
+}
+
 /* ===== 필터 UI 빌드 ===== */
 function buildFiltersFromData(list){
   const museumCount = new Map(); // cat -> n
@@ -45,9 +72,18 @@ function buildFiltersFromData(list){
       museumCount.set(cat, (museumCount.get(cat) || 0) + 1);
     }
     if (it.type === 'heritage' && it.category) {
-      String(it.category).split(/[|,/]/).map(s=>s.trim()).filter(Boolean).forEach(code => {
-        desigCount.set(code, (desigCount.get(code) || 0) + 1);
-      });
+      // "11|12" 또는 "국보, 보물" 같은 혼합을 모두 코드로 환원해 집계
+      String(it.category)
+        .split(/[|,/]/)
+        .map(s => s.trim())
+        .filter(Boolean)
+        .forEach(tok => {
+          const codes = normalizeDesigToken(tok);
+          const incTargets = codes.length ? codes : []; // 미매칭 라벨은 스킵
+          incTargets.forEach(code => {
+            desigCount.set(code, (desigCount.get(code) || 0) + 1);
+          });
+        });
     }
   });
 
@@ -69,7 +105,7 @@ function buildFiltersFromData(list){
         box.checked = SidebarState.selectedMuseumCats.has(cat);
         box.addEventListener('change', () => {
           box.checked ? SidebarState.selectedMuseumCats.add(cat) : SidebarState.selectedMuseumCats.delete(cat);
-          requestRerender();
+          triggerServerRefetch(); // ← 서버 재조회
         });
         $mWrap.appendChild(row);
       });
@@ -79,23 +115,24 @@ function buildFiltersFromData(list){
   const $hWrap = document.getElementById('heritageDesignationList');
   if ($hWrap){
     $hWrap.innerHTML = '';
-    const order = Object.keys(window.designationMap || {}).map(String);
+    const order = Object.keys(window.designationMap || {}).map(String); // 코드 순서
     order.forEach(code => {
       const n = desigCount.get(code) || 0;
       if (n === 0) return;
       const id = 'hdes_' + code;
+      const label = window.designationMap?.[code] || code;
       const row = document.createElement('label');
       row.style.display='flex'; row.style.alignItems='center'; row.style.gap='8px'; row.style.margin='4px 0';
       row.innerHTML = `
         <input type="checkbox" id="${id}" data-code="${code}">
-        <span>${window.designationMap[code] || code}</span>
+        <span>${label}</span>
         <span style="margin-left:auto;color:#6b7280">${n}</span>
       `;
       const box = row.querySelector('input');
       box.checked = SidebarState.selectedDesignations.has(code);
       box.addEventListener('change', () => {
         box.checked ? SidebarState.selectedDesignations.add(code) : SidebarState.selectedDesignations.delete(code);
-        requestRerender();
+        triggerServerRefetch(); // ← 서버 재조회
       });
       $hWrap.appendChild(row);
     });
@@ -106,18 +143,48 @@ function buildFiltersFromData(list){
 function applyFilter(list){
   let out = list || [];
 
-  if (SidebarState.selectedMuseumCats.size > 0){
-    out = out.filter(it => it.type !== 'museum'
-      || SidebarState.selectedMuseumCats.has((it.category ?? '').toString().trim()));
-  }
+  const hasMuseumFilter   = SidebarState.selectedMuseumCats.size > 0;
+  const hasHeritageFilter = SidebarState.selectedDesignations.size > 0;
+  const typeNow = (window.currentType || 'all').toLowerCase();
 
-  if (SidebarState.selectedDesignations.size > 0){
-    const hasCode = (catStr) => {
-      if (!catStr) return false;
-      const arr = String(catStr).split(/[|,/]/).map(s=>s.trim());
-      return arr.some(code => SidebarState.selectedDesignations.has(code));
-    };
-    out = out.filter(it => it.type !== 'heritage' || hasCode(it.category));
+  const hasSelectedDesig = (catStr) => {
+    if (!catStr) return false;
+    const tokens = String(catStr).split(/[|,/]/).map(s=>s.trim()).filter(Boolean);
+    for (const tok of tokens){
+      const codes = normalizeDesigToken(tok); // "11"도, "국보"도 코드로 비교
+      for (const c of codes){
+        if (SidebarState.selectedDesignations.has(c)) return true;
+      }
+    }
+    return false;
+  };
+
+  // 타입별/상태별로 필터 적용
+  if (typeNow === 'all') {
+    if (hasMuseumFilter || hasHeritageFilter){
+      out = out.filter(it => {
+        if (it.type === 'museum'){
+          if (!hasMuseumFilter) return true; // 문화재 필터만 켜진 경우: 박물관은 서버에서 종목 반영
+          const cat = (it.category ?? '').toString().trim();
+          return SidebarState.selectedMuseumCats.has(cat);
+        }
+        if (it.type === 'heritage'){
+          if (hasHeritageFilter) return hasSelectedDesig(it.category);
+          // 박물관 카테고리만 켜진 경우: 문화재는 비노출
+          return false;
+        }
+        return true;
+      });
+    }
+  } else if (typeNow === 'museum') {
+    if (hasMuseumFilter){
+      out = out.filter(it => it.type !== 'museum'
+        || SidebarState.selectedMuseumCats.has((it.category ?? '').toString().trim()));
+    }
+  } else if (typeNow === 'heritage') {
+    if (hasHeritageFilter){
+      out = out.filter(it => it.type !== 'heritage' || hasSelectedDesig(it.category));
+    }
   }
 
   return out;
@@ -197,7 +264,7 @@ function resetAll(){
   } else {
     // 혹시를 대비
     window.currentType = 'all';
-    requestRerender();
+    triggerServerRefetch();
   }
 
   // 보이기/숨기기 동기화
@@ -213,7 +280,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const active = btn.dataset.active === 'true';
       btn.dataset.active = String(!active);
       btn.textContent = !active ? '가까운 순(활성)' : '가까운 순';
-      requestRerender();
+      // 정렬 토글은 클라 렌더만
+      if (typeof window.__requestSidebarRerender === 'function') {
+        window.__requestSidebarRerender();
+      }
     });
   }
 
@@ -251,7 +321,7 @@ function setMyLocationForSidebar(lat, lng){
 window.__sidebar = { updateSidebar, applyFilter, setMyLocationForSidebar };
 window.__sidebar.__state = SidebarState;
 
-/* 재렌더 헬퍼 */
+/* 재렌더 헬퍼 (기본 동작은 유지) */
 function requestRerender(){
   if (typeof window.__requestSidebarRerender === 'function'){
     window.__requestSidebarRerender();
