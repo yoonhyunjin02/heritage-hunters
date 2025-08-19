@@ -148,22 +148,7 @@
     }
   }
 
-  /**
-   * 키보드 이벤트 처리 (방향키 네비게이션)
-   * 
-   * @param {KeyboardEvent} e - 키보드 이벤트 객체
-   * @description
-   * - ArrowLeft: 이전 이미지로 이동
-   * - ArrowRight: 다음 이미지로 이동
-   */
-  function handleKeydown(e) {
-    if (e.key === 'ArrowLeft') {
-      prevImage();
-    }
-    if (e.key === 'ArrowRight') {
-      nextImage();
-    }
-  }
+  
 
   /**
    * 현재 인덱스 기준으로 UI를 업데이트합니다
