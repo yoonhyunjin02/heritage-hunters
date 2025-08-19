@@ -95,7 +95,7 @@ main {
 /* 공통 패널 스타일 (info, contentSection 공유) */
 .heritage__summary__info,
 #contentSection {
-  background: var(--bg-white);
+  background: var(--stone-800);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -116,7 +116,7 @@ main {
 
 .heritage__summary__info figcaption {
   font-size: 0.9rem;
-  color: var(--secondary-color);
+  color: var(--white);
   text-align: center;
 }
 
@@ -131,18 +131,18 @@ main {
 .heritage__summary__info dl {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.5rem 1rem;
+  gap: 1.5rem 3rem;
   margin: 0;
 }
 
 .heritage__summary__info dt {
-  color: var(--primary-color);
+  color: var(--white);
   font-weight: 700;
   align-self: start;
 }
 
 .heritage__summary__info dd {
-  color: var(--text-color);
+  color: var(--white);
   margin: 0;
 }
 
