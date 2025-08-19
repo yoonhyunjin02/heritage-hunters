@@ -46,14 +46,15 @@ public class ViewportRepository {
       int limit, String type, List<String> museumCats, List<String> designations
   ) {
     return switch (type == null ? "all" : type) {
-      case "museum"   -> findMuseums(south, west, north, east, limit, museumCats);
+      case "museum"   -> findMuseums(south, west, north, east, limit, museumCats, designations);
       case "heritage" -> findHeritagesExcludingExhibited(south, west, north, east, limit, designations);
       default         -> findAllMixed(south, west, north, east, limit, museumCats, designations);
     };
   }
 
   // 박물관/미술관만
-  public List<MapMarkerDto> findMuseums(double s, double w, double n, double e, int limit, List<String> cats) {
+  public List<MapMarkerDto> findMuseums(double s, double w, double n, double e, int limit,
+      List<String> cats, List<String> desigs) {
     final String sql = """
     SELECT
       m.id                                   AS id,
@@ -68,18 +69,36 @@ public class ViewportRepository {
     WHERE m.geom IS NOT NULL
       AND ST_X(m.geom) <> 0 AND ST_Y(m.geom) <> 0
       AND ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
-      -- 선택한 카테고리가 있을 때만 필터 (btrim으로 안전 비교)
+      -- 박물관 카테고리 필터
       AND (:catsEmpty OR btrim(m.category) = ANY(:cats))
+      -- ⬇⬇ 문화재 종목 필터: 선택되었을 때만 '그 종목 전시품이 있는 박물관'으로 한정
+      AND (
+        :desigsEmpty
+        OR EXISTS (
+             SELECT 1
+             FROM exhibited_at ea
+             JOIN heritages h ON h.id = ea.heritages_id
+             WHERE ea.museums_id = m.id
+               AND EXISTS (
+                    SELECT 1
+                    FROM regexp_split_to_table(COALESCE(h.designation,''), '[|,/]') AS d(code)
+                    WHERE btrim(d.code) = ANY(:desigs)
+               )
+        )
+      )
     LIMIT :limit
   """;
 
-    String[] catsArr = (cats == null) ? new String[0] : cats.stream().map(String::trim).toArray(String[]::new);
+    String[] catsArr   = (cats   == null) ? new String[0] : cats.stream().map(String::trim).toArray(String[]::new);
+    String[] desigsArr = (desigs == null) ? new String[0] : desigs.stream().map(String::trim).toArray(String[]::new);
 
     var params = new MapSqlParameterSource()
         .addValue("s", s).addValue("w", w).addValue("n", n).addValue("e", e)
         .addValue("limit", limit)
-        .addValue("cats", catsArr)                     // text[]
-        .addValue("catsEmpty", catsArr.length == 0);   // boolean
+        .addValue("cats", catsArr)
+        .addValue("catsEmpty", catsArr.length == 0)
+        .addValue("desigs", desigsArr)
+        .addValue("desigsEmpty", desigsArr.length == 0);
 
     return jdbc.query(sql, params, MAPPER);
   }
@@ -127,53 +146,66 @@ public class ViewportRepository {
   }
 
   // 둘 다(UNION ALL)
-  public List<MapMarkerDto> findAllMixed(
-      double s, double w, double n, double e, int limit,
+  public List<MapMarkerDto> findAllMixed(double s, double w, double n, double e, int limit,
       List<String> cats, List<String> desigs) {
 
     final String sql = """
-    (
-      SELECT
-        m.id                             AS id,
-        'museum'                         AS type,
-        m.name                           AS name,
-        ST_Y(m.geom)                     AS lat,
-        ST_X(m.geom)                     AS lng,
-        COALESCE(m.address, m.region,'') AS address,
-        COALESCE(m.category,'')          AS category,
-        NULL                             AS distanceMeters
-      FROM museums m
-      WHERE m.geom IS NOT NULL
-        AND ST_X(m.geom) <> 0 AND ST_Y(m.geom) <> 0
-        AND ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
-        AND (:catsEmpty OR btrim(m.category) = ANY(:cats))
-    )
-    UNION ALL
-    (
-      SELECT
-        h.id                             AS id,
-        'heritage'                       AS type,
-        h.name                           AS name,
-        ST_Y(h.geom)                     AS lat,
-        ST_X(h.geom)                     AS lng,
-        COALESCE(h.address, h.region,'') AS address,
-        COALESCE(h.designation, h.era,'')AS category,
-        NULL                             AS distanceMeters
-      FROM heritages h
-      WHERE h.geom IS NOT NULL
-        AND ST_X(h.geom) <> 0 AND ST_Y(h.geom) <> 0
-        AND ST_Intersects(h.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
-        AND NOT EXISTS (SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id)
-        AND (
-          :desigsEmpty
-          OR EXISTS (
-               SELECT 1
-               FROM regexp_split_to_table(COALESCE(h.designation,''), '[|,/]') AS d(code)
-               WHERE btrim(d.code) = ANY(:desigs)
-             )
+  (
+    SELECT
+      m.id                             AS id,
+      'museum'                         AS type,
+      m.name                           AS name,
+      ST_Y(m.geom)                     AS lat,
+      ST_X(m.geom)                     AS lng,
+      COALESCE(m.address, m.region,'') AS address,
+      COALESCE(m.category,'')          AS category,
+      NULL                             AS distanceMeters
+    FROM museums m
+    WHERE m.geom IS NOT NULL
+      AND ST_X(m.geom) <> 0 AND ST_Y(m.geom) <> 0
+      AND ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
+      AND (:catsEmpty OR btrim(m.category) = ANY(:cats))
+      AND (
+        :desigsEmpty
+        OR EXISTS (
+             SELECT 1
+             FROM exhibited_at ea
+             JOIN heritages h ON h.id = ea.heritages_id
+             WHERE ea.museums_id = m.id
+               AND EXISTS (
+                    SELECT 1
+                    FROM regexp_split_to_table(COALESCE(h.designation,''), '[|,/]') AS d(code)
+                    WHERE btrim(d.code) = ANY(:desigs)
+               )
         )
-    )
-    LIMIT :limit
+      )
+  )
+  UNION ALL
+  (
+    SELECT
+      h.id                             AS id,
+      'heritage'                       AS type,
+      h.name                           AS name,
+      ST_Y(h.geom)                     AS lat,
+      ST_X(h.geom)                     AS lng,
+      COALESCE(h.address, h.region,'') AS address,
+      COALESCE(h.designation, h.era,'')AS category,
+      NULL                             AS distanceMeters
+    FROM heritages h
+    WHERE h.geom IS NOT NULL
+      AND ST_X(h.geom) <> 0 AND ST_Y(h.geom) <> 0
+      AND ST_Intersects(h.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))
+      AND NOT EXISTS (SELECT 1 FROM exhibited_at ea WHERE ea.heritages_id = h.id)
+      AND (
+        :desigsEmpty
+        OR EXISTS (
+             SELECT 1
+             FROM regexp_split_to_table(COALESCE(h.designation,''), '[|,/]') AS d(code)
+             WHERE btrim(d.code) = ANY(:desigs)
+        )
+      )
+  )
+  LIMIT :limit
   """;
 
     String[] catsArr   = (cats   == null) ? new String[0] : cats.stream().map(String::trim).toArray(String[]::new);

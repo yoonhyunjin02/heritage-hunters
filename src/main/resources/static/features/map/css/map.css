@@ -19,10 +19,10 @@
   display: flex;
   align-items: center;
   gap: .75rem;
-  padding: 0 1rem;
-  background: var(--gray-000);
-  border-bottom: 1px solid var(--gray-200);
-  backdrop-filter: saturate(150%) blur(6px);
+  padding: 1rem 1rem;
+  background: var(--sand-600);
+  border-left: 10px solid var(--stone-800);
+  border-right: 10px solid var(--stone-800);
   z-index: auto;
 }
 .toolbar-left { display: flex; align-items: center; gap: .75rem; }
@@ -92,7 +92,8 @@
   grid-template-columns: 1fr; /* 기본: 지도만 */
   gap: .75rem;
   min-height: calc(100dvh - (var(--site-header-h) + var(--toolbar-h)));
-  background: var(--gray-050);
+  border-left: 10px solid var(--stone-800);
+  border-right: 10px solid var(--stone-800);
 }
 .map-root.nav-open {
   grid-template-columns: var(--nav-w) 1fr; /* 네비 + 지도 */
@@ -115,10 +116,17 @@
   border: 0; border-bottom: var(--border);
   background: transparent; padding: .875rem .25rem; cursor: pointer;
 }
-.card:hover { background: var(--gray-050); }
+.card:hover {
+background: var(--sand-600);
+}
 .card .name { font-weight: 700; margin-bottom: .25rem; color: var(--gray-900); }
 .card .addr { font-size: .8125rem; color: var(--gray-700); margin-bottom: .375rem; }
 .card .desc { font-size: .8125rem; color: var(--gray-800); line-height: 1.45; white-space: pre-line; }
+
+.card:hover .name { color: var(--black); }                 /* 강한 텍스트 */
+.card:hover .addr { color: var(--gray-100); } /* 보조 텍스트 */
+.card:hover .desc,
+.card:hover .desc .distance { color: var(--gray-100); }       /* 설명/거리 */
 
 /* ---------- Map area ---------- */
 .map-area { position: relative; }
@@ -143,8 +151,8 @@
   font-size: .9rem; color: var(--gray-700); background: transparent;
 }
 .seg-btn[aria-pressed="true"] {
-  background: var(--gray-100); color: var(--gray-900); font-weight: 700;
-  box-shadow: inset 0 0 0 1px var(--gray-200);
+  background: var(--stone-800); color: var(--white); font-weight: 700;
+  box-shadow: inset 0 0 0 1px var(--gray-600);
 }
 
 /* ---------- Hamburger ---------- */
@@ -157,7 +165,7 @@
 /* ---------- SideNav (컨테이너/기본) ---------- */
 .side-nav {
   display: none; /* 1열일 때 감춤 */
-  background: var(--gray-000);
+  background: var(--stone-800);
   border: var(--border);
   border-radius: 12px;
   box-shadow: var(--shadow-md);
@@ -173,8 +181,20 @@
 .side-nav a { text-decoration: none; color: var(--gray-900); font-weight: 600; line-height: 1.3; }
 
 /* ---------- Legend ---------- */
-.legend { margin-top: 14px; }
-.legend-title { font-size: 14px; font-weight: 700; margin: 8px 0; }
+.legend {
+  margin-top: 14px;
+  background: white;
+  border-radius: 10px;
+  padding: 5px;
+}
+.legend-title { font-size: 14px; font-weight: 700; margin: 8px 0; color: #FFFFFF;}
+
+.legend-title-unique {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 8px 0;
+  color: #000000;
+}
 
 .legend-list {
   list-style: none;
@@ -342,7 +362,14 @@
 /* ---------- SideNav polish (filters, list) ---------- */
 /* 섹션 여백 및 헤더 톤 */
 .side-nav section + section { margin-top: 12px; }
-.side-nav .legend-title { font-size: 14px; font-weight: 700; color: #111827; }
+.side-nav {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.element.style{
+  color: var(--white);
+}
 
 /* details(필터) */
 .side-nav details {
@@ -383,9 +410,23 @@
 
 /* 리스트 영역 */
 #list { max-height: 44vh; overflow: auto; padding-right: .25rem; }
-.card { padding: .75rem .25rem; border-bottom: 1px solid #e5e7eb; }
-.card .name { font-weight: 700; color: #111827; margin-bottom: .2rem; }
-.card .addr, .card .desc { color: #6b7280; font-size: .8125rem; }
+.card {
+padding: .75rem .25rem;
+border-bottom: 1px solid #e5e7eb;
+}
+
+.card .name {
+  font-weight:
+  700; color: var(--white);
+  margin-bottom: .2rem;
+}
+
+.card .addr, .card .desc {
+  color: var(--gray-400);
+  font-size: .8125rem;
+}
+
+
 
 /* ---------- Controls row (내 위치 / 가까운 순) ---------- */
 /* 반반(50%) 한 줄 배치 + 제목과 간격 확대 */
@@ -412,7 +453,10 @@
 #sortByDistance:hover:not([disabled]), #locateBtn:hover:not([disabled]) { background:#f9fafb; }
 
 /* 버튼 다음에 오는 “현재 화면 지점” 제목과의 간격을 더 띄움 */
-#sortByDistance + h3.legend-title { margin-top: 18px; }
+#sortByDistance + h3.legend-title {
+margin-top: 18px;
+color: #FFFFFF;
+}
 
 /* ----- Reset button (bottom) ----- */
 .side-reset-btn{

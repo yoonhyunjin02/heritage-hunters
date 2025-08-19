@@ -88,6 +88,7 @@
   border-radius: 50%;
   object-fit: cover;
   margin-right: 0.5rem; /* 8px */
+  background-color: var(--white);
 }
 
 /* ===== 드롭다운 ===== */
