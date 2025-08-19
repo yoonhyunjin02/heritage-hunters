@@ -315,7 +315,7 @@ main {
 .heritage__content {
   white-space: pre-line;
   line-height: 1.6;
-  color: var(--white);
+  color: var(--black);
   word-break: keep-all;
 }
 
