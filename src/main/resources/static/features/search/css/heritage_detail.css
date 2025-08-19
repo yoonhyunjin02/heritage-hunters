@@ -35,7 +35,23 @@
   --ai-news-light:       rgba(31, 53, 76, 0.1);
   --ai-weather-light:    rgba(92, 96, 125, 0.1);
   --ai-content-light:    rgba(204, 174, 164, 0.1);
+
+  --rail-w: 0.625rem;
 }
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: var(--rail-w);
+  background: var(--stone-800, #1f2937);
+  pointer-events: none;
+  z-index: 1;
+}
+body::before { left: 0; }
+body::after  { right: 0; }
 
 /*----------------------------------------
   Title section
