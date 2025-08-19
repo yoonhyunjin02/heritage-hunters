@@ -23,7 +23,7 @@ public class SearchService {
     if (q == null || q.isBlank()) {
       throw new IllegalArgumentException("검색어가 비어 있습니다.");
     }
-    int safeLimit = Math.max(1, Math.min(limit, 250)); // 1~250 제한
+    int safeLimit = Math.max(1, Math.min(limit, 500)); // 1~500 제한
 
     return searchRepository.search(q.trim(), safeLimit, type).stream()
         // lat/lng가 모두 0.0이면 제외

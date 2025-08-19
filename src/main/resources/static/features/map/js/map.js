@@ -627,18 +627,15 @@ function wireSearch(){
       // 검색 결과가 있을 때만 검색모드 전환 및 렌더
       searchMode = true;
       allData = list;
-
-      // 타입 가드 → 교차 필터 → 사이드바/마커/리스트 모두 'finalList'로
-      const finalList = applyCrossFilters(applyTypeGuard(list, currentType));
-      if (window.__sidebar?.updateSidebar) {
-        window.__sidebar.updateSidebar(finalList);
-      }
-      renderMarkers(finalList);
-      renderList(finalList);
+      const filtered = (window.__sidebar?.updateSidebar)
+        ? window.__sidebar.updateSidebar(list)
+        : list;
+      renderMarkers(filtered);
+      renderList(filtered);
 
       skipNextFetchOnce = true;
 
-      if (autoFit) fitMapToResults(finalList);
+      if (autoFit) fitMapToResults(list);
     } catch (e) {
       console.error(e);
       if (notify) alert('검색 중 오류가 발생했습니다.');
@@ -761,35 +758,24 @@ async function initMap(){
     if (!query) { searchMode = false; await fetchByViewport(); return; }
     try {
       $q.setAttribute('aria-busy', 'true');
-
       const list = await fetchSearchResults(query, currentType, 50);
       allData = list;
+      const filtered = (window.__sidebar?.updateSidebar)
+        ? window.__sidebar.updateSidebar(list)
+        : list;
+      renderMarkers(filtered);
+      renderList(filtered);
 
-      // [핵심] 타입 가드 → 교차 필터
-      const finalList = applyCrossFilters(applyTypeGuard(list, currentType));
+      skipNextFetchOnce = true;
 
-      // 결과 없음 처리(원본이 있더라도 필터 후 0개일 수 있음)
-      if (!finalList || finalList.length === 0) {
-        alert('필터에 맞는 검색 결과가 없습니다.');
+      if (!list || list.length === 0) {
+        alert('검색 결과가 없습니다.');
         searchMode = false;
         await fetchByViewport();
         return;
       }
 
-      searchMode = true;
-
-      // 사이드바/마커/리스트 모두 finalList로
-      if (window.__sidebar?.updateSidebar) {
-        window.__sidebar.updateSidebar(finalList);
-      }
-      renderMarkers(finalList);
-      renderList(finalList);
-
-      skipNextFetchOnce = true;
-
-      // 지도도 finalList 기준으로 맞춤
-      fitMapToResults(finalList);
-
+      fitMapToResults(list);
     } finally {
       $q.removeAttribute('aria-busy');
     }
@@ -886,15 +872,17 @@ async function fetchByViewport() {
       signal: aborter.signal,
       headers: { Accept: 'application/json' }
     });
-    if (!res.ok) return;
+
+    if (!res.ok) {
+      console.warn('지점 로드 실패 (HTTP ' + res.status + ')');
+      return;
     }
 
     const list = await res.json();
     allData = list;
-
-    const finalList = applyCrossFilters(applyTypeGuard(list, currentType));
-    if (window.__sidebar?.updateSidebar) window.__sidebar.updateSidebar(finalList);
-
+    const filtered = (window.__sidebar?.updateSidebar)
+      ? window.__sidebar.updateSidebar(list)
+      : list;
     renderMarkers(filtered);
     renderList(filtered);
 
@@ -916,35 +904,4 @@ function wireViewportLoading(){
     clearTimeout(t);
     t = setTimeout(fetchByViewport, 250);
   });
-}
-
-function applyTypeGuard(list, type = currentType) {
-  if (!Array.isArray(list)) return [];
-  if (type === 'all') return list;
-  return list.filter(it => it?.type === type);
-}
-
-function applyCrossFilters(list) {
-  const st = window.__sidebar?.__state || {};
-  const cats = st.selectedMuseumCats || new Set();
-  const desi = st.selectedDesignations || new Set();
-  const hasCats = cats.size > 0;
-  const hasDesi = desi.size > 0;
-  const anyOn = hasCats || hasDesi;
-
-  const museumOK = (it) => {
-    if (!hasCats) return !anyOn; // 문화재만 켠 경우 박물관 제외
-    const vals = [];
-    if (it.category) vals.push(String(it.category).trim());
-    if (Array.isArray(it.categories)) vals.push(...it.categories.map(v => String(v).trim()));
-    return vals.some(v => cats.has(v));
-  };
-  const heritageOK = (it) => {
-    if (!hasDesi) return !anyOn; // 박물관만 켠 경우 문화재 제외
-    const toks = String(it.designation ?? it.category ?? '')
-      .split(/[|,\/]/).map(s=>s.trim()).filter(Boolean);
-    return toks.some(code => desi.has(code));
-  };
-
-  return (list || []).filter(it => it.type === 'museum' ? museumOK(it) : heritageOK(it));
 }
