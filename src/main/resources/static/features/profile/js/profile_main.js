@@ -1,79 +1,191 @@
 // profile_main.js
-import { initTabs, getActivePanel } from "./tabs.js";
-import { InfiniteScroller } from "./infinite_scroller.js";
-import { renderPostCard } from "./post_renderer.js";
-import { $, $$ } from "./utils.js";
-import { initPostModal } from "./profile_post_modal.js";
-
-// 이미 초기화된 패널 추적 (중복 옵저버 방지)
-const initializedPanels = new WeakSet();
+// ES Module 형태, HTML 리팩터링 버전과 100% 호환
 
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
+  initInfiniteScroll();
   initPostModal();
-
-  // 초기 활성 탭
-  setupInfiniteScroll(getActivePanel());
-
-  // 탭 전환 시
-  document.addEventListener("tabchange", (e) => {
-    const { panel } = e.detail || {};
-    if (panel) setupInfiniteScroll(panel);
-  });
 });
 
-/**
- * 패널 내 post-grid에 무한스크롤 적용
- * - 중복 초기화 방지
- * - data-* 기반 설정: data-size, [data-page], [data-has-next], [data-endpoint]
- */
-function setupInfiniteScroll(panelEl) {
-  if (!(panelEl instanceof Element)) return;
-  if (initializedPanels.has(panelEl)) return;
+/** =====================
+ *  탭 전환
+ *  ===================== */
+function initTabs() {
+  const tabs = document.querySelectorAll(".profile-tabs .tab-btn");
+  const panels = document.querySelectorAll(".tab-panel");
 
-  const lists = $$(".post-grid[data-infinite]", panelEl);
-  if (!lists.length) return;
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const targetId = tab.getAttribute("aria-controls");
 
-  // 패널 단위 sentinel/페이지 정보를 사용
-  const sentinel = panelEl.querySelector("[data-sentinel]");
-  const endpoint = sentinel?.dataset?.endpoint || "";
-  const sizeAttr = panelEl.querySelector("[data-size]")?.dataset.size;
-  const pageAttr = panelEl.querySelector("[data-page]")?.dataset.page;
-  const hasNextAttr = panelEl.querySelector("[data-has-next]")?.dataset.hasNext;
+      // 탭 상태 변경
+      tabs.forEach((t) => {
+        const isActive = t === tab;
+        t.classList.toggle("is-active", isActive);
+        t.setAttribute("aria-selected", String(isActive));
+        t.tabIndex = isActive ? 0 : -1;
+      });
 
-  // endpoint 유효성 검증
-  let validEndpoint = "";
-  try {
-    validEndpoint = new URL(endpoint, window.location.origin).toString();
-  } catch {
-    return; // 잘못된 엔드포인트면 초기화 건너뜀
-  }
-  const size = Number.isFinite(Number(sizeAttr)) ? Number(sizeAttr) : 9;
-  const page = Number.isFinite(Number(pageAttr)) ? Number(pageAttr) : 1;
-  const hasNext = String(hasNextAttr) === "true";
-  if (!hasNext || !sentinel) return;
-
-  lists.forEach((list) => {
-    // 리스트별 스크롤러 생성
-    const scroller = new InfiniteScroller({
-      listEl: list,
-      sentinelEl: sentinel,
-      endpoint: validEndpoint,
-      params: { size, page },
-      renderItem: renderPostCard,
-      onLoading: (isLoading) => {
-        sentinel.classList.toggle("loading", isLoading);
-        sentinel.setAttribute("aria-busy", String(isLoading));
-        list.setAttribute("aria-busy", String(isLoading));
-      },
-      onError: (err) => {
-        // 필요 시 패널 별 에러 UI 연결 가능
-        console.warn("Infinite scroll error:", err?.message || err);
-      },
-      rootMargin: "800px 0px",
+      // 패널 표시 전환
+      panels.forEach((panel) => {
+        panel.hidden = panel.id !== targetId;
+      });
     });
-    scroller.start({ immediate: false });
+  });
+}
+
+/** =====================
+ *  무한 스크롤
+ *  ===================== */
+function initInfiniteScroll() {
+  document.querySelectorAll("[data-sentinel]").forEach((sentinel) => {
+    const panel = sentinel.closest(".tab-panel");
+    const endpoint = sentinel.dataset.endpoint;
+    const size = Number(panel.dataset.size) || 9;
+
+    const observer = new IntersectionObserver(
+      async (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) return;
+          if (panel.dataset.hasNext !== "true") return;
+
+          panel.setAttribute("aria-busy", "true");
+
+          const nextPage = Number(panel.dataset.page) + 1;
+          try {
+            const res = await fetch(`${endpoint}?page=${nextPage}&size=${size}`);
+            if (res.ok) {
+              const html = await res.text();
+              sentinel.insertAdjacentHTML("beforebegin", html);
+
+              // 다음 페이지 반영
+              panel.dataset.page = nextPage;
+              // 서버에서 hasNext 값을 함께 내려주도록 구성하면 안정적
+            }
+          } catch (err) {
+            console.error("무한 스크롤 로드 실패:", err);
+          } finally {
+            panel.setAttribute("aria-busy", "false");
+          }
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+  });
+}
+
+/** =====================
+ *  게시물 상세 모달
+ *  ===================== */
+function initPostModal() {
+  const modalRoot = document.getElementById("post-modal-root");
+  const modal = document.getElementById("postDetailModal");
+  const loadingOverlay = document.getElementById("modalLoading");
+  const closeBtn = modal.querySelector('[data-action="close-post-modal"]');
+
+  // 게시물 카드 클릭 → 모달 열기
+  document.body.addEventListener("click", (e) => {
+    const card = e.target.closest(".post-thumb");
+    if (card && card.dataset.postId) {
+      e.preventDefault();
+      openPostModal(card.dataset.postId);
+    }
   });
 
-  initializedPanels.add(panelEl);
+  // 닫기 버튼
+  closeBtn.addEventListener("click", closePostModal);
+
+  // 바깥영역 클릭 닫기
+  modalRoot.addEventListener("click", (e) => {
+    if (e.target === modalRoot) {
+      closePostModal();
+    }
+  });
+
+  async function openPostModal(postId) {
+    modal.dataset.postId = postId;
+    modalRoot.hidden = false;
+    modal.hidden = false;
+    modal.focus();
+
+    loadingOverlay.hidden = false;
+    modal.setAttribute("aria-busy", "true");
+
+    try {
+      const res = await fetch(`/posts/${postId}`);
+      if (res.ok) {
+        const data = await res.json();
+        renderPostDetail(data);
+      }
+    } catch (err) {
+      console.error("게시물 로드 실패:", err);
+    } finally {
+      loadingOverlay.hidden = true;
+      modal.setAttribute("aria-busy", "false");
+    }
+  }
+
+  function closePostModal() {
+    modalRoot.hidden = true;
+    modal.hidden = true;
+    modal.dataset.postId = "";
+  }
+}
+
+/** =====================
+ *  게시물 상세 렌더링
+ *  ===================== */
+function renderPostDetail(data) {
+  // 작성자 정보
+  const authorName = document.getElementById("authorName");
+  authorName.textContent = data.authorName || "";
+
+  const createdAt = document.getElementById("postCreatedAt");
+  createdAt.textContent = data.createdAt || "";
+
+  // 내용
+  const contentEl = document.getElementById("postContent");
+  contentEl.textContent = data.content || "";
+
+  // 메인 이미지
+  const mainImage = document.getElementById("mainImage");
+  mainImage.src = data.images?.[0] || mainImage.dataset.fallback;
+  mainImage.alt = data.title || "게시글 이미지";
+
+  // 갤러리 썸네일
+  const thumbs = document.getElementById("thumbContainer");
+  thumbs.innerHTML = "";
+  (data.images || []).forEach((img, idx) => {
+    const thumb = document.createElement("img");
+    thumb.src = img;
+    thumb.alt = `${idx + 1}번 이미지`;
+    thumb.loading = "lazy";
+    thumb.addEventListener("click", () => {
+      mainImage.src = img;
+      mainImage.alt = `${idx + 1}번 이미지`;
+    });
+    thumbs.appendChild(thumb);
+  });
+
+  // 스탯 반영
+  document.getElementById("viewCount").textContent = data.viewCount ?? 0;
+  document.getElementById("likeCount").textContent = data.likeCount ?? 0;
+  document.getElementById("commentCount").textContent = data.commentCount ?? 0;
+
+  // 좋아요 버튼 상태
+  const likeBtn = document.getElementById("likeBtn");
+  likeBtn.setAttribute("aria-pressed", String(data.liked === true));
+  likeBtn.dataset.postId = data.id;
+
+  // 댓글
+  const commentList = document.getElementById("commentList");
+  commentList.innerHTML = "";
+  (data.comments || []).forEach((c) => {
+    const div = document.createElement("div");
+    div.className = "comment-item";
+    div.textContent = `${c.author}: ${c.text}`;
+    commentList.appendChild(div);
+  });
 }
