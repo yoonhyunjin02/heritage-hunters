@@ -232,8 +232,7 @@
       return;
     }
     tx.focus();
-    setTimeout(() => tx.scrollIntoView({behavior: 'smooth', block: 'center'}),
-        80);
+    tx.scrollIntoView({behavior: 'smooth', block: 'center'});
   }
 
   // 상대 시간
