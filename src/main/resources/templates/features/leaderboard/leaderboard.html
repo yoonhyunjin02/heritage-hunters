@@ -39,11 +39,12 @@
           </a>
         </div>
 
-        <div th:class="'user-box ' + (${iterStat.index % 2 == 0} ? 'right' : 'left')">
+        <a th:href="@{/profile/{id}(id=${user.id})}"
+           th:class="'user-box ' + (${iterStat.index % 2 == 0} ? 'right' : 'left')">
           <img th:src="${user.profileImage}" alt="profile" class="profile-img"/>
           <span class="nickname" th:text="${user.nickname}">닉네임</span>
           <span class="score" th:text="${user.score}">0</span>
-        </div>
+        </a>
       </div>
     </section>
   </div>
