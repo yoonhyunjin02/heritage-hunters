@@ -11,7 +11,6 @@
     <link rel="stylesheet" th:href="@{/features/profile/css/profile_page.css}" />
     <!-- 게시물 모달용 CSS -->
     <link rel="stylesheet" th:href="@{/features/post/css/modal-common.css}" />
-    <link rel="stylesheet" th:href="@{/features/post/css/post_write.css}" />
     <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}" />
   </head>
   <body>
@@ -162,71 +161,123 @@
           <p class="empty-hint" th:if="${#lists.isEmpty(initialLiked)}">아직 '좋아요' 누른 게시물이 없어요.</p>
         </div>
       </section>
+    </main>
 
-      <!-- 라이트박스: JS에서 열고 데이터 주입 -->
-      <div class="lightbox" id="post-lightbox" role="dialog" aria-modal="true" aria-labelledby="lightbox-title" hidden>
-        <div class="lightbox__backdrop" data-close="lightbox" aria-hidden="true"></div>
-
-        <div class="lightbox__dialog" role="document">
-          <button class="lightbox__close" type="button" aria-label="닫기" data-close="lightbox">×</button>
-
-          <div class="lightbox__body">
-            <div class="lightbox__media">
-              <img class="lightbox__img" src="" onerror="this.onerror=null;this.src='/images/placeholders/no-image.png'" alt="게시물 이미지" />
-            </div>
-
-            <aside class="lightbox__side">
-              <header class="lightbox__header">
-                <div class="lightbox__author">
-                  <img class="lightbox__avatar" src="" alt="작성자 프로필" />
-                  <div class="lightbox__author-meta">
-                    <strong class="lightbox__nickname">닉네임</strong>
-                    <span class="lightbox__email">email@example.com</span>
+    <div id="post-modal-root" style="display: none">
+      <div
+        id="postDetailModal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="postDetailTitle"
+        data-post-id=""
+        data-total-images="0"
+        data-images=""
+        hidden
+      >
+        <div class="modal-content">
+          <!-- 헤더 -->
+          <div class="modal-header">
+            <h1 id="postDetailTitle" class="modal-title">게시글 상세</h1>
+            <div class="header-actions">
+              <div class="post-actions">
+                <div class="dropdown">
+                  <button class="icon-btn" aria-haspopup="menu" aria-expanded="false" onclick="togglePostDropdown()">⋯</button>
+                  <div class="dropdown-menu" id="postDropdown" role="menu">
+                    <button type="button" class="dropdown-item" role="menuitem" onclick="">수정</button>
+                    <button class="dropdown-item delete-item" role="menuitem" onclick="deletePost()">삭제</button>
                   </div>
                 </div>
-              </header>
-
-              <div class="lightbox__content">
-                <p class="lightbox__text"></p>
               </div>
-
-              <div class="lightbox__stats">
-                <button class="btn-like" type="button" aria-pressed="false">
-                  <span class="btn-like__icon">♥</span>
-                  <span class="btn-like__label">좋아요</span>
-                </button>
-                <div class="counts">
-                  <span class="counts__item"> <strong class="counts__num js-like-count">0</strong> 좋아요 </span>
-                  <span class="counts__item"> <strong class="counts__num js-comment-count">0</strong> 댓글 </span>
+              <button class="modal-close" onclick="closePostDetail()" aria-label="닫기">&times;</button>
+            </div>
+          </div>
+          <!-- 로딩 중 상태 -->
+          <div class="modal-loading-overlay" id="modalLoading" style="display: none">
+            <div class="spinner"></div>
+            <p>게시글을 불러오는 중...</p>
+          </div>
+          <!-- 본문 -->
+          <div class="modal-body">
+            <div class="composer-grid">
+              <!-- 왼쪽: 이미지 영역 -->
+              <div class="compose-left" aria-label="게시글 이미지">
+                <div class="gallery" id="galleryWrapper">
+                  <div class="gallery-main" id="galleryMain">
+                    <img id="mainImage" src="" alt="게시글 이미지" draggable="false" />
+                    <div class="nav-wrapper">
+                      <button class="gallery-nav prev" aria-label="이전 이미지">‹</button>
+                      <button class="gallery-nav next" aria-label="다음 이미지">›</button>
+                    </div>
+                  </div>
+                  <div class="gallery-thumbs" id="thumbContainer"></div>
                 </div>
               </div>
 
-              <form class="lightbox__comment-form" action="#" method="post" autocomplete="off">
-                <label for="comment-input" class="visually-hidden">댓글 입력</label>
-                <input id="comment-input" class="comment-input" type="text" name="content" placeholder="댓글을 입력하세요" />
-                <button class="comment-submit" type="submit">게시</button>
-              </form>
+              <!-- 오른쪽: 작성자/본문/액션/댓글 -->
+              <div class="compose-right">
+                <section class="author-display">
+                  <img id="authorAvatar" class="author-avatar" alt="" />
+                  <div class="author-info">
+                    <div class="author-name" id="authorName"></div>
+                    <time class="author-time" id="postCreatedAt"></time>
+                  </div>
+                </section>
 
-              <ul class="lightbox__comments" role="list" data-infinite="comments">
-                <!-- JS로 댓글 아이템 주입 -->
-              </ul>
-              <div class="infinite-sentinel" id="comments-sentinel" aria-hidden="true"></div>
-            </aside>
+                <section class="content-box">
+                  <p class="content-text" id="postContent"></p>
+                </section>
+
+                <section class="actions-box">
+                  <button type="button" id="likeBtn" class="icon-action like-button" data-post-id="" aria-pressed="false" title="좋아요">
+                    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                      <path
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12
+                  21.23l8.84-8.84a5.5 5.5 0 0 0-0-7.78z"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        fill="none"
+                      ></path>
+                    </svg>
+                    <span class="sr-only">좋아요</span>
+                  </button>
+
+                  <button class="icon-action" onclick="focusCommentInput()" title="댓글 달기" aria-label="댓글 달기">
+                    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" fill="none" />
+                    </svg>
+                  </button>
+
+                  <div class="stats">
+                    <span class="stat"><b id="viewCount">0</b> 조회</span>
+                    <span class="stat"><b id="likeCount">0</b> 좋아요</span>
+                    <span class="stat"><b id="commentCount">0</b> 댓글</span>
+                  </div>
+                </section>
+
+                <section class="login-notice" id="loginNotice">댓글을 작성하려면 <a href="/login">로그인</a>이 필요합니다.</section>
+
+                <section class="comments-list" id="commentList"></section>
+
+                <section class="comment-write" id="commentWriteSection">
+                  <form class="comment-form" id="commentForm">
+                    <textarea id="commentTextarea" name="content" class="comment-input" placeholder="댓글을 입력하세요..." maxlength="200" required></textarea>
+                    <div class="comment-tools">
+                      <div class="count"><span id="commentCharCount">0</span> / 200자</div>
+                      <button type="submit" class="btn-primary">등록</button>
+                    </div>
+                  </form>
+                </section>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </main>
-
-    <!-- 모달 HTML이 동적으로 들어올 자리 -->
-    <div id="post-modal-root"></div>
+    </div>
 
     <!--footer-->
     <div th:replace="~{fragments/footer :: common-footer}"></div>
 
-    <!-- 게시물 모달용 JS -->
-    <script defer th:src="@{/features/post/js/modal_manager.js}"></script>
-    <script defer th:src="@{/features/post/js/like_manager.js}"></script>
-    <script defer th:src="@{/features/post/js/post_detail.js}"></script>
     <!-- JS -->
     <script type="module" th:src="@{/features/profile/js/profile_main.js}"></script>
   </body>

@@ -276,201 +276,26 @@
   height: 2.5rem;
 }
 
-/* ========== 라이트박스 ========== */
-.lightbox[hidden] {
-  display: none !important;
-}
-
-.lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-}
-
-.lightbox__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(17, 17, 17, 0.6);
-  backdrop-filter: blur(2px);
-}
-
-.lightbox__dialog {
-  position: relative;
-  z-index: 1;
-  width: min(62.5rem, 96vw);
-  height: min(42rem, 90vh);
-  margin: 4vh auto;
-  background: var(--gray-000);
-  border-radius: 0.5rem;
-  overflow: hidden;
-  display: grid;
-}
-
-.lightbox__close {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  width: 2.25rem;
-  height: 2.25rem;
-  border: 1px solid var(--gray-300);
-  border-radius: 50%;
-  background: var(--gray-000);
-  color: var(--gray-900);
-  font-size: 1.25rem;
-  cursor: pointer;
-}
-
-.lightbox__body {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 0;
-  height: 100%;
-}
-
-.lightbox__media {
-  background: var(--gray-050);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-.lightbox__img {
+.modal-loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  gap: 16px;
 }
-
-.lightbox__side {
-  display: grid;
-  grid-template-rows: auto 1fr auto auto;
-  border-left: 1px solid var(--gray-200);
-  min-width: 0;
-}
-
-.lightbox__header {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--gray-200);
-}
-.lightbox__author {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.lightbox__avatar {
-  width: 2rem;
-  height: 2rem;
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #2b3f33;
   border-radius: 50%;
-  object-fit: cover;
-  background: var(--gray-100);
-  border: 1px solid var(--gray-200);
+  animation: spin 1s linear infinite;
 }
-.lightbox__author-meta {
-  display: grid;
-  line-height: 1.2;
-}
-.lightbox__nickname {
-  font-weight: 700;
-}
-.lightbox__email {
-  font-size: 0.875rem;
-  color: var(--gray-700);
-}
-
-.lightbox__content {
-  padding: 1rem;
-  overflow: auto;
-}
-.lightbox__text {
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.lightbox__stats {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-top: 1px solid var(--gray-200);
-  border-bottom: 1px solid var(--gray-200);
-}
-.btn-like {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 999px;
-  border: 1px solid var(--gray-300);
-  background: var(--gray-000);
-  cursor: pointer;
-}
-.btn-like[aria-pressed="true"] {
-  background: var(--purple-100);
-  border-color: var(--purple-400);
-  color: var(--purple-800);
-}
-.counts {
-  display: inline-flex;
-  gap: 1rem;
-  color: var(--gray-800);
-}
-.counts__num {
-  font-weight: 800;
-}
-
-.lightbox__comment-form {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-}
-.comment-input {
-  width: 100%;
-  height: 2.5rem;
-  border: 1px solid var(--gray-300);
-  border-radius: 0.5rem;
-  padding: 0 0.75rem;
-  outline: none;
-}
-.comment-input:focus {
-  border-color: var(--purple-400);
-  box-shadow: 0 0 0 3px rgba(156, 102, 255, 0.15);
-}
-.comment-submit {
-  height: 2.5rem;
-  padding: 0 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--purple-500);
-  background: var(--purple-500);
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-}
-.comment-submit:hover {
-  background: var(--purple-600);
-  border-color: var(--purple-600);
-}
-
-.lightbox__comments {
-  padding: 0.5rem 1rem 1rem;
-  overflow: auto;
-  min-height: 3rem;
-  max-height: 12rem;
-  display: grid;
-  gap: 0.75rem;
-}
-
-/* 반응형: 태블릿/모바일에서 상하 스택 */
-@media (max-width: 64rem) {
-  .lightbox__dialog {
-    width: min(56rem, 96vw);
-    height: min(80vh, 90vh);
-  }
-  .lightbox__body {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(16rem, 45vh) 1fr;
-  }
-  .lightbox__side {
-    border-left: none;
-    border-top: 1px solid var(--gray-200);
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
