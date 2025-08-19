@@ -93,9 +93,16 @@ main {
 }
 
 /* 공통 패널 스타일 (info, contentSection 공유) */
-.heritage__summary__info,
-#contentSection {
+.heritage__summary__info {
   background: var(--stone-800);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: calc(var(--spacing-unit) * 2);
+}
+
+#contentSection {
+  background: var(--white);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -308,7 +315,7 @@ main {
 .heritage__content {
   white-space: pre-line;
   line-height: 1.6;
-  color: var(--text-color);
+  color: var(--white);
   word-break: keep-all;
 }
 
@@ -378,9 +385,10 @@ main {
 .content-toggle-btn {
   display: block;
   margin: 8px auto;
-  background: transparent;
+  background: var(--sand-600);
   border: 1px solid var(--primary-color);
   color: var(--primary-color);
+  font-weight: 600;
   padding: 6px 14px;
   border-radius: var(--radius-sm);
   cursor: pointer;
