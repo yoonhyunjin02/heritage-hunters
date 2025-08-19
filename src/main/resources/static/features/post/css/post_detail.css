@@ -1,52 +1,4 @@
 /* 드롭다운 메뉴 스타일 */
-.dropdown {
-  position: relative;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 36px;
-  right: 0;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  padding: 4px;
-  min-width: 120px;
-  display: none;
-  z-index: 1000;
-  border: 1px solid #e9ecef;
-}
-
-.dropdown-menu.show {
-  display: block;
-  animation: fadeInDown 0.2s ease;
-}
-
-.dropdown-item {
-  display: block;
-  width: 100%;
-  padding: 8px 12px;
-  text-decoration: none;
-  color: #333;
-  border: none;
-  background: none;
-  text-align: left;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.dropdown-item:hover {
-  background: #f8f9fa;
-  color: var(--blue-800);
-}
-
-.delete-item:hover {
-  background: #ffe6e6;
-  color: #dc3545;
-}
-
 .icon-btn {
   background: none;
   border: none;
@@ -245,7 +197,7 @@
 .author-avatar-placeholder {
   display: grid;
   place-items: center;
-  background: var(--blue-800);
+  background: var(--sand-600);
   color: #fff;
   font-weight: 700;
 }
@@ -268,7 +220,7 @@
 }
 
 .content-text {
-  font-size: 14px;
+  font-size: 0.9rem;
   line-height: 1.5;
   color: #333;
   margin: 0;
@@ -282,7 +234,7 @@
 }
 
 .location-text {
-  font-size: 14px;
+  font-size: 0.9rem;
   line-height: 1.5;
   color: #333;
   margin: 0;
@@ -373,21 +325,21 @@
 
 .comment-input {
   width: 100%;
-  min-height: 80px;
-  padding: 10px 12px;
+  min-height: 5rem;
+  padding: 0.625rem 0.75rem;
   border: 1px solid #e2e2e2;
   border-radius: 6px;
-  resize: vertical;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.9rem;
   line-height: 1.5;
   background: white;
   transition: border-color 0.3s ease;
+  resize: none;
 }
 
 .comment-input:focus {
   outline: none;
-  border-color: var(--blue-800);
+  border-color: var(--stone-800);
   box-shadow: 0 0 0 3px rgba(31, 53, 76, 0.12);
 }
 
@@ -404,7 +356,7 @@
 }
 
 .btn-primary {
-  background: var(--blue-800);
+  background: var(--sand-600);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -416,7 +368,7 @@
 }
 
 .btn-primary:hover {
-  background: #1a2e40;
+  background: var(--stone-800);
 }
 
 /* 댓글 목록 */
@@ -545,7 +497,7 @@
 
 /* 게시글 수정 폼 스타일 */
 .edit-form .form-section {
-  margin: 0 0 16px 16px;
+  margin-bottom: 1rem;
 }
 
 .form-label {
@@ -553,7 +505,7 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 0.9rem;
 }
 
 .form-label .required {
@@ -567,27 +519,26 @@
   border: 1px solid #e2e2e2;
   border-radius: 6px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.9rem;
   line-height: 1.5;
-  background: white;
+  background: var(--white);
   transition: border-color 0.3s ease;
 }
 
 .form-input:focus, .form-textarea:focus {
-  outline: none;
-  border-color: var(--blue-800);
-  box-shadow: 0 0 0 3px rgba(31, 53, 76, 0.12);
+  border: 1px solid var(--stone-800);
+  border-color: var(--stone-800);
 }
 
 .form-textarea {
-  min-height: 120px;
-  resize: vertical;
+  min-height: 7.5rem;
+  resize: none;
 }
 
 .char-count {
-  margin-top: 6px;
+  margin-top: 0.5rem;
   text-align: right;
-  font-size: 12px;
+  font-size:0.7rem;
   color: #777;
 }
 
@@ -595,8 +546,8 @@
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  margin-top: 20px;
-  padding-top: 16px;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
   border-top: 1px solid #f0f0f0;
 }
 
@@ -604,10 +555,10 @@
   background: #6c757d;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 0.625rem 1.25rem;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   transition: all 0.2s ease;
 }
@@ -686,12 +637,12 @@
 }
 
 .upload-zone:hover {
-  border-color: var(--blue-800);
+  border-color: var(--sand-600);
   background: rgba(31, 53, 76, 0.05);
 }
 
 .upload-zone.dragover {
-  border-color: var(--blue-800);
+  border-color: var(--sand-600);
   background: rgba(31, 53, 76, 0.05);
   transform: scale(1.02);
 }
@@ -732,7 +683,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid #f3f3f3;
-  border-top: 3px solid var(--blue-800);
+  border-top: 3px solid var(--sand-600);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -786,12 +737,8 @@
 }
 
 /* 포커스 스타일 */
-button:focus,
-.dropdown-item:focus,
-.form-input:focus,
-.form-textarea:focus {
-  outline: 2px solid var(--blue-800);
-  outline-offset: 2px;
+button:focus {
+  outline: 2px solid var(--stone-800);
 }
 
 /* ===== 게시글 수정 모달 전용 오버라이드 ===== */
@@ -843,7 +790,7 @@ button:focus,
 
 /* 활성 썸네일 강조(상세와 비슷하게) */
 #postEditModal .thumb.active {
-  outline: 2px solid var(--blue-800);
+  outline: 2px solid var(--sand-600);
   outline-offset: 0;
 }
 
@@ -854,17 +801,6 @@ button:focus,
   outline: none;
 }
 
-/* fadeInDown 애니메이션 (드롭다운용) */
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 /* 반응형 */
 @media (max-width: var(--bp-tablet)) {
@@ -884,7 +820,7 @@ button:focus,
   }
 
   .comment-input {
-    font-size: 16px;
+    font-size: 1rem;
   }
 
   .gallery-nav {
@@ -928,35 +864,5 @@ button:focus,
   to {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* 닫기 애니메이션 키프레임 */
-@keyframes modalFadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes modalScaleOut {
-  from {
-    opacity: 1;
-    transform: scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: scale(.98);
   }
 }
