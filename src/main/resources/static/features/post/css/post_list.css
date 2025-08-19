@@ -2,22 +2,13 @@
    게시글 리스트 페이지 스타일
    ======================================== */
 
+/* 로컬 변수 - 실제 사용되는 것만 유지 */
 :root {
-  /* OAuth 색상 테마 적용 */
-  --primary-color: #2b3f33;
-  --primary-hover: #1e2b25;
   --secondary-color: #6c757d;
-  --success-color: #28a745;
-  --danger-color: #d14343;
-  --warning-color: #ffc107;
-  --info-color: #17a2b8;
   --light-color: #f8f9fa;
   --dark-color: #343a40;
   --border-color: #e5e7eb;
-  --accent-color: #d16a4b;
-  --focus-color: #a7b1a7;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
   --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.15);
   --border-radius: 8px;
   --transition: all 0.3s ease;
@@ -25,10 +16,11 @@
 
 /* 컨테이너 */
 .main-content {
-  max-width: 1200px;
+  max-width: var(--section-max);
   margin: 0 auto;
   padding: 20px;
   font-family: sans-serif;
+  background-color: #fff;
 }
 
 /* 검색/필터 */
@@ -58,7 +50,7 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #2b3f33;
+  border-color: var(--blue-800);
   box-shadow: 0 0.75rem 1.875rem rgba(0,0,0,0.08)
 }
 
@@ -83,9 +75,11 @@
 
 .sort-filter-tabs {
   display: flex;
-  background: var(--light-color);
-  border-radius: var(--border-radius);
+  background: #fff;
+  border: 2px solid var(--border-color);
+  border-radius: 25px;
   padding: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .sort-filter-tabs input[type="radio"] {
@@ -93,49 +87,56 @@
 }
 
 .sort-tab {
-  padding: 8px 16px;
+  padding: 10px 20px;
   font-size: 14px;
   color: var(--secondary-color);
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 20px;
   transition: var(--transition);
+  font-weight: 500;
 }
 
 .sort-filter-tabs input[type="radio"]:checked + .sort-tab {
-  background: #2b3f33 !important;
+  background: var(--blue-800);
   color: #fff !important;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(43, 63, 51, 0.3);
+  box-shadow: 0 4px 12px rgba(31, 53, 76, 0.25);
   transform: translateY(-1px);
-  border: 2px solid #1e2b25;
 }
 
 .sort-tab:hover {
-  background: rgba(43, 63, 51, 0.1);
-  color: #2b3f33;
+  background: rgba(31, 53, 76, 0.08);
+  color: var(--blue-800);
 }
 
 .sort-filter-tabs input[type="radio"]:checked + .sort-tab:hover {
-  background: #2b3f33 !important;
+  background: var(--blue-800);
   color: #fff !important;
 }
 
 /* JavaScript에서 추가하는 활성 클래스 */
 .sort-tab.active-filter {
-  background: #2b3f33 !important;
+  background: var(--blue-800);
   color: #fff !important;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(43, 63, 51, 0.3);
+  box-shadow: 0 4px 12px rgba(31, 53, 76, 0.25);
   transform: translateY(-1px);
-  border: 2px solid #1e2b25;
 }
 
 .region-filter-select {
-  padding: 8px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  padding: 12px 20px;
+  border: 2px solid var(--border-color);
+  border-radius: 25px;
   background: #fff;
   font-size: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: var(--transition);
+}
+
+.region-filter-select:focus {
+  outline: none;
+  border-color: var(--blue-800);
+  box-shadow: 0 4px 12px rgba(31, 53, 76, 0.15);
 }
 
 .control-buttons {
@@ -145,19 +146,35 @@
 }
 
 .control-btn {
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  padding: 12px 20px;
+  border: 2px solid var(--border-color);
+  border-radius: 25px;
   background: #fff;
   font-size: 14px;
   cursor: pointer;
   transition: var(--transition);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  font-weight: 500;
+}
+
+.control-btn:hover {
+  background: #f8f9fa;
+  border-color: var(--blue-800);
+  box-shadow: 0 4px 12px rgba(31, 53, 76, 0.15);
+  transform: translateY(-1px);
 }
 
 .new-post-btn {
-  background: var(--primary-color);
+  background: var(--blue-800);
   color: #fff;
-  border-color: var(--primary-color);
+  border-color: var(--blue-800);
+  box-shadow: 0 4px 12px rgba(31, 53, 76, 0.25);
+}
+
+.new-post-btn:hover {
+  background: #1a2e40;
+  border-color: #1a2e40;
+  box-shadow: 0 6px 16px rgba(31, 53, 76, 0.3);
 }
 
 /* 그리드 */
@@ -242,7 +259,7 @@
   border-radius: 999px;
   font-size: .75rem;
   font-weight: 600;
-  background: var(--primary-color);
+  background: var(--blue-800);
   color: #fff;
 }
 
@@ -352,45 +369,21 @@
 }
 
 .page-btn.active {
-  background: var(--primary-color);
+  background: var(--blue-800);
   color: #fff;
-  border-color: var(--primary-color);
+  border-color: var(--blue-800);
 }
 
-/* =========================
-   정렬 탭: 선택(체크) 하이라이트
-   ========================= */
-/* 라디오 숨김(접근성 유지) */
-.sort-filter-tabs input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-/* 기본 라벨 전환 부드럽게 */
-.sort-filter-tabs .sort-tab {
-  transition: var(--transition);
-}
-
-/* 핵심: 체크된 라디오의 바로 다음 라벨을 강하게 표시
-   (뒤에서 로드된 CSS가 덮어쓰지 못하도록 !important 사용) */
-.sort-filter-tabs input[type="radio"]:checked + label.sort-tab {
-  background: var(--primary-color) !important;
-  color: #fff !important;
-  border-color: var(--primary-color) !important;
-  box-shadow: var(--shadow-sm) !important;
-}
 
 /* 반응형 */
-@media (min-width: 768px) and (max-width: 1024px) {
+@media (min-width: var(--bp-mobile)) and (max-width: var(--bp-tablet)) {
   .posts-grid {
     grid-template-columns:repeat(3, 1fr);
     gap: 16px;
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: var(--bp-mobile)) {
   .main-content {
     padding: 12px;
   }

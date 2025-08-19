@@ -39,7 +39,7 @@
 
 .dropdown-item:hover {
   background: #f8f9fa;
-  color: #007bff;
+  color: var(--blue-800);
 }
 
 .delete-item:hover {
@@ -181,6 +181,10 @@
   opacity: 0.6;
 }
 
+.thumb:hover {
+  opacity: 0.8;
+}
+
 .thumb.active {
   opacity: 1;
   border: 2px solid white;
@@ -241,7 +245,7 @@
 .author-avatar-placeholder {
   display: grid;
   place-items: center;
-  background: #2b3f33;
+  background: var(--blue-800);
   color: #fff;
   font-weight: 700;
 }
@@ -346,7 +350,7 @@
 }
 
 .login-notice a {
-  color: #007bff;
+  color: var(--blue-800);
   text-decoration: none;
   font-weight: 600;
 }
@@ -383,8 +387,8 @@
 
 .comment-input:focus {
   outline: none;
-  border-color: #a7b1a7;
-  box-shadow: 0 0 0 3px rgba(33, 81, 57, 0.12);
+  border-color: var(--blue-800);
+  box-shadow: 0 0 0 3px rgba(31, 53, 76, 0.12);
 }
 
 .comment-tools {
@@ -400,7 +404,7 @@
 }
 
 .btn-primary {
-  background: #2b3f33;
+  background: var(--blue-800);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -412,7 +416,7 @@
 }
 
 .btn-primary:hover {
-  background: #1e2b25;
+  background: #1a2e40;
 }
 
 /* 댓글 목록 */
@@ -571,8 +575,8 @@
 
 .form-input:focus, .form-textarea:focus {
   outline: none;
-  border-color: #a7b1a7;
-  box-shadow: 0 0 0 3px rgba(33, 81, 57, 0.12);
+  border-color: var(--blue-800);
+  box-shadow: 0 0 0 3px rgba(31, 53, 76, 0.12);
 }
 
 .form-textarea {
@@ -682,13 +686,13 @@
 }
 
 .upload-zone:hover {
-  border-color: #2b3f33;
-  background: rgba(43, 63, 51, 0.05);
+  border-color: var(--blue-800);
+  background: rgba(31, 53, 76, 0.05);
 }
 
 .upload-zone.dragover {
-  border-color: #2b3f33;
-  background: rgba(43, 63, 51, 0.05);
+  border-color: var(--blue-800);
+  background: rgba(31, 53, 76, 0.05);
   transform: scale(1.02);
 }
 
@@ -728,7 +732,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid #f3f3f3;
-  border-top: 3px solid #2b3f33;
+  border-top: 3px solid var(--blue-800);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -786,7 +790,7 @@ button:focus,
 .dropdown-item:focus,
 .form-input:focus,
 .form-textarea:focus {
-  outline: 2px solid #a7b1a7;
+  outline: 2px solid var(--blue-800);
   outline-offset: 2px;
 }
 
@@ -839,7 +843,7 @@ button:focus,
 
 /* 활성 썸네일 강조(상세와 비슷하게) */
 #postEditModal .thumb.active {
-  outline: 2px solid #56a3ff;
+  outline: 2px solid var(--blue-800);
   outline-offset: 0;
 }
 
@@ -862,8 +866,8 @@ button:focus,
   }
 }
 
-/* 반응형 - post_write_modal.css와 동일 */
-@media (max-width: 992px) {
+/* 반응형 */
+@media (max-width: var(--bp-tablet)) {
   .composer-grid {
     grid-template-columns: 1fr;
   }
@@ -873,14 +877,14 @@ button:focus,
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: var(--bp-mobile)) {
   .avatar, .avatar-fallback {
     width: 32px;
     height: 32px;
   }
 
   .comment-input {
-    font-size: 16px; /* iOS 줌 방지 */
+    font-size: 16px;
   }
 
   .gallery-nav {

@@ -137,7 +137,7 @@
 }
 
 .thumb-item.active {
-  border-color: #2b3f33;
+  border-color: var(--blue-800);
 }
 
 .image-upload-section.drag-over .upload-placeholder {
@@ -145,7 +145,7 @@
 }
 
 .image-upload-section.drag-over {
-  outline: 2px dashed #2b3f33;
+  outline: 2px dashed var(--blue-800);
   outline-offset: -8px;
 }
 
@@ -179,7 +179,7 @@
 .author-avatar-placeholder {
   display: grid;
   place-items: center;
-  background: #2b3f33;
+  background: var(--blue-800);
   color: #fff;
   font-weight: 700;
 }
@@ -215,8 +215,8 @@
 
 .content-textarea:focus {
   outline: none;
-  border-color: #a7b1a7;
-  box-shadow: 0 0 0 3px rgba(33, 81, 57, 0.12);
+  border-color: var(--blue-800);
+  box-shadow: 0 0 0 3px rgba(31, 53, 76, 0.12);
 }
 
 .char-counter {
@@ -236,8 +236,8 @@
 
 .location-input:focus {
   outline: none;
-  border-color: #a7b1a7;
-  box-shadow: 0 0 0 3px rgba(33, 81, 57, 0.12);
+  border-color: var(--blue-800);
+  box-shadow: 0 0 0 3px rgba(31, 53, 76, 0.12);
 }
 
 .field-help {
@@ -266,14 +266,14 @@
 }
 
 .btn-primary {
-  background: #2b3f33;
+  background: var(--blue-800);
   color: #fff;
-  border-color: #2b3f33;
+  border-color: var(--blue-800);
 }
 
 .btn-primary:hover {
-  background: #1e2b25;
-  border-color: #1e2b25;
+  background: #1a2e40;
+  border-color: #1a2e40;
 }
 
 .btn-secondary {
@@ -307,35 +307,10 @@
   animation: spin 1s linear infinite;
 }
 
-/* ============ Animations ============ */
-@keyframes fadeIn {
-  from {
-    opacity: 0
-  }
-  to {
-    opacity: 1
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: .95;
-    transform: scale(.98)
-  }
-  to {
-    opacity: 1;
-    transform: scale(1)
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+/* 애니메이션은 post_detail.css에서 공통 사용 */
 
 /* ============ Responsive ============ */
-@media (max-width: 992px) {
+@media (max-width: var(--bp-tablet)) {
   .composer-grid {
     grid-template-columns: 1fr;
   }
@@ -345,7 +320,7 @@
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: var(--bp-mobile)) {
   .author-avatar, .author-avatar-placeholder {
     width: 32px;
     height: 32px;
@@ -356,10 +331,7 @@
     font-size: 16px;
   }
 
-  /* iOS 줌 방지 */
   .location-input {
     font-size: 16px;
   }
-
-  /* iOS 줌 방지 */
 }
