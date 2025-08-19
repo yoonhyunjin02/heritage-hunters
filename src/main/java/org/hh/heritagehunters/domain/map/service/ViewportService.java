@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+// ViewportService.java
 @Service
 @RequiredArgsConstructor
 public class ViewportService {
@@ -15,26 +16,38 @@ public class ViewportService {
   public List<MapMarkerDto> fetch(String bbox, int limit, String type,
       List<String> museumCats, List<String> designations) {
     String[] sp = bbox.split(",");
-    if (sp.length != 4) {
-      throw new IllegalArgumentException("bbox must be 'south,west,north,east'");
-    }
     double south = Double.parseDouble(sp[0]);
     double west  = Double.parseDouble(sp[1]);
     double north = Double.parseDouble(sp[2]);
     double east  = Double.parseDouble(sp[3]);
 
-    if (museumCats != null && museumCats.isEmpty()) museumCats = null;
-    if (designations != null && designations.isEmpty()) designations = null;
+    museumCats   = (museumCats == null || museumCats.isEmpty()) ? null : museumCats.stream().map(String::trim).toList();
+    designations = (designations == null || designations.isEmpty()) ? null : designations.stream().map(String::trim).toList();
 
-    limit = Math.max(1, Math.min(limit, 2000)); // 여기서도 한번 가드
-    return repo.findByViewport(south, west, north, east, limit,
-        (type == null ? "all" : type), museumCats, designations);
-  }
+    int safeLimit = Math.max(1, Math.min(limit, 2000));
 
-  // 내 위치 반경 조회 (거리순)
-  public List<MapMarkerDto> nearby(double lat, double lng, double radiusMeters, int limit, String type) {
-    if (radiusMeters <= 0) radiusMeters = 2000;           // 기본 2km
-    if (limit <= 0 || limit > 500) limit = 100;           // 안전 상한
-    return repo.findNearby(lat, lng, radiusMeters, limit, (type == null ? "all" : type));
+    // 타입 강제 가드
+    if ("museum".equalsIgnoreCase(type)) {
+      return repo.findMuseums(south, west, north, east, safeLimit, museumCats);
+    }
+    if ("heritage".equalsIgnoreCase(type)) {
+      return repo.findHeritagesExcludingExhibited(south, west, north, east, safeLimit, designations);
+    }
+
+    // type=all : 교차 필터
+    boolean onlyCats = museumCats != null && designations == null;
+    boolean onlyDesi = museumCats == null && designations != null;
+
+    if (onlyCats) {
+      // 박물관 필터만 → 박물관만
+      return repo.findMuseums(south, west, north, east, safeLimit, museumCats);
+    }
+    if (onlyDesi) {
+      // 문화재 필터만 → 문화재만
+      return repo.findHeritagesExcludingExhibited(south, west, north, east, safeLimit, designations);
+    }
+
+    // 둘 다 없거나 둘 다 있으면 혼합
+    return repo.findAllMixed(south, west, north, east, safeLimit, museumCats, designations);
   }
 }
