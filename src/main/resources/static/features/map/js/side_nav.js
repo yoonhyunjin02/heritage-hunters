@@ -106,18 +106,31 @@ function buildFiltersFromData(list){
 function applyFilter(list){
   let out = list || [];
 
-  if (SidebarState.selectedMuseumCats.size > 0){
-    out = out.filter(it => it.type !== 'museum'
-      || SidebarState.selectedMuseumCats.has((it.category ?? '').toString().trim()));
-  }
+  const hasMuseumFilter  = SidebarState.selectedMuseumCats.size > 0;
+  const hasHeritageFilter = SidebarState.selectedDesignations.size > 0;
 
-  if (SidebarState.selectedDesignations.size > 0){
-    const hasCode = (catStr) => {
-      if (!catStr) return false;
-      const arr = String(catStr).split(/[|,/]/).map(s=>s.trim());
-      return arr.some(code => SidebarState.selectedDesignations.has(code));
-    };
-    out = out.filter(it => it.type !== 'heritage' || hasCode(it.category));
+  const hasCode = (catStr) => {
+    if (!catStr) return false;
+    const arr = String(catStr).split(/[|,/]/).map(s=>s.trim());
+    return arr.some(code => SidebarState.selectedDesignations.has(code));
+  };
+
+  if (hasMuseumFilter || hasHeritageFilter){
+    out = out.filter(it => {
+      if (it.type === 'museum'){
+        // 박물관은 카테고리 선택 시 그에 맞게 필터
+        if (!hasMuseumFilter) return true;
+        const cat = (it.category ?? '').toString().trim();
+        return SidebarState.selectedMuseumCats.has(cat);
+      }
+      if (it.type === 'heritage'){
+        // 문화재 종목 선택이 있으면 종목으로 필터
+        if (hasHeritageFilter) return hasCode(it.category);
+        // 박물관 카테고리만 켜진 경우: 문화재는 비노출
+        return false;
+      }
+      return true;
+    });
   }
 
   return out;

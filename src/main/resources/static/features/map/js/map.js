@@ -831,6 +831,7 @@ async function fetchByViewport() {
     bbox.north.toFixed(5),
     bbox.east.toFixed(5)
   ].join(',');
+
   if (key === lastBboxKey) return;
   lastBboxKey = key;
 
