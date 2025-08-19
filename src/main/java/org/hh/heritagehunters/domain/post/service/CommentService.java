@@ -23,9 +23,9 @@ public class CommentService {
   public Comment add(Long postId, User user, CommentCreateRequestDto dto) {
     Post post = postRepository.findById(postId)
         .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
-    Comment c = Comment.create(user, post, dto.getContent());
-    commentRepository.save(c);
+    Comment comment = Comment.create(user, post, dto.getContent());
+    commentRepository.save(comment);
     post.syncCommentCount();
-    return c;
+    return comment;
   }
 }
