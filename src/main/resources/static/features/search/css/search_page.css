@@ -284,23 +284,27 @@
 .search__pagination-link {
   display: block;
   padding: 0.5em 0.75em;
-  border: 1px solid var(--primary-color);
-  background-color: var(--bg-light);
-  color: var(--primary-color);
+  border: none;
+  background-color: transparent;
+  color: #000;
   border-radius: 4px;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color .2s, color .2s, border-color .2s;
 }
 
-.search__pagination-link:hover {
-  background-color: var(--primary-color);
-  color: #fff;
+.search__pagination-link:hover,
+.search__pagination-link:focus-visible {
+  background-color: #fff;
+  color: #000;
+  border-color: #000;
 }
 
-.search__pagination-link--active {
-  background-color: var(--primary-color);
-  color: #fff;
+.search__pagination-link--active,
+.search__pagination-link[aria-current="page"] {
+  background-color: #fff;
+  color: #000;
+  border-color: #000;
 }
 
 /*----------------------------------------
