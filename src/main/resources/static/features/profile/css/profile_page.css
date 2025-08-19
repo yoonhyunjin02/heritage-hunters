@@ -1,16 +1,26 @@
 /* profile_page.css */
-/* 전역 유틸을 기반으로 컴포넌트 스타일만 정의 */
 
+/* 최신 접근성 패턴 적용 */
 .visually-hidden {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  margin: -1px !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  clip: rect(0 0 0 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.visually-hidden.visually-hidden--focusable:focus,
+.visually-hidden.visually-hidden--focusable:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  clip-path: none;
+  white-space: normal;
+  overflow: visible;
 }
 
 /* ========== 상단 프로필 영역 ========== */
@@ -104,16 +114,18 @@
   color: var(--gray-700);
   cursor: pointer;
   transition: color 0.2s ease;
+  outline-offset: 2px;
+}
+.tab-btn:focus-visible {
+  outline: 2px solid var(--stone-800);
+}
+.tab-btn[aria-selected="true"] {
+  color: var(--stone-800);
+  font-weight: 700;
 }
 .tab-btn:hover {
   color: var(--gray-900);
 }
-.tab-btn.is-active {
-  color: var(--stone-800);
-  font-weight: 700;
-}
-
-/* JS에서 data-tab에 따라 translateX(0%, 100%, 200%)로 이동 예정 */
 
 /* ========== 탭 패널 ========== */
 .profile-panels {
@@ -166,8 +178,15 @@
   object-fit: contain;
   transition: transform 0.2s ease;
 }
-.stamp-card:hover .stamp-card__image img {
-  transform: scale(1.03);
+@media (hover: hover) {
+  .stamp-card:hover .stamp-card__image img {
+    transform: scale(1.03);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stamp-card__image img {
+    transition: none;
+  }
 }
 .stamp-card__date {
   display: flex;
@@ -199,13 +218,17 @@
 }
 @media (max-width: 47.9375rem) {
   .post-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 @media (min-width: 64.0625rem) {
   .post-grid {
     gap: 0.5rem;
   }
+}
+.post-grid > .post-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 300px 300px;
 }
 
 .post-card {
@@ -233,7 +256,7 @@
   align-items: center;
   justify-content: center;
   gap: 1.25rem;
-  background: rgba(0, 0, 0, 0.35);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.35));
   color: #fff;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -241,6 +264,21 @@
 .post-thumb:hover .post-thumb__overlay {
   opacity: 1;
 }
+.post-thumb:focus-within .post-thumb__overlay,
+.post-thumb:focus-visible .post-thumb__overlay {
+  opacity: 1;
+}
+@media (hover: none) {
+  .post-thumb__overlay {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .post-thumb__overlay {
+    transition: none;
+  }
+}
+
 .overlay-item {
   display: inline-flex;
   align-items: center;
@@ -265,26 +303,21 @@
   height: 2.5rem;
 }
 
-.modal-loading-overlay {
-  display: flex;
-  flex-direction: column;
+.infinite-sentinel__loading {
+  display: none;
   align-items: center;
   justify-content: center;
-  padding: 60px 24px;
-  width: 100%;
   height: 100%;
-  gap: 16px;
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  animation: grayFade 1.5s ease-in-out infinite;
 }
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #2b3f33;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+@keyframes grayFade {
+  0%,
+  100% {
+    color: #ccc;
+  }
+  50% {
+    color: #555;
   }
 }

@@ -9,8 +9,7 @@
 
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/features/profile/css/profile_page.css}" />
-    <link rel="stylesheet" th:href="@{/features/post/css/modal-common.css}" />
-    <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}" />
+    <link rel="stylesheet" th:href="@{/features/profile/css/modal.css}" />
   </head>
   <body>
     <!--header-->
@@ -78,7 +77,7 @@
         </div>
 
         <!-- 내가 올린 게시물 -->
-        <div id="panel-posts" class="tab-panel" role="tabpanel" aria-labelledby="tab-posts" data-size="9" data-page="1" th:attr="data-has-next=${hasNextPosts}">
+        <div id="panel-posts" class="tab-panel" role="tabpanel" aria-labelledby="tab-posts" data-size="9" data-page="0" th:attr="data-has-next=${hasNextPosts}">
           <ul class="post-grid" role="list" data-infinite="posts" aria-live="polite" aria-busy="false">
             <li class="post-card" th:each="post : ${initialPosts}">
               <a
@@ -107,13 +106,9 @@
               </a>
             </li>
           </ul>
-          <div
-            class="infinite-sentinel"
-            data-sentinel
-            aria-hidden="true"
-            th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/posts'}"
-            aria-busy="false"
-          ></div>
+          <div class="infinite-sentinel" data-sentinel aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/posts'}" aria-busy="false">
+            <p class="infinite-sentinel__loading" hidden>다음 글을 불러오는 중입니다...</p>
+          </div>
           <p class="empty-hint" th:if="${#lists.isEmpty(initialPosts)}">아직 올린 게시물이 없어요.</p>
         </div>
 
@@ -125,7 +120,7 @@
           aria-labelledby="tab-liked"
           hidden
           data-size="9"
-          data-page="1"
+          data-page="0"
           th:attr="data-has-next=${hasNextLiked}"
         >
           <ul class="post-grid" role="list" data-infinite="liked" aria-live="polite" aria-busy="false">
@@ -156,19 +151,16 @@
               </a>
             </li>
           </ul>
-          <div
-            class="infinite-sentinel"
-            data-sentinel
-            aria-hidden="true"
-            th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/likes'}"
-            aria-busy="false"
-          ></div>
+          <div class="infinite-sentinel" data-sentinel aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/likes'}" aria-busy="false">
+            <p class="infinite-sentinel__loading">다음 글을 불러오는 중입니다...</p>
+          </div>
           <p class="empty-hint" th:if="${#lists.isEmpty(initialLiked)}">아직 '좋아요' 누른 게시물이 없어요.</p>
         </div>
       </section>
     </main>
+
     <!-- 게시물 상세 모달 -->
-    <div id="post-modal-root" hidden>
+    <div id="post-modal-root" class="modal-root" hidden>
       <div
         id="postDetailModal"
         class="modal"
@@ -180,11 +172,15 @@
         data-post-id=""
         hidden
       >
+        <div class="modal-loading" id="modalLoading" aria-live="polite" aria-busy="true" hidden>
+          <div class="loading-spinner" aria-hidden="true"></div>
+          <p>게시글을 불러오는 중...</p>
+        </div>
         <div class="modal-content">
           <div class="modal-header">
             <h1 id="postDetailTitle" class="modal-title">게시글 상세</h1>
             <div class="header-actions">
-              <div class="post-actions">
+              <div class="post-actions" hidden>
                 <div class="dropdown">
                   <button
                     class="icon-btn"
@@ -206,11 +202,6 @@
             </div>
           </div>
 
-          <div class="modal-loading-overlay" id="modalLoading" aria-live="polite" aria-busy="true" hidden>
-            <div class="spinner" aria-hidden="true"></div>
-            <p>게시글을 불러오는 중...</p>
-          </div>
-
           <div class="modal-body" id="postDetailDesc">
             <div class="composer-grid">
               <div class="compose-left" aria-label="게시글 이미지">
@@ -228,7 +219,7 @@
 
               <div class="compose-right">
                 <section class="author-display">
-                  <img id="authorAvatar" class="author-avatar" alt="작성자 아바타" hidden data-fallback="/images/placeholders/no-image.png" />
+                  <img id="authorAvatar" class="author-avatar" alt="작성자 아바타" data-fallback="/images/placeholders/no-image.png" />
                   <div class="author-info">
                     <div class="author-name" id="authorName"></div>
                     <time class="author-time" id="postCreatedAt"></time>
@@ -237,6 +228,11 @@
 
                 <section class="content-box">
                   <p class="content-text" id="postContent"></p>
+                </section>
+
+                <section class="location-box">
+                  <h4>위치</h4>
+                  <p class="location-text" id="postLocation"></p>
                 </section>
 
                 <section class="actions-box" aria-live="polite">
@@ -265,11 +261,11 @@
                   </div>
                 </section>
 
-                <section class="login-notice" id="loginNotice" hidden>댓글을 작성하려면 <a href="/login">로그인</a>이 필요합니다.</section>
-
                 <section class="comments-list" id="commentList"></section>
 
-                <section class="comment-write" id="commentWriteSection" hidden>
+                <section class="login-notice" id="loginNotice" hidden>댓글을 작성하려면 <a href="/login">로그인</a>이 필요합니다.</section>
+
+                <section class="comment-write" id="commentWriteSection">
                   <form class="comment-form" id="commentForm">
                     <label for="commentTextarea" class="sr-only">댓글 입력</label>
                     <textarea id="commentTextarea" name="content" class="comment-input" placeholder="댓글을 입력하세요..." maxlength="200" required></textarea>
