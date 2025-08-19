@@ -474,6 +474,9 @@
 
     console.log('댓글 폼 AJAX 이벤트 리스너 등록됨');
     
+    // 중복 제출 방지를 위한 상태 관리
+    let isSubmitting = false;
+    
     // 폼 제출 이벤트
     commentForm.addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -484,16 +487,22 @@
     // Enter 키 이벤트 (댓글 입력창)
     const commentTextarea = document.getElementById('commentTextarea');
     if (commentTextarea) {
-      commentTextarea.addEventListener('keydown', (evt) => {
+      commentTextarea.addEventListener('keydown', async (evt) => {
         if (evt.key === 'Enter' && !evt.shiftKey && !evt.ctrlKey) {
           evt.preventDefault();
-          handleCommentSubmit();
+          await handleCommentSubmit();
         }
       });
     }
 
     // 댓글 제출 처리 함수
     async function handleCommentSubmit() {
+      // 중복 제출 방지
+      if (isSubmitting) {
+        console.log('댓글 제출 중... 중복 요청 무시됨');
+        return;
+      }
+      
       const formData = new FormData(commentForm);
       const postId = getPostId();
       
@@ -508,6 +517,17 @@
         alert('댓글 내용을 입력해주세요.');
         textarea?.focus();
         return;
+      }
+
+      // 제출 상태 설정 및 UI 비활성화
+      isSubmitting = true;
+      const submitButton = commentForm.querySelector('button[type="submit"]');
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = '등록 중...';
+      }
+      if (textarea) {
+        textarea.disabled = true;
       }
 
       try {
@@ -527,8 +547,14 @@
             updateCharCount(textarea);
           }
 
-          // 모달을 유지하면서 댓글 목록만 업데이트
+          // 모달을 유지하면서 댓글 목록 및 개수 업데이트
           await refreshComments(postId);
+          
+          // 게시글 리스트의 댓글 개수도 동기화
+          updatePostListCommentCount(postId);
+          
+          // 게시글 모달 캐시 무효화 (다음 방문 시 최신 댓글 표시)
+          invalidatePostCache(postId);
           
           // 토스트 메시지 표시
           showToastMessage('success', '댓글이 등록되었습니다.');
@@ -539,6 +565,17 @@
       } catch (error) {
         console.error('댓글 등록 오류:', error);
         showToastMessage('error', '댓글 등록에 실패했습니다.');
+      } finally {
+        // 제출 상태 해제 및 UI 활성화
+        isSubmitting = false;
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = '등록';
+        }
+        if (textarea) {
+          textarea.disabled = false;
+          textarea.focus(); // 포커스 복원
+        }
       }
     }
 
@@ -569,6 +606,59 @@
   }
 
   /**
+   * 게시글 리스트의 댓글 개수를 업데이트합니다.
+   */
+  function updatePostListCommentCount(postId) {
+    try {
+      // 현재 모달의 댓글 개수 가져오기
+      const modal = document.getElementById('postDetailModal');
+      if (!modal) return;
+      
+      const commentsList = modal.querySelector('.comments-list');
+      if (!commentsList) return;
+      
+      // 실제 댓글 아이템 개수 세기 (.no-comments 제외)
+      const commentItems = commentsList.querySelectorAll('.comment-item');
+      const newCommentCount = commentItems.length;
+      
+      // 게시글 리스트에서 해당 카드 찾기
+      const postCards = document.querySelectorAll(`.post-card[data-post-id="${postId}"]`);
+      
+      postCards.forEach(card => {
+        // 댓글 개수 업데이트 (댓글이라는 텍스트가 포함된 stat 요소)
+        const commentStats = Array.from(card.querySelectorAll('.stat')).filter(stat => 
+          stat.textContent.includes('댓글')
+        );
+        
+        commentStats.forEach(stat => {
+          const commentCountElement = stat.querySelector('b');
+          if (commentCountElement) {
+            commentCountElement.textContent = newCommentCount;
+          }
+        });
+      });
+      
+      console.log(`게시글 ${postId}의 리스트 댓글 개수가 ${newCommentCount}개로 업데이트됨`);
+    } catch (error) {
+      console.error('게시글 리스트 댓글 개수 업데이트 오류:', error);
+    }
+  }
+
+  /**
+   * 게시글 모달 캐시 무효화
+   */
+  function invalidatePostCache(postId) {
+    try {
+      if (window.PostListManager && typeof window.PostListManager.clearPostCache === 'function') {
+        window.PostListManager.clearPostCache(postId);
+        console.log(`✅ 게시글 ${postId} 캐시 무효화 완료 (댓글 변경)`);
+      }
+    } catch (error) {
+      console.error('❌ 게시글 캐시 무효화 실패:', error);
+    }
+  }
+
+  /**
    * 댓글 목록을 새로고침합니다.
    */
   async function refreshComments(postId) {
@@ -594,12 +684,25 @@
           }
         }
         
-        // 댓글 개수 업데이트
-        const newCommentCount = doc.querySelector('.comment-count');
-        if (newCommentCount) {
-          const currentCommentCount = document.querySelector('#postDetailModal .comment-count');
-          if (currentCommentCount) {
-            currentCommentCount.textContent = newCommentCount.textContent;
+        // 댓글 개수 업데이트 (모달 내부의 통계 영역)
+        const newStatsSection = doc.querySelector('.stats');
+        if (newStatsSection) {
+          const currentStatsSection = document.querySelector('#postDetailModal .stats');
+          if (currentStatsSection) {
+            // 댓글이라는 텍스트가 포함된 stat 요소 찾기
+            const newCommentStats = Array.from(newStatsSection.querySelectorAll('.stat')).filter(stat => 
+              stat.textContent.includes('댓글')
+            );
+            const currentCommentStats = Array.from(currentStatsSection.querySelectorAll('.stat')).filter(stat => 
+              stat.textContent.includes('댓글')
+            );
+            
+            // 댓글 개수 동기화
+            newCommentStats.forEach((newStat, index) => {
+              if (currentCommentStats[index]) {
+                currentCommentStats[index].innerHTML = newStat.innerHTML;
+              }
+            });
           }
         }
         
