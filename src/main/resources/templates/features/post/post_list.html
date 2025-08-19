@@ -35,7 +35,7 @@
                   th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
                   th:if="${entry.key != '00'}"
                   th:value="${entry.key}"
-                  th:selected="${param.region == entry.key}"
+                  th:selected="${region == entry.key}"
                   th:text="${entry.value}"></option>
             </select>
           </div>
