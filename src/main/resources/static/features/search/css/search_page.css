@@ -11,25 +11,29 @@
   --filter-height: 200px;
 }
 
-/* body {
-  display: flex;
-  flex-direction: column;
-} */
-
 /*----------------------------------------
   main Container
 ----------------------------------------*/
 .main-container {
-  /* flex: 1; */
+  /* 메인만 페이지 양옆 레일 */
+  width: 100%;
+  max-width: none;            /* 레일이 화면 끝까지 가도록 */
+  padding: 0;                 /* 안쪽 여백은 .search-inner가 담당 */
+  box-sizing: border-box;
+
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-self: center;
+
+  border-left: 0.625rem solid var(--stone-800);
+  border-right: 0.625rem solid var(--stone-800);
+}
+
+.search-inner {
   width: 100%;
   max-width: 1200px;
+  margin: 0 auto;
   padding: var(--spacing-unit);
   box-sizing: border-box;
-  background: var(--bg-light);
 }
 
 /*----------------------------------------
@@ -46,6 +50,7 @@
 .search__label {
   font-size: 1rem;
   color: var(--text-color);
+  font-weight: 600;
 }
 
 .search__input {
@@ -61,8 +66,8 @@
 ----------------------------------------*/
 .search__btn {
   padding: 0.5em var(--spacing-unit);
-  border: 1px solid var(--primary-color);
-  background-color: var(--primary-color);
+  border: 1px solid var(--beige-50);
+  background-color: var(--stone-800);
   color: #fff;
   border-radius: 4px;
   cursor: pointer;
@@ -71,7 +76,8 @@
 }
 
 .search__btn:hover {
-  background-color: #003f6b;
+  background-color: var(--sand-600);
+  color: var(--black);
 }
 
 /*----------------------------------------
@@ -87,22 +93,24 @@
 
 .search__action-btn {
   padding: 0.5em 1em;
-  border: 1px solid var(--border-color);
-  border-bottom: none;
-  background-color: var(--secondary-color);
+  border: 1px solid var(--sand-600);
+  border-bottom: 1px solid var(--stone-800);
+  background-color: var(--sand-600);
   color: var(--text-color);
+  font-weight: 600;
   border-radius: 4px 4px 0 0;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
 }
 
 .search__action-btn:hover {
-  background-color: var(--border-color);
+  background-color: var(--stone-800);
+  color: var(--white);
 }
 
 .search-mid {
-  background-color: var(--secondary-color);
-  border: 1px solid var(--border-color);
+  background-color: var(--stone-800);
+  border: 1px solid var(--stone-800);
   margin-top: -1px; /* overlap with button’s bottom edge */
   border-radius: 4px;
   padding: var(--spacing-unit);

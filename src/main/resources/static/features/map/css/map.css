@@ -23,7 +23,6 @@
   background: var(--sand-600);
   border-left: 10px solid var(--stone-800);
   border-right: 10px solid var(--stone-800);
-  backdrop-filter: saturate(150%) blur(6px);
   z-index: auto;
 }
 .toolbar-left { display: flex; align-items: center; gap: .75rem; }
