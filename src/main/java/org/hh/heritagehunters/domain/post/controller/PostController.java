@@ -77,7 +77,7 @@ public class PostController {
 
     model.addAttribute("posts", posts);
     model.addAttribute("keyword", keyword);
-    model.addAttribute("region", region);
+    model.addAttribute("region", region != null ? region : "");
     model.addAttribute("sort", sort);
     model.addAttribute("direction", direction);
     model.addAttribute("currentPage", page);
