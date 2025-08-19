@@ -148,9 +148,9 @@
 }
 
 .sort-filter-tabs input[type="radio"]:checked + .sort-tab {
-  background: var(--sand-600);
+  background: var(--stone-800);
   color: var(--white) !important;
-  border-color: var(--sand-600);
+  border-color: var(--stone-800);
   border-bottom: none;
 }
 
@@ -161,16 +161,22 @@
 }
 
 .sort-filter-tabs input[type="radio"]:checked + .sort-tab:hover {
-  background: var(--sand-600);
+  background: var(--stone-800);
   color: var(--white) !important;
   border-bottom: none;
 }
 
 /* JavaScript에서 추가하는 활성 클래스 */
 .sort-tab.active-filter {
-  background: var(--sand-600);
+  background: var(--stone-800);
   color: var(--white) !important;
-  border-color: var(--sand-600);
+  border-color: var(--stone-800);
+}
+
+.region-filter-select.active-region {
+  background: var(--stone-800);
+  color: var(--white);
+  border-color: var(--stone-800);
 }
 
 .region-filter-select {
