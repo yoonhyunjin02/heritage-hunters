@@ -1,6 +1,6 @@
 /* ===== Header Base ===== */
 .header {
-  --hdr-h: 3.5rem; /* 56px */
+  --hdr-h: 4rem;
   background-color: var(--blue-800);
   border: 0.625rem solid var(--stone-800);
   box-sizing: border-box;
