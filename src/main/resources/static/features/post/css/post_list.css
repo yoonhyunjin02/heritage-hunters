@@ -84,7 +84,7 @@
 .post-filter-controls {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   margin: 2rem 1rem 0;
   flex-wrap: wrap;
@@ -99,9 +99,9 @@
   line-height: 1;
   vertical-align: middle;
   padding: 0 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--sand-600);
   border-bottom: none;
-  background: var(--light-color);
+  background: var(--sand-600);
   color: var(--black);
   border-radius: 4px 4px 0 0;
   cursor: pointer;
@@ -113,25 +113,25 @@
 
 .post-action-btn:hover {
   background: var(--stone-800);
-  color: var(--secondary-color);
+  color: var(--white);
 }
 
 .post-filters-left {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 12px;
 }
 
 .post-actions-right {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 4px;
   height: 31px;
 }
 
 .post-filter {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
 }
 
 .sort-filter-tabs {

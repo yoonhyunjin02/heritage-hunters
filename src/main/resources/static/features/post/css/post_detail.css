@@ -71,7 +71,7 @@
   border-radius: 50%;
   font-size: 24px;
   cursor: pointer;
-  z-index: 10;
+  z-index: 9;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -99,7 +99,7 @@
   right: 20px;
   display: flex;
   gap: 8px;
-  z-index: 10;
+  z-index: 9;
   overflow-x: visible;
   padding: 4px;
   background: rgba(0, 0, 0, 0.3);

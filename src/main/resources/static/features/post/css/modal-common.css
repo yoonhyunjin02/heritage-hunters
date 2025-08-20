@@ -116,7 +116,7 @@
   position: relative;
 }
 
-.dropdown-menu {
+.modal-dropdown-menu {
   position: absolute;
   top: 36px;
   right: 0;
@@ -130,12 +130,12 @@
   border: 1px solid #e9ecef;
 }
 
-.dropdown-menu.show {
+.modal-dropdown-menu.show {
   display: block;
   animation: fadeInDown 0.2s ease;
 }
 
-.dropdown-item {
+.modal-dropdown-item {
   display: block;
   width: 100%;
   padding: 8px 12px;
@@ -150,7 +150,7 @@
   transition: all 0.2s ease;
 }
 
-.dropdown-item:hover {
+.modal-dropdown-item:hover {
   background: #f8f9fa;
   color: #007bff;
 }
@@ -350,7 +350,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  z-index: 10;
+  z-index: 9;
 }
 
 .gallery-nav:hover {
