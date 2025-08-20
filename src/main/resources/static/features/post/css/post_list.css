@@ -75,8 +75,10 @@
 }
 
 .search-btn:hover {
-  background: var(--stone-800);
-  border-color: var(--stone-800);
+  background: var(--sand-600) !important;
+  border-color: var(--sand-600) !important;
+  border: 1px solid var(--sand-600) !important;
+  color: var(--black) !important;
 }
 
 .post-filter-controls {
@@ -100,7 +102,7 @@
   border: 1px solid var(--border-color);
   border-bottom: none;
   background: var(--light-color);
-  color: var(--secondary-color);
+  color: var(--black);
   border-radius: 4px 4px 0 0;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
@@ -111,6 +113,7 @@
 
 .post-action-btn:hover {
   background: var(--stone-800);
+  color: var(--secondary-color);
 }
 
 .post-filters-left {
@@ -152,7 +155,7 @@
   vertical-align: middle;
   padding: 0 1rem;
   font-size: 14px;
-  color: var(--white);
+  color: var(--black);
   cursor: pointer;
   border-radius: 4px 4px 0 0;
   transition: background-color 0.2s, color 0.2s;
@@ -189,7 +192,7 @@
 
 .region-filter-select.active-region {
   background: var(--stone-800);
-  color: var(--white);
+  color: var(--black);
   border-color: var(--stone-800);
 }
 
@@ -203,7 +206,7 @@
   border-bottom: none;
   border-radius: 4px 4px 0 0;
   background: var(--sand-600);
-  color: var(--white);
+  color: var(--black);
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
@@ -223,18 +226,19 @@
 
 .new-post-btn {
   background: var(--sand-600);
-  color: var(--white);
+  color: var(--black);
   border-color: var(--sand-600);
 }
 
 .new-post-btn:hover {
   background: var(--stone-800);
   border-color: var(--stone-800);
+  color: var(--white);
 }
 
 .reset-btn {
   background: var(--sand-600);
-  color: var(--white);
+  color: var(--black);
   border-color: var(--border-color);
 }
 

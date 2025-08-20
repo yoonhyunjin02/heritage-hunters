@@ -357,7 +357,7 @@
 
 .btn-primary {
   background: var(--sand-600);
-  color: white;
+  color: var(--black);
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
@@ -369,6 +369,7 @@
 
 .btn-primary:hover {
   background: var(--stone-800);
+  color: var(--white);
 }
 
 /* 댓글 목록 */
