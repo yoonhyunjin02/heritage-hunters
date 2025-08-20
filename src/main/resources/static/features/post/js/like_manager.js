@@ -19,7 +19,7 @@ class LikeManager {
     }
 
     /**
-     * 좋아요 토글 (AJAX 방식)
+     * 좋아요 토글 (낙관적 업데이트)
      * @param {HTMLElement} button - 클릭된 좋아요 버튼
      * @param {boolean} useAjax - AJAX 사용 여부 (기본값: true)
      */
@@ -36,60 +36,212 @@ class LikeManager {
             return;
         }
 
-        // 중복 클릭 방지
+        // 중복 클릭 방지 (짧은 시간동안만)
         if (button.disabled) return;
         button.disabled = true;
 
+        if (useAjax) {
+            // 1. 즉시 UI 업데이트 (낙관적 업데이트)
+            this.performOptimisticUpdate(button);
+            // 2. 백엔드 호출은 비동기로 (UI 블로킹 없음)
+            this.handleAjaxLike(button, postId); // await 제거!
+        } else {
+            this.handleFormSubmit(button, postId);
+        }
+        
+        // 300ms 후 버튼 재활성화 (연속 클릭 방지용)
+        setTimeout(() => {
+            button.disabled = false;
+        }, 300);
+    }
+
+    /**
+     * 낙관적 UI 업데이트 수행
+     */
+    performOptimisticUpdate(button) {
+        const isCurrentlyLiked = button.classList.contains('liked');
+        const currentCount = this.getCurrentLikeCount(button);
+        
+        const newLiked = !isCurrentlyLiked;
+        const newCount = Math.max(0, newLiked ? currentCount + 1 : currentCount - 1);
+        
+        console.log(`낙관적 업데이트: ${isCurrentlyLiked ? '좋아요 취소' : '좋아요'} - ${currentCount} → ${newCount}`);
+        
+        // 현재 버튼 업데이트
+        this.updateUI(button, newLiked, newCount);
+        
+        // 게시글 상세에서 좋아요를 눌렀을 때 리스트의 해당 게시글도 동기화
+        this.syncWithPostList(button, newLiked, newCount);
+    }
+
+    /**
+     * 게시글 리스트와 상세 간 좋아요 상태 동기화
+     */
+    syncWithPostList(currentButton, newLiked, newCount) {
+        // 현재 게시글 ID 가져오기
+        const postId = currentButton.getAttribute('data-post-id') || 
+                      currentButton.closest('[data-post-id]')?.getAttribute('data-post-id');
+        
+        if (!postId) {
+            console.log('게시글 ID를 찾을 수 없어 동기화 생략');
+            return;
+        }
+
+        // 현재 버튼이 게시글 상세 모달에 있는지 확인
+        const isInModal = currentButton.closest('#postDetailModal') !== null;
+        
+        if (isInModal) {
+            // 게시글 상세에서 좋아요를 눌렀을 때 → 리스트의 해당 게시글 동기화
+            this.updatePostListItem(postId, newLiked, newCount);
+            console.log(`게시글 ${postId} 리스트 동기화: ${newLiked ? '좋아요' : '좋아요 취소'} ${newCount}개`);
+        } else {
+            // 게시글 리스트에서 좋아요를 눌렀을 때 → 열린 모달이 있다면 동기화
+            this.updateModalIfOpen(postId, newLiked, newCount);
+            console.log(`게시글 ${postId} 모달 동기화: ${newLiked ? '좋아요' : '좋아요 취소'} ${newCount}개`);
+        }
+
+        // 📌 중요: 게시글 상세 모달 캐시 무효화
+        this.invalidatePostCache(postId);
+    }
+
+    /**
+     * 게시글 상세 모달 캐시 무효화
+     * 좋아요 상태 변경 시 캐시된 HTML에서 오래된 상태가 보이는 것을 방지
+     */
+    invalidatePostCache(postId) {
         try {
-            if (useAjax) {
-                await this.handleAjaxLike(button, postId);
+            // post_list.js의 PostListManager.clearPostCache 호출
+            if (window.PostListManager && typeof window.PostListManager.clearPostCache === 'function') {
+                window.PostListManager.clearPostCache(postId);
+                console.log(`✅ 게시글 ${postId} 캐시 무효화 완료`);
             } else {
-                this.handleFormSubmit(button, postId);
+                console.warn('⚠️ PostListManager.clearPostCache 함수를 찾을 수 없습니다');
             }
         } catch (error) {
-            console.error('좋아요 처리 중 오류:', error);
-            this.showError('좋아요 처리 중 오류가 발생했습니다.');
-        } finally {
-            button.disabled = false;
+            console.error('❌ 게시글 캐시 무효화 실패:', error);
         }
     }
 
     /**
-     * AJAX 방식 좋아요 처리
+     * 게시글 리스트의 특정 게시글 좋아요 상태 업데이트
+     */
+    updatePostListItem(postId, isLiked, likeCount) {
+        // 해당 게시글 카드 찾기
+        const postCards = document.querySelectorAll(`.post-card[data-post-id="${postId}"]`);
+        
+        postCards.forEach(card => {
+            // 좋아요 버튼 상태 업데이트
+            const likeButton = card.querySelector('.like-button');
+            if (likeButton) {
+                if (isLiked) {
+                    likeButton.classList.add('liked');
+                    likeButton.setAttribute('aria-pressed', 'true');
+                } else {
+                    likeButton.classList.remove('liked');
+                    likeButton.setAttribute('aria-pressed', 'false');
+                }
+
+                // SVG fill 속성 업데이트
+                const path = likeButton.querySelector('svg path');
+                if (path) {
+                    path.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+                }
+            }
+
+            // 좋아요 개수 업데이트 (게시글 리스트의 통계 영역)
+            const likeStatElements = card.querySelectorAll('.stat');
+            likeStatElements.forEach(stat => {
+                if (stat.textContent.includes('좋아요')) {
+                    const bElement = stat.querySelector('b');
+                    if (bElement) {
+                        bElement.textContent = likeCount;
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * 열린 모달이 해당 게시글이면 좋아요 상태 업데이트
+     */
+    updateModalIfOpen(postId, isLiked, likeCount) {
+        const modal = document.getElementById('postDetailModal');
+        if (!modal || modal.style.display === 'none' || !modal.classList.contains('show')) {
+            return; // 모달이 열려있지 않음
+        }
+
+        const modalPostId = modal.getAttribute('data-post-id') || modal.dataset.postId;
+        if (modalPostId !== postId) {
+            return; // 다른 게시글의 모달임
+        }
+
+        // 모달의 좋아요 버튼 업데이트
+        const modalLikeButton = modal.querySelector('.like-button');
+        if (modalLikeButton) {
+            if (isLiked) {
+                modalLikeButton.classList.add('liked');
+                modalLikeButton.setAttribute('aria-pressed', 'true');
+            } else {
+                modalLikeButton.classList.remove('liked');
+                modalLikeButton.setAttribute('aria-pressed', 'false');
+            }
+
+            // SVG fill 속성 업데이트
+            const path = modalLikeButton.querySelector('svg path');
+            if (path) {
+                path.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+            }
+        }
+
+        // 모달의 좋아요 개수 업데이트
+        const modalStats = modal.querySelector('.actions-box .stats');
+        if (modalStats) {
+            const statElements = modalStats.querySelectorAll('.stat');
+            statElements.forEach(stat => {
+                if (stat.textContent.includes('좋아요')) {
+                    const bElement = stat.querySelector('b');
+                    if (bElement) {
+                        bElement.textContent = likeCount;
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * AJAX 방식 좋아요 처리 (백엔드 동기화용)
      */
     async handleAjaxLike(button, postId) {
-        const response = await fetch(`/posts/${postId}/like`, {
-            method: 'POST',
-            headers: {
-                [this.csrfHeader]: this.csrfToken,
-                'Content-Type': 'application/x-www-form-urlencoded'
-            }
-        });
+        try {
+            const response = await fetch(`/posts/${postId}/like`, {
+                method: 'POST',
+                headers: {
+                    [this.csrfHeader]: this.csrfToken,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
 
-        if (response.ok) {
-            const contentType = response.headers.get('content-type');
-            
-            if (contentType && contentType.includes('application/json')) {
-                // JSON 응답 처리
-                const result = await response.json();
-                this.updateUI(button, result.liked, result.likeCount);
+            if (response.ok) {
+                console.log('백엔드 좋아요 처리 성공');
+                // 성공 시에는 이미 낙관적으로 업데이트된 상태 유지
+                // 필요시 서버 응답으로 정확한 카운트 동기화 가능
+            } else if (response.status === 401) {
+                // 인증 실패 시 UI 롤백 후 로그인 페이지 이동
+                this.performOptimisticUpdate(button); // 롤백
+                this.showError('로그인이 필요합니다.');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1000);
             } else {
-                // HTML 응답인 경우 현재 상태 기반으로 토글
-                const isCurrentlyLiked = button.classList.contains('liked');
-                const currentCount = this.getCurrentLikeCount(button);
-                
-                const newLiked = !isCurrentlyLiked;
-                const newCount = newLiked ? currentCount + 1 : currentCount - 1;
-                
-                this.updateUI(button, newLiked, newCount);
+                // 기타 에러 시 UI 롤백
+                this.performOptimisticUpdate(button); // 롤백
+                throw new Error(`HTTP ${response.status}`);
             }
-        } else if (response.status === 401) {
-            this.showError('로그인이 필요합니다.');
-            setTimeout(() => {
-                window.location.href = '/login';
-            }, 1000);
-        } else {
-            throw new Error(`HTTP ${response.status}`);
+        } catch (error) {
+            // 네트워크 에러 등 시 UI 롤백
+            this.performOptimisticUpdate(button); // 롤백
+            console.error('좋아요 백엔드 처리 실패:', error);
+            this.showError('좋아요 처리 중 오류가 발생했습니다.');
         }
     }
 
@@ -208,21 +360,23 @@ class LikeManager {
     }
 
     /**
-     * 모든 좋아요 버튼에 이벤트 리스너 추가
+     * DOM 위임 패턴으로 좋아요 버튼 이벤트 처리
+     * 동적으로 생성된 버튼들도 자동으로 처리됨
      */
     initializeLikeButtons(useAjax = true) {
-        const likeButtons = document.querySelectorAll('.like-button, .icon-action[title*="좋아요"]');
-        
-        likeButtons.forEach(button => {
-            // 기존 이벤트 리스너 제거
-            button.removeEventListener('click', this.handleLikeClick);
+        // 기존 직접 바인딩 방식 제거하고 DOM 위임 사용
+        document.addEventListener('click', (e) => {
+            // 좋아요 버튼인지 확인
+            const button = e.target.closest('.like-button, .icon-action[title*="좋아요"]');
+            if (!button) return;
             
-            // 새 이벤트 리스너 추가
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation(); // 카드 클릭 이벤트 방지
-                this.toggleLike(button, useAjax);
-            });
+            e.preventDefault();
+            e.stopPropagation(); // 카드 클릭 이벤트 방지
+            
+            // 중복 클릭 방지
+            if (button.disabled) return;
+            
+            this.toggleLike(button, useAjax);
         });
     }
 }

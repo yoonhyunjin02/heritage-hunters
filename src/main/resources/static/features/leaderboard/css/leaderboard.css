@@ -4,7 +4,32 @@ html, body {
 }
 
 body.leaderboard-page {
-  min-height: 100%;
+  min-height: 100vh;
+
+  border-top: none;
+  border-bottom: none;
+
+  display: flex;
+  flex-direction: column;
+}
+
+body.leaderboard-page .main-container {
+  flex: 1 0 auto;
+  /* 레일이 화면 끝까지 오도록 메인을 전체 폭으로 */
+  width: 100%;
+  max-width: none;       /* 기존 var(--section-max) 제한 해제(이 페이지에서만) */
+  box-sizing: border-box;/* 보더 두께 포함해서 중앙 레이아웃 안흔들리게 */
+
+  /* 페이지 양옆 레일 */
+  border-left: 0.625rem solid var(--stone-800);
+  border-right: 0.625rem solid var(--stone-800);
+
+  /* 기존 속성 유지 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  padding: 0;
 }
 
 /* 공통 메인 컨테이너 */
@@ -17,7 +42,7 @@ body.leaderboard-page {
   width: 100%;
   max-width: var(--section-max);
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0;
 }
 
 .leaderboard-background {
@@ -26,7 +51,7 @@ body.leaderboard-page {
   margin: 0 auto;
 
   background: url('/images/background.png') no-repeat center top;
-  background-size: cover;
+  background-size: 1000px auto;
   background-attachment: scroll;
 }
 
@@ -35,7 +60,7 @@ body.leaderboard-page {
   width: 100%;
   max-width: 1000px;
   margin: 0 auto;
-  padding-top: 60vh;
+  padding-top: 39vh;
   position: relative;
 }
 
@@ -68,10 +93,12 @@ body.leaderboard-page {
 }
 
 .rank-circle a {
-  display: inline-block;
+  display: flex;
   width: 2.5rem;
   height: 2.5rem;
-  line-height: 2.5rem;
+  justify-content: center;
+  align-items: center;
+  /* line-height: 2.5rem; */
   border-radius: 50%;
   background: var(--gray-800);
   color: var(--gray-000);
@@ -83,7 +110,7 @@ body.leaderboard-page {
 }
 
 .rank-circle a:hover {
-  background: var(--purple-500);
+  background: var(--blue-800);
   color: var(--gray-000);
 }
 
@@ -100,6 +127,10 @@ body.leaderboard-page {
   position: absolute;   /* 중앙 원 기준으로 좌우 배치 */
   top: 50%;
   transform: translateY(-50%);
+}
+
+.user-box a:hover {
+  background: var(--blue-800);
 }
 
 .user-box .nickname {
@@ -132,6 +163,7 @@ body.leaderboard-page {
   border-radius: 50%;
   background-color: #fff;
   object-fit: cover;
+  object-position: center;
   flex-shrink: 0;
 }
 

@@ -140,9 +140,9 @@
 
           <!-- 댓글 작성 -->
           <section class="comment-write" sec:authorize="isAuthenticated()">
-            <form class="comment-form" th:action="@{/posts/{id}/comments(id=${post.id})}" method="post">
+            <form id="commentForm" class="comment-form" th:action="@{/posts/{id}/comments(id=${post.id})}" method="post">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-              <textarea id="commentTextarea" name="content" class="comment-input" placeholder="댓글을 입력하세요..." maxlength="200" required></textarea>
+              <textarea id="commentTextarea" name="content" class="comment-input" placeholder="댓글을 입력하세요... (Enter: 전송, Shift+Enter: 줄바꿈)" maxlength="200" required></textarea>
               <div class="comment-tools">
                 <div class="count"><span id="commentCharCount">0</span> / 200자</div>
                 <button type="submit" class="btn-primary">등록</button>

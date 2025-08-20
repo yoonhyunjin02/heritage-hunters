@@ -25,17 +25,33 @@
   --bp-mobile: 768px;
 
   /* AI 카드 테마 컬러 */
-  --ai-recommends-color: #a671bf;
-  --ai-news-color: #4a90e2;
-  --ai-weather-color: #f5a623;
-  --ai-content-color: #7ed321;
+  --ai-recommends-color: #D08880;
+  --ai-news-color:       #1F354C;
+  --ai-weather-color:    #5C607D;
+  --ai-content-color:    #CCAEA4;
 
-  /* AI 카드 호버 배경 */
-  --ai-recommends-light: rgba(167, 114, 192, 0.1);
-  --ai-news-light: rgba(74, 144, 226, 0.1);
-  --ai-weather-light: rgba(245, 166, 35, 0.1);
-  --ai-content-light: rgba(126, 211, 33, 0.1);
+  /* AI 카드 호버 배경 (알파 0.1) */
+  --ai-recommends-light: rgba(208, 136, 128, 0.1);
+  --ai-news-light:       rgba(31, 53, 76, 0.1);
+  --ai-weather-light:    rgba(92, 96, 125, 0.1);
+  --ai-content-light:    rgba(204, 174, 164, 0.1);
+
+  --rail-w: 0.625rem;
 }
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: var(--rail-w);
+  background: var(--stone-800, #1f2937);
+  pointer-events: none;
+  z-index: 1;
+}
+body::before { left: 0; }
+body::after  { right: 0; }
 
 /*----------------------------------------
   Title section
@@ -93,9 +109,16 @@ main {
 }
 
 /* 공통 패널 스타일 (info, contentSection 공유) */
-.heritage__summary__info,
+.heritage__summary__info {
+  background: var(--stone-800);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: calc(var(--spacing-unit) * 2);
+}
+
 #contentSection {
-  background: var(--bg-white);
+  background: var(--white);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -116,7 +139,7 @@ main {
 
 .heritage__summary__info figcaption {
   font-size: 0.9rem;
-  color: var(--secondary-color);
+  color: var(--white);
   text-align: center;
 }
 
@@ -131,18 +154,18 @@ main {
 .heritage__summary__info dl {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.5rem 1rem;
+  gap: 1.5rem 3rem;
   margin: 0;
 }
 
 .heritage__summary__info dt {
-  color: var(--primary-color);
+  color: var(--white);
   font-weight: 700;
   align-self: start;
 }
 
 .heritage__summary__info dd {
-  color: var(--text-color);
+  color: var(--white);
   margin: 0;
 }
 
@@ -308,7 +331,7 @@ main {
 .heritage__content {
   white-space: pre-line;
   line-height: 1.6;
-  color: var(--text-color);
+  color: var(--black);
   word-break: keep-all;
 }
 
@@ -378,9 +401,10 @@ main {
 .content-toggle-btn {
   display: block;
   margin: 8px auto;
-  background: transparent;
+  background: var(--sand-600);
   border: 1px solid var(--primary-color);
   color: var(--primary-color);
+  font-weight: 600;
   padding: 6px 14px;
   border-radius: var(--radius-sm);
   cursor: pointer;

@@ -2,6 +2,11 @@
 .main-container{
   text-align:center;
   padding:1rem 0;
+
+  border-top: none;
+  border-bottom: none;
+  border-left: 0.625rem solid var(--stone-800);
+  border-right: 0.625rem solid var(--stone-800);
 }
 
 /* ========= Slideshow ========= */
@@ -43,14 +48,28 @@
 }
 
 /* 위치 라벨 */
-.location-tag{
+.location-tag {
   position: absolute;
-  top: .875rem; right: .875rem;
+  top: .875rem;
+  right: .875rem;
+
+  display: inline-flex;        /* 가로 배치 */
+  align-items: center;         /* 세로 가운데 맞춤 */
+  gap: 4px;                    /* 아이콘과 텍스트 간격 */
+
   background: rgba(255,255,255,.85);
-  padding: .5rem .75rem;
+  padding: .35rem .6rem;       /* 패딩 살짝 줄임 */
   border-radius: .5rem;
-  font-size: .875rem;
+
+  font-size: .8rem;            /* 글자 크기 조금 줄임 */
   z-index: 2;
+}
+
+/* 아이콘 크기 */
+.location-tag .label-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;              /* 아이콘이 눌리지 않도록 */
 }
 
 /* 인디케이터 도트 */
@@ -80,6 +99,9 @@
 .main-nav{
   display:flex; justify-content:center;
   gap:3rem; margin-top:.625rem;
+}
+.main-nav a:hover{
+  color: var(--sand-600);
 }
 .main-nav a{
   text-decoration:none; font-weight:700;

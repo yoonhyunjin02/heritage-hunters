@@ -12,6 +12,11 @@ const slidesData = [
   { src: '/images/main/main10.jpg', alt: '향원정 전경',                  label: '📍 향원정' },
 ];
 
+// 렌더링 시
+function renderLabel(labelText) {
+  return labelText.replace('📍', '<img src="/images/icons/location.svg" class="label-icon" alt="탐색">');
+}
+
 /** 2) 요소 */
 const slidesWrap = document.getElementById('slides');
 const dotsWrap   = document.getElementById('dots');
@@ -23,7 +28,7 @@ const slideEls = slidesData.map((s, i) => {
   slide.className = 'slide';
   slide.innerHTML = `
     <img src="${s.src}" alt="${s.alt}" loading="${i < 2 ? 'eager' : 'lazy'}">
-    <div class="location-tag">${s.label}</div>
+    <div class="location-tag">${renderLabel(s.label)}</div>  <!-- 여기 renderLabel() 적용 -->
   `;
   slidesWrap.appendChild(slide);
   return slide;

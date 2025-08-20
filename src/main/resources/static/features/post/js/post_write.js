@@ -65,8 +65,11 @@ const PostModal = {
 
     // 이미지 선택/드롭
     this.imageInput.addEventListener('change', e => {
+      // GPS는 첫 번째 사진이 없을 때만 추출 (덮어쓰기 방지)
+      if (this.files.length === 0 && e.target.files?.length > 0) {
+        this.extractGps(e.target.files[0]);
+      }
       this.handleFileSelect(e.target.files);
-      this.extractGps(e.target.files?.[0]);
     });
     const upload = document.getElementById('imageUploadSection');
     if (upload) {
@@ -88,8 +91,11 @@ const PostModal = {
       upload.addEventListener('drop', e => {
         e.preventDefault();
         upload.classList.remove('drag-over');
+        // GPS는 첫 번째 사진이 없을 때만 추출 (덮어쓰기 방지)
+        if (this.files.length === 0 && e.dataTransfer.files?.length > 0) {
+          this.extractGps(e.dataTransfer.files[0]);
+        }
         this.handleFileSelect(e.dataTransfer.files);
-        this.extractGps(e.dataTransfer.files?.[0]);
       });
     }
 
@@ -246,7 +252,7 @@ const PostModal = {
    * @description
    * - EXIF 데이터에서 GPS 위도/경도 정보 추출
    * - DMS(도분초) 형식을 십진수 형식으로 변환
-   * - GPS 정보가 없으면 gpsFromImg를 null로 설정
+   * - 첫 번째 사진의 GPS만 사용 (이후 사진은 무시)
    * - 추출된 GPS는 위치 검증에 사용
    */
   extractGps(file) {
@@ -254,11 +260,20 @@ const PostModal = {
       this.gpsFromImg = null;
       return;
     }
+    
+    // 이미 GPS가 설정되어 있으면 덮어쓰지 않음 (첫 번째 사진 우선)
+    if (this.gpsFromImg !== null) {
+      console.log('GPS 이미 설정됨. 첫 번째 사진의 GPS 유지:', this.gpsFromImg);
+      return;
+    }
+    
     EXIF.getData(file, function () {
       const lat = EXIF.getTag(this, 'GPSLatitude');
       const lng = EXIF.getTag(this, 'GPSLongitude');
       if (!lat || !lng) {
-        return (PostModal.gpsFromImg = null);
+        PostModal.gpsFromImg = null;
+        console.log('첫 번째 사진에 GPS 메타데이터가 없음');
+        return;
       }
       const toDec = (dms, ref) => (dms[0] + dms[1] / 60 + dms[2] / 3600)
           * (['S', 'W'].includes(ref) ? -1 : 1);
@@ -266,6 +281,7 @@ const PostModal = {
         lat: toDec(lat, EXIF.getTag(this, 'GPSLatitudeRef') || 'N'),
         lng: toDec(lng, EXIF.getTag(this, 'GPSLongitudeRef') || 'E')
       };
+      console.log('첫 번째 사진에서 GPS 추출됨:', PostModal.gpsFromImg);
     });
   },
 
@@ -335,10 +351,16 @@ const PostModal = {
     if (this.imageInput.files.length === 0) {
       return alert('이미지를 최소 1장 업로드하세요.');
     }
+    
+    // GPS 메타데이터 필수 검증
+    if (!this.gpsFromImg) {
+      return alert('업로드한 사진에 위치 정보가 없습니다.\nGPS 기능이 켜진 상태에서 촬영한 사진을 업로드해주세요.');
+    }
+    
     const latV = parseFloat(lat.value), lngV = parseFloat(lng.value);
-    if (this.gpsFromImg && !isNaN(latV) && !isNaN(lngV)) {
+    if (!isNaN(latV) && !isNaN(lngV)) {
       if (this.haversine(this.gpsFromImg, {lat: latV, lng: lngV}) > 200) {
-        return alert('사진 GPS와 선택 위치가 200 m 이상 차이납니다.');
+        return alert('사진 GPS와 선택 위치가 200m 이상 차이납니다.\n사진이 촬영된 위치와 일치하는 장소를 선택해주세요.');
       }
     }
     return true;
