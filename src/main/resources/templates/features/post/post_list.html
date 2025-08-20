@@ -44,21 +44,25 @@
           <div class="post-filter sort-filter">
             <div class="sort-filter-tabs">
               <input type="radio" name="sort" value="createdAt" id="sort-time"
-                     th:checked="${param.sort == null or param.sort == 'createdAt'}"
+                     th:checked="${sort == null or sort == 'createdAt'}"
                      onchange="submitForm()">
-              <label for="sort-time" class="sort-tab">최신순</label>
+              <label for="sort-time" class="sort-tab" 
+                     th:classappend="${sort == null or sort == 'createdAt' ? 'active-sort' : ''}">최신순</label>
 
               <input type="radio" name="sort" value="viewCount" id="sort-view"
-                     th:checked="${param.sort == 'viewCount'}" onchange="submitForm()">
-              <label for="sort-view" class="sort-tab">조회순</label>
+                     th:checked="${sort == 'viewCount'}" onchange="submitForm()">
+              <label for="sort-view" class="sort-tab"
+                     th:classappend="${sort == 'viewCount' ? 'active-sort' : ''}">조회순</label>
 
               <input type="radio" name="sort" value="likeCount" id="sort-like"
-                     th:checked="${param.sort == 'likeCount'}" onchange="submitForm()">
-              <label for="sort-like" class="sort-tab">좋아요순</label>
+                     th:checked="${sort == 'likeCount'}" onchange="submitForm()">
+              <label for="sort-like" class="sort-tab"
+                     th:classappend="${sort == 'likeCount' ? 'active-sort' : ''}">좋아요순</label>
 
               <input type="radio" name="sort" value="commentCount" id="sort-comment"
-                     th:checked="${param.sort == 'commentCount'}" onchange="submitForm()">
-              <label for="sort-comment" class="sort-tab">댓글순</label>
+                     th:checked="${sort == 'commentCount'}" onchange="submitForm()">
+              <label for="sort-comment" class="sort-tab"
+                     th:classappend="${sort == 'commentCount' ? 'active-sort' : ''}">댓글순</label>
             </div>
           </div>
         </div>

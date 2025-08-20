@@ -249,6 +249,7 @@
   // 초기 바인딩(문서 로드 후)
   // --------------------------->
   document.addEventListener('DOMContentLoaded', () => {
+
     // (1) 필터 초기화 버튼
     const clearBtn = document.getElementById('clearFiltersBtn');
     if (clearBtn) {
