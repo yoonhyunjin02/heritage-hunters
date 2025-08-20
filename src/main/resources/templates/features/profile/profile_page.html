@@ -38,7 +38,12 @@
             <div class="user-meta__row">
               <span class="user-meta__email" th:text="${user.email}">email@example.com</span>
             </div>
+            <div class="user-meta__row">
+              <span class="user-meta__bio" th:text="${user.bio ?: ''}">한 줄 소개</span>
+            </div>
           </div>
+
+          <button type="button" id="editProfileBtn" class="edit-profile-button" th:if="${isOwner}" aria-label="프로필 수정">프로필 수정</button>
         </div>
 
         <div class="profile-header__right" aria-label="점수" aria-live="polite">

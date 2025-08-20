@@ -33,8 +33,7 @@
 }
 
 .profile-header__left {
-  display: grid;
-  grid-template-columns: 6rem 1fr;
+  display: flex;
   gap: 1.25rem;
   align-items: center;
 }
@@ -54,6 +53,7 @@
 }
 
 .user-meta {
+  flex: 1;
   display: grid;
   gap: 0.25rem;
 }
@@ -63,7 +63,30 @@
 }
 .user-meta__email {
   font-size: 0.9375rem;
+  color: var(--gray-600);
+}
+.user-meta__bio {
+  font-size: 0.875rem;
   color: var(--gray-700);
+}
+
+.edit-profile-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--stone-800);
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.edit-profile-button:hover {
+  background: var(--sand-600);
 }
 
 .profile-header__right {
