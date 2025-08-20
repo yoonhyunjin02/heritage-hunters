@@ -1,4 +1,4 @@
-package org.hh.heritagehunters.domain.profile.dto;
+package org.hh.heritagehunters.domain.post.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
