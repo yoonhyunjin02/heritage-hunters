@@ -41,7 +41,7 @@
    * 
    * @description
    * - DOM에서 기존 이미지 정보를 수집
-   * - 이벤트 위임을 통한 클릭/키보드 이벤트 바인딩
+   * - 이벤트 위임을 통한 클릭 이벤트 바인딩
    * - 중복 이벤트 리스너 방지
    */
   function initEditGallery() {
@@ -63,14 +63,11 @@
     // 기존 리스너가 있다면 제거하여 중복 방지
     if (root.handleClickDeleted) {
       root.removeEventListener('click', root.handleClickDeleted);
-      root.removeEventListener('keydown', root.handleKeydown);
     }
 
     // 새 리스너 저장 및 등록
     root.handleClickDeleted = handleClickDeleted;
-    root.handleKeydown = handleKeydown;
     root.addEventListener('click', root.handleClickDeleted);
-    root.addEventListener('keydown', root.handleKeydown);
   }
 
   /**
@@ -148,22 +145,7 @@
     }
   }
 
-  /**
-   * 키보드 이벤트 처리 (방향키 네비게이션)
-   * 
-   * @param {KeyboardEvent} e - 키보드 이벤트 객체
-   * @description
-   * - ArrowLeft: 이전 이미지로 이동
-   * - ArrowRight: 다음 이미지로 이동
-   */
-  function handleKeydown(e) {
-    if (e.key === 'ArrowLeft') {
-      prevImage();
-    }
-    if (e.key === 'ArrowRight') {
-      nextImage();
-    }
-  }
+  
 
   /**
    * 현재 인덱스 기준으로 UI를 업데이트합니다

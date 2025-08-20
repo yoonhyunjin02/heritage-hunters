@@ -14,6 +14,7 @@ import org.hh.heritagehunters.domain.post.dto.request.PostUpdateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostCreateResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostListResponseDto;
+import org.hh.heritagehunters.domain.post.entity.Comment;
 import org.hh.heritagehunters.domain.post.entity.Post;
 import org.hh.heritagehunters.domain.post.service.CommentService;
 import org.hh.heritagehunters.domain.post.service.ImageService;
@@ -85,15 +86,19 @@ public class PostFacade {
    */
   @Transactional
   public PostDetailResponseDto detail(Long postId, User currentUser) {
+    // 1. 게시글 + 이미지 조회 (1개 쿼리)
     Post post = postReader.getPostWithImages(postId);
 
-    // 조회수 증가
+    // 2. 댓글 조회 (1개 쿼리)  
+    List<Comment> comments = postReader.loadComments(postId);
+
+    // 3. 조회수 증가
     post.incrementViewCount();
 
     boolean isLiked = currentUser != null && likeService.isLiked(postId, currentUser.getId());
     boolean isOwner = currentUser != null && post.getUser().getId().equals(currentUser.getId());
 
-    return PostDetailResponseDto.from(post, isLiked, isOwner);
+    return PostDetailResponseDto.from(post, comments, isLiked, isOwner);
   }
 
   /**

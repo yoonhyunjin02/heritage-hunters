@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hh.heritagehunters.domain.post.dto.CommentDto;
 import org.hh.heritagehunters.domain.post.dto.PostImageDto;
+import org.hh.heritagehunters.domain.post.entity.Comment;
 import org.hh.heritagehunters.domain.post.entity.Post;
 
 @Data
@@ -70,8 +71,47 @@ public class PostDetailResponseDto {
         .map(PostImageDto::from)
         .toList());
 
-    // 댓글 목록
+    // 댓글 목록 (Post 엔티티의 댓글 사용)
     dto.setComments(post.getComments().stream()
+        .map(CommentDto::from)
+        .toList());
+
+    dto.setLiked(isLiked);
+    dto.setOwner(isOwner);
+
+    return dto;
+  }
+
+  public static PostDetailResponseDto from(Post post, List<Comment> comments, boolean isLiked, boolean isOwner) {
+    PostDetailResponseDto dto = new PostDetailResponseDto();
+
+    dto.setId(post.getId());
+    dto.setContent(post.getContent());
+    dto.setLocation(post.getLocation());
+    dto.setCreatedAt(post.getCreatedAt());
+    dto.setViewCount(post.getViewCount());
+    dto.setCommentCount(post.getCommentCount());
+    dto.setLikeCount(post.getLikeCount());
+
+    // 작성자 정보
+    dto.setUserId(post.getUser().getId());
+    dto.setUserNickname(post.getUser().getNickname());
+    dto.setUserProfileImage(post.getUser().getProfileImage());
+
+    // 문화유산 정보
+    if (post.getHeritage() != null) {
+      dto.setHeritageId(post.getHeritage().getId());
+      dto.setHeritageName(post.getHeritage().getName());
+      dto.setHeritageRegion(post.getHeritage().getRegion());
+    }
+
+    // 이미지 목록
+    dto.setImages(post.getImages().stream()
+        .map(PostImageDto::from)
+        .toList());
+
+    // 댓글 목록 (별도 조회된 댓글 사용)
+    dto.setComments(comments.stream()
         .map(CommentDto::from)
         .toList());
 

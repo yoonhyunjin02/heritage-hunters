@@ -15,65 +15,65 @@
 
 <div th:replace="~{fragments/header :: common-header}"></div>
 
-<main class="main-content container-max">
+<div class="page-wrapper">
+  <main class="main-content container-max">
 
   <!-- 검색/필터 -->
   <section class="search-filter-section">
     <form th:action="@{/posts}" method="get" class="search-form" id="searchForm">
       <div class="search-container">
-        <div class="search-input-wrapper">
-          <input type="text" name="keyword" th:value="${param.keyword}"
-                 placeholder="문화유산 이름이나 지역을 검색하세요..." class="search-input" id="searchInput">
-          <button type="submit" class="search-btn" title="검색"><img
-              th:src="@{/images/icons/search.svg}" alt="검색 버튼"/></button>
-        </div>
+        <input type="text" name="keyword" th:value="${param.keyword}"
+               placeholder="문화유산 또는 지역을 입력해주세요" class="search-input" id="searchInput">
+        <button type="submit" class="search-btn" title="검색">검색</button>
       </div>
 
-      <div class="filter-controls">
-        <div class="sort-filter-tabs">
-          <input type="radio" name="sort" value="createdAt" id="sort-time"
-                 th:checked="${param.sort == null or param.sort == 'createdAt'}"
-                 onchange="submitForm()">
-          <label for="sort-time" class="sort-tab"> 최신순</label>
+      <div class="post-filter-controls">
+        <div class="post-filters-left">
+          <div class="post-filter region-filter">
+            <select name="region" class="region-filter-select" onchange="submitForm()">
+              <option value="">전체 지역</option>
+              <option
+                  th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
+                  th:if="${entry.key != '00'}"
+                  th:value="${entry.key}"
+                  th:selected="${region == entry.key}"
+                  th:text="${entry.value}"></option>
+            </select>
+          </div>
+          
+          <div class="post-filter sort-filter">
+            <div class="sort-filter-tabs">
+              <input type="radio" name="sort" value="createdAt" id="sort-time"
+                     th:checked="${param.sort == null or param.sort == 'createdAt'}"
+                     onchange="submitForm()">
+              <label for="sort-time" class="sort-tab">최신순</label>
 
-          <input type="radio" name="sort" value="viewCount" id="sort-view"
-                 th:checked="${param.sort == 'viewCount'}" onchange="submitForm()">
-          <label for="sort-view" class="sort-tab">조회순</label>
+              <input type="radio" name="sort" value="viewCount" id="sort-view"
+                     th:checked="${param.sort == 'viewCount'}" onchange="submitForm()">
+              <label for="sort-view" class="sort-tab">조회순</label>
 
-          <input type="radio" name="sort" value="likeCount" id="sort-like"
-                 th:checked="${param.sort == 'likeCount'}" onchange="submitForm()">
-          <label for="sort-like" class="sort-tab">좋아요순</label>
+              <input type="radio" name="sort" value="likeCount" id="sort-like"
+                     th:checked="${param.sort == 'likeCount'}" onchange="submitForm()">
+              <label for="sort-like" class="sort-tab">좋아요순</label>
 
-          <input type="radio" name="sort" value="commentCount" id="sort-comment"
-                 th:checked="${param.sort == 'commentCount'}" onchange="submitForm()">
-          <label for="sort-comment" class="sort-tab">댓글순</label>
+              <input type="radio" name="sort" value="commentCount" id="sort-comment"
+                     th:checked="${param.sort == 'commentCount'}" onchange="submitForm()">
+              <label for="sort-comment" class="sort-tab">댓글순</label>
+            </div>
+          </div>
         </div>
-
-        <div class="region-filter-container">
-          <select name="region" class="region-filter-select" onchange="submitForm()">
-            <option value="">전체 지역</option>
-            <option
-                th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
-                th:if="${entry.key != '00'}"
-                th:value="${entry.key}"
-                th:selected="${param.region == entry.key}"
-                th:text="${entry.value}"></option>
-          </select>
-        </div>
-
-        <div class="control-buttons">
-          <button type="button" id="clearFiltersBtn" class="control-btn reset-btn" title="필터 초기화">
-            초기화
-          </button>
-          <button type="button" id="openPostModal" class="control-btn new-post-btn"
-                  sec:authorize="isAuthenticated()" data-action="open-post-modal">게시글 작성
-          </button>
+        
+        <div class="post-actions-right">
+          <button type="button" id="clearFiltersBtn" class="post-action-btn reset-btn">초기화</button>
+          <button type="button" id="openPostModal" class="post-action-btn new-post-btn"
+                  sec:authorize="isAuthenticated()" data-action="open-post-modal">게시글 작성</button>
         </div>
       </div>
 
       <input type="hidden" name="direction" th:value="${param.direction ?: 'desc'}">
       <input type="hidden" name="page" value="0">
     </form>
+    <div class="search-filter-divider"></div>
   </section>
 
   <!-- 게시글 그리드 -->
@@ -90,13 +90,13 @@
 
           <!-- ① 이미지 -->
           <div class="post-image-container">
-            <img th:if="${post.mainImageUrl != null}"
+            <img th:if="${post.mainImageUrl != null and !post.mainImageUrl.isEmpty()}"
                  th:src="${post.mainImageUrl}"
                  th:alt="${(post.heritage != null ? post.heritage.name : '사진') + ' - ' + post.content}"
                  class="post-image" loading="lazy">
             <div class="image-count-badge"
                  th:if="${post.images != null and #lists.size(post.images) > 1}">
-              📷 <span th:text="${#lists.size(post.images)}">2</span>
+              <img class="camera-svg" th:src="@{/images/icons/cards.svg}" /> <span th:text="${#lists.size(post.images)}">2</span>
             </div>
           </div>
 
@@ -166,11 +166,11 @@
       <div class="pagination">
         <a th:if="${posts.number > 0}"
            th:href="@{/posts(page=0, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-           class="page-btn first-page" title="첫 페이지">‹‹ 처음</a>
+           class="page-btn first-page" title="첫 페이지">‹‹</a>
 
         <a th:if="${posts.number > 0}"
            th:href="@{/posts(page=${posts.number - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-           class="page-btn prev-page">‹ 이전</a>
+           class="page-btn prev-page">‹</a>
 
         <div class="page-numbers">
           <span th:each="i : ${pageNumbers}">
@@ -184,15 +184,16 @@
 
         <a th:if="${posts.number < posts.totalPages - 1}"
            th:href="@{/posts(page=${posts.number + 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-           class="page-btn next-page">다음 ›</a>
+           class="page-btn next-page">›</a>
 
         <a th:if="${posts.number < posts.totalPages - 1}"
            th:href="@{/posts(page=${posts.totalPages - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-           class="page-btn last-page" title="마지막 페이지">마지막 ››</a>
+           class="page-btn last-page" title="마지막 페이지">››</a>
       </div>
     </nav>
   </section>
-</main>
+  </main>
+</div>
 
 <div th:replace="~{fragments/footer :: common-footer}"></div>
 <div th:replace="~{features/post/post_write :: postWriteModal}"></div>

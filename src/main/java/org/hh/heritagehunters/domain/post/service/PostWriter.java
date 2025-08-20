@@ -90,6 +90,7 @@ public class PostWriter {
         .orElse(null);
   }
 
+
   /**
    * Haversine 공식으로 두 좌표 간 거리를 계산합니다 (km 단위)
    */

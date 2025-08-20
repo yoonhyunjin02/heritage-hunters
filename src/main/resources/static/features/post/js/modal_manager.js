@@ -123,11 +123,3 @@ window.closeModal = closeModal;
 window.closePostDetail = closePostDetail;
 window.closePostEdit = closePostEdit;
 window.closePostWrite = closePostWrite;
-
-// 디버깅: 함수들이 정의되었는지 확인
-console.log('Modal manager loaded. Functions defined:', {
-  closeModal: typeof window.closeModal,
-  closePostDetail: typeof window.closePostDetail,
-  closePostEdit: typeof window.closePostEdit,
-  closePostWrite: typeof window.closePostWrite
-});

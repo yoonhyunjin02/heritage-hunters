@@ -49,7 +49,7 @@
 }
 
 .modal-title {
-  font-size: 16px; /* 게시글 작성과 동일한 크기 */
+  font-size: 1rem; /* 게시글 작성과 동일한 크기 */
   font-weight: 600;
   color: #222; /* 게시글 작성과 동일한 색상 */
   margin: 0;
@@ -146,7 +146,7 @@
   text-align: left;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 0.9rem;
   transition: all 0.2s ease;
 }
 
@@ -471,7 +471,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 1;
+  opacity: 0.7;
   transition: all 0.2s ease;
 }
 
@@ -486,8 +486,8 @@
 
 /* 이미지 추가 버튼 */
 .thumb-add-btn {
-  width: 60px;
-  height: 60px;
+  width: 3.75rem;
+  height: 3.75rem;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.2);
   border: 2px dashed rgba(255, 255, 255, 0.5);
@@ -578,7 +578,7 @@
 .author-name {
   font-weight: 600;
   color: #333;
-  font-size: 14px;
+  font-size: 0.9rem;
 }
 
 .author-time {
@@ -588,8 +588,8 @@
 
 /* 폼 섹션 공통 */
 .form-section {
-  padding: 16px 20px;
-  border-bottom: 1px solid #f6f6f6;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--gray-050);
 }
 
 .form-label {
@@ -597,7 +597,7 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 8px;
-  font-size: 14px;
+  font-size: 0.9rem;
 }
 
 .required {
@@ -611,7 +611,7 @@
   border: 1px solid #e2e2e2;
   border-radius: 8px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 0.9rem;
   line-height: 1.5;
   transition: all 0.2s ease;
 }
@@ -619,18 +619,18 @@
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
-  border-color: #2b3f33;
+  border-color: var(--stone-800);
   box-shadow: 0 0 0 3px rgba(43, 63, 51, 0.1);
 }
 
 .form-textarea {
   min-height: 120px;
-  resize: vertical;
+  resize: none;
 }
 
 .char-count {
   text-align: right;
-  font-size: 12px;
+  font-size: 0.7rem;
   color: #6c757d;
   margin-top: 6px;
 }
@@ -647,19 +647,19 @@
 }
 
 .btn-primary {
-  background: #2b3f33;
-  color: white;
-  border: 1px solid #2b3f33;
+  background: var(--sand-600);
+  color: var(--white);
+  border: 1px solid var(--sand-600);
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
-  background: #1e2b25;
-  border-color: #1e2b25;
+  background: var(--stone-800);
+  border-color: var(--stone-800);
 }
 
 .btn-secondary {
@@ -679,7 +679,7 @@
 }
 
 /* 반응형 모달 */
-@media (max-width: 768px) {
+@media (max-width: var(--bp-mobile)) {
   .modal-content {
     max-width: 95vw;
     max-height: 95vh;
@@ -687,37 +687,37 @@
   }
   
   .modal-header {
-    padding: 12px 16px;
+    padding: 0.7rem 1rem;
   }
   
   .modal-body {
-    padding: 16px;
+    padding: 1rem;
     max-height: calc(95vh - 60px);
   }
   
   .modal-title {
-    font-size: 16px;
+    font-size: 1rem;
   }
   
   .gallery-nav {
-    width: 36px;
-    height: 36px;
-    font-size: 18px;
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
   }
   
   .gallery-nav.prev {
-    left: 8px;
+    left: 0.5rem;
   }
   
   .gallery-nav.next {
-    right: 8px;
+    right: 0.5rem;
   }
   
   .thumb,
   .thumb-item,
   .thumb-add-btn {
-    width: 50px;
-    height: 50px;
+    width: 3rem;
+    height: 3rem;
   }
 }
 

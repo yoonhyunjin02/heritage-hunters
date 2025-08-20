@@ -109,6 +109,17 @@
           </section>
 
           <section class="form-section">
+            <label for="content" class="form-label">본문 <span class="required">*</span></label>
+            <textarea id="content" name="content" class="form-textarea"
+                      placeholder="게시글 내용을 입력하세요..." maxlength="200"
+                      required th:text="${post.content}"></textarea>
+            <div class="char-count">
+              <span id="contentCharCount" th:text="${#strings.length(post.content)}">0</span> /
+              200자
+            </div>
+          </section>
+
+          <section class="form-section">
             <label for="locationInput" class="form-label">위치</label>
             <div class="location-input-wrapper">
               <input type="text" id="locationInput" name="location"
@@ -117,17 +128,6 @@
               <input type="hidden" id="latHidden" name="latitude">
               <input type="hidden" id="lngHidden" name="longitude">
               <div id="locationSuggestions" class="location-suggestions"></div>
-            </div>
-          </section>
-
-          <section class="form-section">
-            <label for="content" class="form-label">내용 <span class="required">*</span></label>
-            <textarea id="content" name="content" class="form-textarea"
-                      placeholder="게시글 내용을 입력하세요..." maxlength="1000"
-                      required th:text="${post.content}"></textarea>
-            <div class="char-count">
-              <span id="contentCharCount" th:text="${#strings.length(post.content)}">0</span> /
-              1000자
             </div>
           </section>
 
