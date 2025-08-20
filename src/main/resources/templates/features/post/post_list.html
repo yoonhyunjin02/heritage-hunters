@@ -15,7 +15,8 @@
 
 <div th:replace="~{fragments/header :: common-header}"></div>
 
-<main class="main-content container-max">
+<div class="page-wrapper">
+  <main class="main-content container-max">
 
   <!-- 검색/필터 -->
   <section class="search-filter-section">
@@ -89,7 +90,7 @@
 
           <!-- ① 이미지 -->
           <div class="post-image-container">
-            <img th:if="${post.mainImageUrl != null}"
+            <img th:if="${post.mainImageUrl != null and !post.mainImageUrl.isEmpty()}"
                  th:src="${post.mainImageUrl}"
                  th:alt="${(post.heritage != null ? post.heritage.name : '사진') + ' - ' + post.content}"
                  class="post-image" loading="lazy">
@@ -191,7 +192,8 @@
       </div>
     </nav>
   </section>
-</main>
+  </main>
+</div>
 
 <div th:replace="~{fragments/footer :: common-footer}"></div>
 <div th:replace="~{features/post/post_write :: postWriteModal}"></div>
