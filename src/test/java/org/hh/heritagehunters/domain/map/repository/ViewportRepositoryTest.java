@@ -34,8 +34,8 @@ class ViewportRepositoryTest {
   // ========== 뷰포트 ==========
 
   @Test
-  @DisplayName("findMuseums: 뷰포트 + 카테고리 필터(없음) + sanitize + distanceMeters NULL→0.0")
-  void findMuseums_noCats() throws Exception {
+  @DisplayName("findMuseums: 뷰포트 + 카테고리 필터(없음) + 종목 필터(없음) + sanitize + distanceMeters NULL→0.0")
+  void findMuseums_noCats_noDesigs() throws Exception {
     double s = 33.0, w = 125.0, n = 39.0, e = 132.0;
     int limit = 50;
 
@@ -55,21 +55,35 @@ class ViewportRepositoryTest {
             (sql, params) -> {
               assertThat(sql).contains("FROM museums m");
               assertThat(sql).contains("ST_Intersects(m.geom, ST_MakeEnvelope(:w,:s,:e,:n,4326))");
+              // 카테고리 필터
               assertThat(sql).contains(":catsEmpty OR btrim(m.category) = ANY(:cats)");
+              // 종목(문화재) 필터 - 선택된 경우에만 exhibited_at EXISTS
+              assertThat(sql).contains("FROM exhibited_at ea");
+              assertThat(sql).contains("JOIN heritages h ON h.id = ea.heritages_id");
+              assertThat(sql).contains("regexp_split_to_table");
               assertThat(sql).doesNotContain("UNION ALL");
+
               assertThat(params.get("s")).isEqualTo(s);
               assertThat(params.get("w")).isEqualTo(w);
               assertThat(params.get("n")).isEqualTo(n);
               assertThat(params.get("e")).isEqualTo(e);
               assertThat(params.get("limit")).isEqualTo(limit);
+
+              // cats
               assertThat(params.get("catsEmpty")).isEqualTo(true);
               Object cats = params.get("cats");
               assertThat(cats).isInstanceOf(String[].class);
               assertThat((String[]) cats).isEmpty();
+
+              // desigs
+              assertThat(params.get("desigsEmpty")).isEqualTo(true);
+              Object desigs = params.get("desigs");
+              assertThat(desigs).isInstanceOf(String[].class);
+              assertThat((String[]) desigs).isEmpty();
             }
         ));
 
-    List<MapMarkerDto> out = repo().findMuseums(s, w, n, e, limit, List.of());
+    List<MapMarkerDto> out = repo().findMuseums(s, w, n, e, limit, List.of(), List.of());
 
     assertThat(out).hasSize(1);
     MapMarkerDto dto = out.get(0);
@@ -81,8 +95,8 @@ class ViewportRepositoryTest {
   }
 
   @Test
-  @DisplayName("findMuseums: 카테고리 필터가 있으면 catsEmpty=false, 값은 trim되어 배열로 전달")
-  void findMuseums_withCats() {
+  @DisplayName("findMuseums: 카테고리 필터가 있으면 catsEmpty=false, 값은 trim되어 배열로 전달 / 종목 필터는 비어있으면 desigsEmpty=true")
+  void findMuseums_withCats_noDesigs() {
     double s = 33.0, w = 125.0, n = 39.0, e = 132.0;
 
     when(jdbc.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
@@ -92,10 +106,14 @@ class ViewportRepositoryTest {
               assertThat(params.get("catsEmpty")).isEqualTo(false);
               String[] cats = (String[]) params.get("cats");
               assertThat(cats).containsExactly("역사", "미술"); // 공백 trim 확인
+
+              assertThat(params.get("desigsEmpty")).isEqualTo(true);
+              String[] desigs = (String[]) params.get("desigs");
+              assertThat(desigs).isEmpty();
             }
         ));
 
-    repo().findMuseums(s, w, n, e, 10, List.of("  역사 ", "미술  "));
+    repo().findMuseums(s, w, n, e, 10, List.of("  역사 ", "미술  "), List.of());
   }
 
   @Test
@@ -114,7 +132,7 @@ class ViewportRepositoryTest {
     row.put("category", "통일신라");
     row.put("distanceMeters", null); // 또는 이 줄을 아예 생략해도 됩니다
 
-    when(jdbc.query(anyString(), any(org.springframework.jdbc.core.namedparam.MapSqlParameterSource.class), any(org.springframework.jdbc.core.RowMapper.class)))
+    when(jdbc.query(anyString(), any(MapSqlParameterSource.class), any(RowMapper.class)))
         .thenAnswer(sqlParamAnswer(
             java.util.List.of(row),
             (sql, params) -> {
@@ -166,6 +184,8 @@ class ViewportRepositoryTest {
               assertThat(sql).contains("FROM heritages h");
               assertThat(sql).contains(":catsEmpty OR btrim(m.category) = ANY(:cats)");
               assertThat(sql).contains("NOT EXISTS (SELECT 1 FROM exhibited_at");
+              assertThat(sql).contains("regexp_split_to_table");
+
               assertThat(params.get("catsEmpty")).isEqualTo(false);
               assertThat(params.get("desigsEmpty")).isEqualTo(false);
               assertThat((String[]) params.get("cats")).containsExactly("역사");
