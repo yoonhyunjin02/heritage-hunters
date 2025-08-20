@@ -467,7 +467,6 @@
   function initializeCommentForm() {
     const commentForm = document.getElementById('commentForm');
     if (!commentForm) {
-      console.warn('댓글 폼을 찾을 수 없습니다.');
       return;
     }
 

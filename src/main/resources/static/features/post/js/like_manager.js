@@ -378,8 +378,6 @@ class LikeManager {
             
             this.toggleLike(button, useAjax);
         });
-        
-        console.log('좋아요 버튼 DOM 위임 이벤트 리스너 등록됨');
     }
 }
 
