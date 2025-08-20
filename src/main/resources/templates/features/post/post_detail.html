@@ -33,11 +33,11 @@
                     onclick="togglePostDropdown()">
               ⋯
             </button>
-            <div class="dropdown-menu" id="postDropdown" role="menu">
-              <button type="button" class="dropdown-item" role="menuitem"
+            <div class="modal-dropdown-menu" id="postDropdown" role="menu">
+              <button type="button" class="modal-dropdown-item" role="menuitem"
                       th:onclick="'openPostEdit(' + ${post.id} + ')'">수정
               </button>
-              <button class="dropdown-item delete-item" role="menuitem" onclick="deletePost()">삭제
+              <button class="modal-dropdown-item delete-item" role="menuitem" onclick="deletePost()">삭제
               </button>
             </div>
           </div>
