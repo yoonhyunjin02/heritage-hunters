@@ -2,23 +2,27 @@ package org.hh.heritagehunters.domain.map.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.hh.heritagehunters.common.handler.ApiExceptionHandler;
 import org.hh.heritagehunters.domain.map.dto.MapMarkerDto;
 import org.hh.heritagehunters.domain.map.service.MapService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequiredArgsConstructor
-@Tag(name = "Map", description = "지도 및 마커 관리 API")
+@Tag(name = "map-controller", description = "Map Controller")
 public class MapController {
 
   private final MapService mapService;
@@ -38,12 +42,13 @@ public class MapController {
   )
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", description = "마커 데이터 조회 성공"),
-      @ApiResponse(responseCode = "500", description = "서버 내부 오류 (데이터베이스 연결 오류 등)")
+      @ApiResponse(responseCode = "500", description = "서버 내부 오류",
+          content = @Content(schema = @Schema(implementation = ApiExceptionHandler.class))),
   })
   @GetMapping(value = "/map", produces = MediaType.APPLICATION_JSON_VALUE)
   @ResponseBody
   public List<MapMarkerDto> getMapMarkers(
-      @Parameter(description = "마커 타입 필터 (all: 전체, heritage: 문화재, museum: 박물관·미술관)", example = "all")
+      @Parameter(description = "마커 타입 필터 (all/heritage/museum)")
       @RequestParam(required = false, defaultValue = "all") String type,
       @Parameter(description = "문화재 지정 종류 필터", example = "국보")
       @RequestParam(required = false) String designation,
