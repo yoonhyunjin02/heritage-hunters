@@ -58,8 +58,6 @@ body {
 
 main {
   flex: 1;
-  border-left: 0.625rem solid var(--stone-800);
-  border-right: 0.625rem solid var(--stone-800);
 }
 
 /* 링크: 밑줄 제거 + 색상 상속 */
