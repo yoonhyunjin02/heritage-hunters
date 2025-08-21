@@ -21,29 +21,57 @@
         <h1 id="profile-title" class="visually-hidden">프로필</h1>
 
         <div class="profile-header__left">
-          <div class="avatar">
-            <img
-              class="avatar__img"
-              th:src="${user.profileImage}"
-              th:alt="${user.nickname} + '님의 프로필 사진'"
-              loading="lazy"
-              data-fallback="/images/placeholders/no-image.png"
-            />
+          <!-- 읽기 전용 뷰 -->
+          <div id="profileHeaderView">
+            <div class="avatar">
+              <img
+                class="avatar__img"
+                th:src="${user.profileImage}"
+                th:alt="${user.nickname} + '님의 프로필 사진'"
+                loading="lazy"
+                data-fallback="/images/placeholders/no-image.png"
+              />
+            </div>
+
+            <div class="user-meta">
+              <div class="user-meta__row">
+                <span class="user-meta__nickname" th:text="${user.nickname}">닉네임</span>
+              </div>
+              <div class="user-meta__row">
+                <span class="user-meta__email" th:text="${user.email}">email@example.com</span>
+              </div>
+              <div class="user-meta__row">
+                <span class="user-meta__bio" th:text="${user.bio ?: ''}">한 줄 소개</span>
+              </div>
+            </div>
+
+            <button type="button" id="editProfileBtn" class="edit-profile-button" th:if="${isOwner}" aria-label="프로필 수정">프로필 수정</button>
           </div>
 
-          <div class="user-meta">
-            <div class="user-meta__row">
-              <span class="user-meta__nickname" th:text="${user.nickname}">닉네임</span>
+          <!-- 편집 모드 폼 -->
+          <form id="profileHeaderEdit" class="profile-header__edit" hidden enctype="multipart/form-data">
+            <div class="avatar-edit">
+              <label for="profileImageInput" class="sr-only">프로필 사진 업로드</label>
+              <input type="file" id="profileImageInput" name="profileImage" accept="image/*" />
+              <img id="avatarPreview" class="avatar__img" src="" alt="프로필 사진 프리뷰" loading="lazy" data-fallback="/images/placeholders/no-image.png" />
             </div>
-            <div class="user-meta__row">
-              <span class="user-meta__email" th:text="${user.email}">email@example.com</span>
-            </div>
-            <div class="user-meta__row">
-              <span class="user-meta__bio" th:text="${user.bio ?: ''}">한 줄 소개</span>
-            </div>
-          </div>
 
-          <button type="button" id="editProfileBtn" class="edit-profile-button" th:if="${isOwner}" aria-label="프로필 수정">프로필 수정</button>
+            <div class="user-meta">
+              <div class="user-meta__row">
+                <label for="nicknameInput" class="sr-only">닉네임</label>
+                <input type="text" id="nicknameInput" name="nickname" th:value="${user.nickname}" required maxlength="30" />
+              </div>
+              <div class="user-meta__row">
+                <label for="bioInput" class="sr-only">한 줄 소개</label>
+                <textarea id="bioInput" name="bio" maxlength="100" rows="2" th:text="${user.bio ?: ''}"></textarea>
+              </div>
+            </div>
+
+            <div class="profile-edit-buttons">
+              <button type="button" id="cancelProfileEdit" class="btn-secondary">취소</button>
+              <button type="submit" class="btn-primary">저장</button>
+            </div>
+          </form>
         </div>
 
         <div class="profile-header__right" aria-label="점수" aria-live="polite">
@@ -181,6 +209,7 @@
           <div class="loading-spinner" aria-hidden="true"></div>
           <p>게시글을 불러오는 중...</p>
         </div>
+
         <div class="modal-content">
           <div class="modal-header">
             <h1 id="postDetailTitle" class="modal-title">게시글 상세</h1>
@@ -203,6 +232,7 @@
                   </div>
                 </div>
               </div>
+
               <button class="modal-close" aria-label="닫기" data-action="close-post-modal">&times;</button>
             </div>
           </div>
@@ -232,7 +262,18 @@
                 </section>
 
                 <section class="content-box">
+                  <!-- 읽기 전용 본문 -->
                   <p class="content-text" id="postContent"></p>
+
+                  <!-- 편집 모드 폼 (본문만) -->
+                  <form id="editPostForm" class="edit-post-form" hidden>
+                    <label for="editPostContentInput" class="sr-only">게시글 내용 수정</label>
+                    <textarea id="editPostContentInput" name="content" required maxlength="300" rows="5"></textarea>
+                    <div class="edit-post-buttons">
+                      <button type="button" id="cancelPostEdit" class="btn-secondary">취소</button>
+                      <button type="submit" class="btn-primary">저장</button>
+                    </div>
+                  </form>
                 </section>
 
                 <section class="location-box">
