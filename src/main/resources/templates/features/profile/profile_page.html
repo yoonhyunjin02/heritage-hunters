@@ -233,7 +233,7 @@
                 </div>
               </div>
 
-              <button class="modal-close" aria-label="닫기" data-action="close-post-modal">&times;</button>
+              <button class="modal-close icon-btn" aria-label="닫기" data-action="close-post-modal">&times;</button>
             </div>
           </div>
 
@@ -266,12 +266,12 @@
                   <p class="content-text" id="postContent"></p>
 
                   <!-- 편집 모드 폼 (본문만) -->
-                  <form id="editPostForm" class="edit-post-form" hidden>
+                  <form id="editPostForm" class="edit-post-form hidden">
                     <label for="editPostContentInput" class="sr-only">게시글 내용 수정</label>
                     <textarea id="editPostContentInput" name="content" required maxlength="300" rows="5"></textarea>
                     <div class="edit-post-buttons">
                       <button type="button" id="cancelPostEdit" class="btn-secondary">취소</button>
-                      <button type="submit" class="btn-primary">저장</button>
+                      <button type="submit" id="savePostBtn" class="btn-primary">저장</button>
                     </div>
                   </form>
                 </section>
