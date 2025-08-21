@@ -43,7 +43,7 @@ public class PostWriter {
     Heritage nearest = findNearestHeritage(request.getLat(), request.getLng());
 
     Post post = Post.create(user, nearest, request.getContent(), request.getLocation());
-    // (선택) 유물 연동 시 스코어 +1 및 우표 획득
+    // 유물 연동 시 스코어 +1 및 우표 획득
     if (nearest != null) {
       Integer s = user.getScore();
       user.setScore((s == null ? 0 : s) + 1);
