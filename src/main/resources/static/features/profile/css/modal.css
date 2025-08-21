@@ -290,8 +290,8 @@
   flex: 0 0 auto;
   width: 4rem;
   height: 4rem;
-  border: 2px solid transparent;
-  border-radius: 0.25rem;
+  border: 4px solid transparent;
+  border-radius: 0.5rem;
   overflow: hidden;
   cursor: pointer;
   background: none;
@@ -301,7 +301,7 @@
 }
 
 .gallery-thumbs img.active {
-  border-color: var(--stone-800);
+  border-color: var(--white);
 }
 .gallery-thumbs img:hover {
   transform: scale(1.05);
@@ -318,6 +318,7 @@
   padding: 1rem 1.25rem;
   border-bottom: 1px solid var(--gray-200);
   background: var(--gray-050);
+  cursor: pointer;
 }
 .author-avatar {
   width: 2.5rem;
@@ -450,6 +451,7 @@
   border-radius: 50%;
   overflow: hidden;
   background: var(--gray-200);
+  cursor: pointer;
 }
 .comment-avatar img {
   width: 100%;
@@ -476,6 +478,7 @@
   font-weight: 600;
   font-size: 13px;
   color: #333;
+  cursor: pointer;
 }
 
 .comment-time {
@@ -497,19 +500,21 @@
   font-size: 0.8125rem;
 }
 
-/* ========== 댓글 작성 영역 ========== */
+/* ========== 댓글 작성 영역, 게시글 수정 영역 ========== */
 .comment-write {
   padding: 14px 16px;
   border-bottom: 1px solid #f6f6f6;
 }
 
-.comment-form {
+.comment-form,
+.edit-post-form {
   background: #f8f9fa;
   border-radius: 8px;
   padding: 12px;
 }
 
-.comment-input {
+.comment-input,
+.edit-post-form textarea {
   width: 100%;
   min-height: 80px;
   padding: 10px 12px;
@@ -523,13 +528,15 @@
   transition: border-color 0.3s ease;
 }
 
-.comment-input:focus {
+.comment-input:focus,
+.edit-post-form textarea:focus {
   outline: none;
   border-color: #a7b1a7;
   box-shadow: 0 0 0 3px rgba(33, 81, 57, 0.12);
 }
 
-.comment-tools {
+.comment-tools,
+.edit-post-tools {
   display: flex;
   justify-content: space-between;
   align-items: center;

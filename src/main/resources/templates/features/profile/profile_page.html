@@ -268,10 +268,13 @@
                   <!-- 편집 모드 폼 (본문만) -->
                   <form id="editPostForm" class="edit-post-form hidden">
                     <label for="editPostContentInput" class="sr-only">게시글 내용 수정</label>
-                    <textarea id="editPostContentInput" name="content" required maxlength="300" rows="5"></textarea>
-                    <div class="edit-post-buttons">
-                      <button type="button" id="cancelPostEdit" class="btn-secondary">취소</button>
-                      <button type="submit" id="savePostBtn" class="btn-primary">저장</button>
+                    <textarea id="editPostContentInput" name="content" required maxlength="300" rows="5" placeholder="수정할 내용을 입력하세요..."></textarea>
+                    <div class="edit-post-tools">
+                      <div class="count"><span id="editPostCharCount">0</span> / 300자</div>
+                      <div class="edit-post-buttons">
+                        <button type="button" id="cancelPostEdit" class="btn-secondary">취소</button>
+                        <button type="submit" id="savePostBtn" class="btn-primary">저장</button>
+                      </div>
                     </div>
                   </form>
                 </section>

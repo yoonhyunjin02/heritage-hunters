@@ -74,6 +74,10 @@ export function deleteJSON(url) {
   return fetchJSON(url, { method: "DELETE" });
 }
 
+export function patchJSON(url, body) {
+  return fetchJSON(url, { method: "PATCH", body: JSON.stringify(body) });
+}
+
 /**
  * 멀티파트 PUT 요청용 헬퍼
  * @param {string} url
