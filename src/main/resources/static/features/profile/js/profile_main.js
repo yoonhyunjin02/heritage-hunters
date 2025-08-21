@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initInfiniteScroll();
   initPostModal();
+  initProfileEdit();
 });
 
 function getUserIdFromUrl() {
@@ -12,6 +13,15 @@ function getUserIdFromUrl() {
   return String(segments[segments.length - 1]);
 }
 
+function getCsrfHeaders() {
+  const token = document.querySelector("meta[name='_csrf']").content;
+  const header = document.querySelector("meta[name='_csrf_header']").content;
+  return { [header]: token };
+}
+
+// ==========================
+// 1. 탭 처리
+// ==========================
 function initTabs() {
   const tabs = document.querySelectorAll(".profile-tabs .tab-btn");
   const panels = document.querySelectorAll(".tab-panel");
@@ -34,6 +44,9 @@ function initTabs() {
   });
 }
 
+// ==========================
+// 2. 무한 스크롤
+// ==========================
 function initInfiniteScroll() {
   const userId = getUserIdFromUrl();
 
@@ -53,9 +66,9 @@ function initInfiniteScroll() {
           if (panel.dataset.hasNext !== "true") return;
 
           panel.setAttribute("aria-busy", "true");
-
           const nextPage = Number(panel.dataset.page) + 1;
           const loadingEl = sentinel.querySelector(".infinite-sentinel__loading");
+
           try {
             loadingEl.style.display = "flex";
             const res = await fetch(`${endpoint}?page=${nextPage}&size=${size}`);
@@ -114,6 +127,9 @@ function renderPostCard(post) {
   return li;
 }
 
+// ==========================
+// 3. 게시글 모달 + 상세
+// ==========================
 function initPostModal() {
   const modalRoot = document.getElementById("post-modal-root");
   const modal = document.getElementById("postDetailModal");
@@ -132,20 +148,44 @@ function initPostModal() {
   closeBtn.addEventListener("click", closePostModal);
 
   modalRoot.addEventListener("click", (e) => {
-    if (e.target === modalRoot) {
-      closePostModal();
+    if (e.target === modalRoot) closePostModal();
+  });
+
+  // ==========================
+  // 좋아요 토글
+  // ==========================
+  modal.querySelector("#likeBtn").addEventListener("click", async () => {
+    const likeBtn = modal.querySelector("#likeBtn");
+    const postId = modal.dataset.postId;
+    if (!postId) return;
+
+    // UI 즉시 변경
+    const liked = !likeBtn.classList.contains("liked");
+    likeBtn.classList.toggle("liked", liked);
+    likeBtn.setAttribute("aria-pressed", String(liked));
+    const countEl = modal.querySelector("#likeCount");
+    countEl.textContent = Number(countEl.textContent) + (liked ? 1 : -1);
+
+    try {
+      const res = await fetch(`/profile/${getUserIdFromUrl()}/posts/${postId}/like`, {
+        method: "POST",
+        headers: getCsrfHeaders(),
+      });
+      if (!res.ok) throw new Error(res.statusText);
+
+      const data = await res.json();
+      countEl.textContent = data.likeCount;
+      likeBtn.setAttribute("aria-pressed", String(data.liked));
+      likeBtn.classList.toggle("liked", data.liked);
+    } catch (err) {
+      console.error("좋아요 토글 실패:", err);
     }
   });
 
   async function openPostModal(userId, postId) {
     const isSamePost = String(modal.dataset.postId) === String(postId);
 
-    if (!isSamePost) {
-      clearPostDetail();
-      loadingOverlay.style.display = "flex";
-      modalContent.style.display = "none";
-      modal.setAttribute("aria-busy", "true");
-    }
+    if (!isSamePost) clearPostDetail();
 
     modal.dataset.postId = postId;
     modalRoot.classList.add("show");
@@ -153,22 +193,20 @@ function initPostModal() {
     modal.hidden = false;
     modal.focus();
 
+    loadingOverlay.hidden = false;
+    modalContent.style.display = "none";
+    modal.setAttribute("aria-busy", "true");
+
     try {
       const res = await fetch(`/profile/${userId}/posts/${postId}`);
-      if (res.ok) {
-        const data = await res.json();
-        renderPostDetail(data);
-        const navWrapper = modal.querySelector(".nav-wrapper");
-        if (data.images && data.images.length <= 1) {
-          navWrapper.classList.add("hidden");
-        } else {
-          navWrapper.classList.remove("hidden");
-        }
-      }
+      if (!res.ok) throw new Error(res.statusText);
+      const data = await res.json();
+      renderPostDetail(data);
+      modal.querySelector(".nav-wrapper").classList.toggle("hidden", (data.images?.length || 0) <= 1);
     } catch (err) {
       console.error("게시물 로드 실패:", err);
     } finally {
-      loadingOverlay.style.display = "none";
+      loadingOverlay.hidden = true;
       modalContent.style.display = "flex";
       modal.setAttribute("aria-busy", "false");
     }
@@ -181,96 +219,187 @@ function initPostModal() {
   }
 
   function clearPostDetail() {
-    document.getElementById("authorAvatar").src = "";
-    document.getElementById("authorName").textContent = "";
-    document.getElementById("postCreatedAt").textContent = "";
-    document.getElementById("postContent").textContent = "";
-    document.getElementById("postLocation").textContent = "";
-    document.getElementById("mainImage").src = "";
-    document.getElementById("thumbContainer").innerHTML = "";
-    document.getElementById("viewCount").textContent = "0";
-    document.getElementById("likeCount").textContent = "0";
-    document.getElementById("commentCount").textContent = "0";
-    document.getElementById("commentList").innerHTML = "";
+    [
+      "authorAvatar",
+      "authorName",
+      "postCreatedAt",
+      "postContent",
+      "postLocation",
+      "mainImage",
+      "thumbContainer",
+      "viewCount",
+      "likeCount",
+      "commentCount",
+      "commentList",
+    ].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = "";
+      if (el?.tagName === "IMG") el.src = el.dataset.fallback || "";
+      if (id === "thumbContainer" || id === "commentList") el.innerHTML = "";
+    });
+  }
+
+  function renderPostDetail(data) {
+    // 게시글 수정/삭제 버튼
+    const postActions = modal.querySelector(".post-actions");
+    postActions.hidden = !data.owner;
+
+    // 작성자
+    const authorAvatar = document.getElementById("authorAvatar");
+    authorAvatar.src = data.userProfileImage || authorAvatar.dataset.fallback;
+    document.getElementById("authorName").textContent = data.userNickname || "";
+    const created = new Date(data.createdAt);
+    const absolute = created.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" });
+    document.getElementById("postCreatedAt").textContent = `${absolute} (${formatRelativeTime(created)})`;
+
+    // 내용
+    document.getElementById("postContent").textContent = data.content || "";
+    document.getElementById("postLocation").textContent = data.location || "위치 정보 없음";
+
+    // 이미지
+    const mainImage = document.getElementById("mainImage");
+    mainImage.src = data.images?.[0]?.url || mainImage.dataset.fallback;
+    mainImage.alt = data.heritageName || "게시글 이미지";
+
+    const thumbs = document.getElementById("thumbContainer");
+    thumbs.innerHTML = "";
+    (data.images || []).forEach((img, idx) => {
+      const thumb = document.createElement("img");
+      thumb.src = img.url;
+      thumb.alt = `${idx + 1}번 이미지`;
+      thumb.loading = "lazy";
+      thumb.addEventListener("click", () => {
+        mainImage.src = img.url;
+        mainImage.alt = `${idx + 1}번 이미지`;
+      });
+      thumbs.appendChild(thumb);
+    });
+
+    // 통계
+    document.getElementById("viewCount").textContent = data.viewCount ?? 0;
+    document.getElementById("likeCount").textContent = data.likeCount ?? 0;
+    document.getElementById("commentCount").textContent = data.commentCount ?? 0;
+
+    // 좋아요
+    const likeBtn = document.getElementById("likeBtn");
+    likeBtn.setAttribute("aria-pressed", String(data.liked));
+    likeBtn.classList.toggle("liked", data.liked);
+
+    // 댓글
+    const commentList = document.getElementById("commentList");
+    commentList.innerHTML = "";
+    (data.comments || []).forEach((c) => {
+      const div = document.createElement("div");
+      div.className = "comment-item";
+
+      const cAvatar = document.createElement("div");
+      cAvatar.className = "comment-avatar";
+      const defaultAvatar = `/images/profile/profile${(c.userId % 4) + 1}.png`;
+      cAvatar.innerHTML = `<img src="${c.userProfileImage || defaultAvatar}" alt="${c.userNickname}">`;
+      div.appendChild(cAvatar);
+
+      const cContent = document.createElement("div");
+      cContent.className = "comment-content";
+      cContent.innerHTML = `
+        <div class="comment-head">
+          <span class="comment-name">${c.userNickname}</span>
+          <span class="comment-time">${formatRelativeTime(c.createdAt)}</span>
+        </div>
+        <p class="comment-text">${c.content}</p>
+      `;
+      div.appendChild(cContent);
+
+      commentList.appendChild(div);
+    });
+
+    // 댓글 작성
+    const commentForm = document.getElementById("commentForm");
+    const textarea = document.getElementById("commentTextarea");
+    textarea.value = "";
+    document.getElementById("commentCharCount").textContent = "0";
+
+    commentForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const content = textarea.value.trim();
+      if (!content) return;
+
+      try {
+        const res = await fetch(`/profile/${getUserIdFromUrl()}/posts/${modal.dataset.postId}/comments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...getCsrfHeaders() },
+          body: JSON.stringify({ content }),
+        });
+        if (!res.ok) throw new Error(res.statusText);
+        const comments = await res.json();
+        renderPostDetail({ ...data, comments });
+        textarea.value = "";
+        document.getElementById("commentCharCount").textContent = "0";
+      } catch (err) {
+        console.error("댓글 작성 실패:", err);
+      }
+    };
+
+    textarea.oninput = (e) => {
+      document.getElementById("commentCharCount").textContent = e.target.value.length;
+    };
+
+    // 수정 / 삭제 버튼
+    postActions.querySelector('[data-action="delete-post"]')?.addEventListener("click", async () => {
+      if (!confirm("정말 게시글을 삭제하시겠습니까?")) return;
+      try {
+        const res = await fetch(`/profile/${getUserIdFromUrl()}/posts/${modal.dataset.postId}`, {
+          method: "DELETE",
+          headers: getCsrfHeaders(),
+        });
+        if (!res.ok) throw new Error(res.statusText);
+        closePostModal();
+        window.location.reload();
+      } catch (err) {
+        console.error("게시글 삭제 실패:", err);
+      }
+    });
+
+    postActions.querySelector('[data-action="edit-post"]')?.addEventListener("click", () => {
+      // 추후 모달 내 편집 폼 구현
+      alert("게시글 수정 기능은 추후 구현 예정");
+    });
   }
 }
 
-function renderPostDetail(data) {
-  document.getElementsByClassName("post-actions").hidden = data.owner ? false : true;
+// ==========================
+// 4. 프로필 수정
+// ==========================
+function initProfileEdit() {
+  const editBtn = document.getElementById("editProfileBtn");
+  if (!editBtn) return;
 
-  document.getElementById("authorAvatar").src = data.userProfileImage || document.getElementById("authorAvatar").dataset.fallback;
-  document.getElementById("authorName").textContent = data.userNickname || "";
-
-  const created = new Date(data.createdAt);
-  const absolute = created.toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" });
-  const relative = formatRelativeTime(created);
-  document.getElementById("postCreatedAt").textContent = `${absolute} (${relative})`;
-
-  document.getElementById("postContent").textContent = data.content || "";
-  document.getElementById("postLocation").textContent = data.location || "위치 정보 없음";
-
-  const mainImage = document.getElementById("mainImage");
-  mainImage.src = data.images?.[0]?.url || mainImage.dataset.fallback;
-  mainImage.alt = data.heritageName || "게시글 이미지";
-
-  const thumbs = document.getElementById("thumbContainer");
-  thumbs.innerHTML = "";
-  (data.images || []).forEach((img, idx) => {
-    const thumb = document.createElement("img");
-    thumb.src = img.url;
-    thumb.alt = `${idx + 1}번 이미지`;
-    thumb.loading = "lazy";
-    thumb.addEventListener("click", () => {
-      mainImage.src = img.url;
-      mainImage.alt = `${idx + 1}번 이미지`;
-    });
-    thumbs.appendChild(thumb);
+  editBtn.addEventListener("click", () => {
+    const form = document.getElementById("profileEditForm");
+    if (!form) return;
+    form.classList.toggle("hidden");
   });
 
-  document.getElementById("viewCount").textContent = data.viewCount ?? 0;
-  document.getElementById("likeCount").textContent = data.likeCount ?? 0;
-  document.getElementById("commentCount").textContent = data.commentCount ?? 0;
+  const form = document.getElementById("profileEditForm");
+  if (!form) return;
 
-  const likeBtn = document.getElementById("likeBtn");
-  likeBtn.setAttribute("aria-pressed", String(data.liked));
-  likeBtn.classList.toggle("liked", data.liked === true);
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
 
-  // 댓글 렌더링
-  const commentList = document.getElementById("commentList");
-  commentList.innerHTML = "";
-  (data.comments || []).forEach((c) => {
-    const div = document.createElement("div");
-    div.className = "comment-item";
-
-    // 아바타
-    const cAvatar = document.createElement("div");
-    cAvatar.className = "comment-avatar";
-    const defaultAvatar = `/images/profile/profile${(c.userId % 4) + 1}.png`;
-    cAvatar.innerHTML = `<img src="${c.userProfileImage || defaultAvatar}" alt="${c.userNickname}">`;
-    div.appendChild(cAvatar);
-
-    // 내용
-    const cContent = document.createElement("div");
-    cContent.className = "comment-content";
-
-    // 상대 시간 적용
-    const relativeTime = formatRelativeTime(c.createdAt);
-
-    cContent.innerHTML = `
-      <div class="comment-head">
-        <span class="comment-name">${c.userNickname}</span>
-        <span class="comment-time">${relativeTime}</span>
-      </div>
-      <p class="comment-text">${c.content}</p>
-    `;
-    div.appendChild(cContent);
-
-    commentList.appendChild(div);
-  });
-
-  // 댓글 작성 영역 글자 수 표시
-  const textarea = document.getElementById("commentTextarea");
-  textarea.addEventListener("input", (e) => {
-    document.getElementById("commentCharCount").textContent = e.target.value.length;
+    try {
+      const res = await fetch(`/profile/${getUserIdFromUrl()}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...getCsrfHeaders() },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(res.statusText);
+      const data = await res.json();
+      alert("프로필이 수정되었습니다.");
+      window.location.reload();
+    } catch (err) {
+      console.error("프로필 수정 실패:", err);
+      alert("프로필 수정 실패");
+    }
   });
 }
