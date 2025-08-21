@@ -1,135 +1,48 @@
-// infinite_scroller.js
-import { fetchJSON } from "./utils.js";
+import { getUserIdFromUrl } from "./utils.js";
+import { renderPostCard } from "./post_renderer.js";
+import { getEl, getEls } from "/common/js/utils/dom.js";
+import { getJSON } from "/common/js/api.js";
 
 /**
- * 무한 스크롤러
- * - IntersectionObserver 기반
- * - page/cursor 기반 페이징 모두 지원
- * - 안전한 콜백 실행 및 중복 attach 방지
+ * 프로필 페이지 무한 스크롤 초기화
  */
-export class InfiniteScroller {
-  /**
-   * @param {Object} options
-   * @param {Element} options.listEl - 아이템이 append될 컨테이너(ul/ol/div)
-   * @param {Element} options.sentinelEl - 관찰 대상 센티넬
-   * @param {string} options.endpoint - API 엔드포인트(절대/상대)
-   * @param {Object} [options.params={}] - 초기 쿼리 (page, size, cursor 등)
-   * @param {(item:any)=>Node} options.renderItem - 아이템을 DOM Node로 렌더
-   * @param {(loading:boolean)=>void} [options.onLoading] - 로딩 상태 콜백
-   * @param {(err:Error)=>void} [options.onError] - 오류 콜백
-   * @param {string} [options.rootMargin="800px 0px"] - 옵저버 rootMargin
-   */
-  constructor({ listEl, sentinelEl, endpoint, params = {}, renderItem, onLoading, onError, rootMargin = "800px 0px" }) {
-    if (!(listEl instanceof Element)) throw new TypeError("listEl is required");
-    if (!(sentinelEl instanceof Element)) throw new TypeError("sentinelEl is required");
-    if (typeof endpoint !== "string" || !endpoint) throw new TypeError("endpoint is required");
-    if (typeof renderItem !== "function") throw new TypeError("renderItem must be a function");
+export default function initInfiniteScroll() {
+  const userId = getUserIdFromUrl();
 
-    this.listEl = listEl;
-    this.sentinelEl = sentinelEl;
-    this.endpoint = endpoint;
-    this.params = { ...params };
-    this.renderItem = renderItem;
-    this.onLoading = onLoading || (() => {});
-    this.onError = onError || (() => {});
-    this.done = false;
-    this.loading = false;
-    this.started = false;
-    this.emptyStreak = 0; // 빈 응답 연속 카운트
+  getEls("[data-sentinel]").forEach((sentinel) => {
+    const panel = sentinel.closest(".tab-panel");
+    let endpoint = sentinel.dataset.endpoint;
+    const loadingText = getEl(".infinite-sentinel__loading", sentinel);
+    const size = Number(panel.dataset.size) || 9;
 
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) this.loadMore();
-        }
-      },
-      { rootMargin }
-    );
-  }
-
-  buildURL() {
-    // endpoint에 이미 쿼리가 있으면 merge
-    const url = new URL(this.endpoint, window.location.origin);
-    Object.entries(this.params).forEach(([k, v]) => {
-      if (v != null) url.searchParams.set(k, v);
-    });
-    return url.toString();
-  }
-
-  parsePaging(data) {
-    const items = data?.items || data?.content || [];
-    const hasMore = data?.hasMore ?? data?.last === false ?? Boolean(data?.nextCursor);
-    const nextCursor = data?.nextCursor ?? (this.params.page ?? 0) + 1;
-    return { items, nextCursor, hasMore };
-  }
-
-  async loadMore() {
-    if (this.loading || this.done) return;
-    this.loading = true;
-    this.safely(() => this.onLoading(true));
-    this.sentinelEl.setAttribute("aria-busy", "true");
-    this.listEl.setAttribute("aria-busy", "true");
-
-    try {
-      const data = await fetchJSON(this.buildURL());
-      const { items, nextCursor, hasMore } = this.parsePaging(data);
-
-      if (!Array.isArray(items) || items.length === 0) {
-        this.emptyStreak += 1;
-        if (!hasMore || this.emptyStreak >= 2) {
-          // 빈 응답 2회면 중단
-          this.done = true;
-          this.stop();
-        }
-        return;
-      }
-      this.emptyStreak = 0;
-
-      const frag = document.createDocumentFragment();
-      for (const item of items) {
-        const node = this.renderItem(item);
-        if (!(node instanceof Node)) {
-          throw new TypeError("renderItem must return a DOM Node");
-        }
-        frag.appendChild(node);
-      }
-      this.listEl.appendChild(frag);
-
-      if (!hasMore) {
-        this.done = true;
-        this.stop();
-      } else {
-        if (data?.nextCursor != null) this.params.cursor = data.nextCursor;
-        if (this.params.page != null) this.params.page = nextCursor;
-      }
-    } catch (err) {
-      console.error("무한 스크롤 로딩 실패:", err);
-      this.safely(() => this.onError(err));
-    } finally {
-      this.loading = false;
-      this.safely(() => this.onLoading(false));
-      this.sentinelEl.setAttribute("aria-busy", "false");
-      this.listEl.setAttribute("aria-busy", "false");
+    if (!endpoint.startsWith("/profile/")) {
+      endpoint = `/profile/${userId}${endpoint}`;
     }
-  }
 
-  start({ immediate = false } = {}) {
-    if (this.started) return;
-    this.started = true;
-    this.observer.observe(this.sentinelEl);
-    if (immediate) this.loadMore();
-  }
+    const observer = new IntersectionObserver(onIntersect, { threshold: 0.1 });
+    observer.observe(sentinel);
 
-  stop() {
-    this.observer.disconnect();
-    this.loading = false;
-  }
+    async function onIntersect(entries) {
+      for (const entry of entries) {
+        if (!entry.isIntersecting || panel.dataset.hasNext !== "true") return;
 
-  safely(fn) {
-    try {
-      fn();
-    } catch {
-      // 콜백 예외는 삼킴
+        panel.setAttribute("aria-busy", "true");
+        const nextPage = Number(panel.dataset.page) + 1;
+        loadingText.classList.remove("hidden");
+
+        try {
+          const data = await getJSON(`${endpoint}?page=${nextPage}&size=${size}`);
+          const listEl = getEl(".post-grid", panel);
+          data.content.forEach((post) => listEl.appendChild(renderPostCard(post)));
+          panel.dataset.page = nextPage;
+          panel.dataset.hasNext = String(!data.last);
+        } catch (e) {
+          console.error("무한 스크롤 오류:", e);
+        } finally {
+          panel.setAttribute("aria-busy", "false");
+          loadingText.classList.add("hidden");
+        }
+      }
     }
-  }
+  });
 }
