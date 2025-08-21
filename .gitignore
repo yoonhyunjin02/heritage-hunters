@@ -37,6 +37,8 @@ build/
 secrets/
 .config/keys/
 src/main/resources/secrets/
+application-secret.yml
+**/application-secret.yml
 
 # aws
 application-aws.properties
