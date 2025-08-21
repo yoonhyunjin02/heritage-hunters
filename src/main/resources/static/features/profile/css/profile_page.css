@@ -353,8 +353,8 @@ main {
   height: 2.5rem;
 }
 
-.infinite-sentinel__loading {
-  display: none;
+.loading-text {
+  display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
