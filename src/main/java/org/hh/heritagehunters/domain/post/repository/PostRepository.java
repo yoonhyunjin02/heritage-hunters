@@ -1,7 +1,9 @@
 package org.hh.heritagehunters.domain.post.repository;
 
 import java.util.Optional;
+import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.post.entity.Post;
+import org.hh.heritagehunters.domain.search.entity.Heritage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -56,4 +58,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
   @EntityGraph(attributePaths = {"user", "heritage"})
   @Query("select l.post from Like l where l.user.id = :userId order by l.createdAt desc")
   Page<Post> findLikedPostsByUserId(@Param("userId") Long userId, Pageable pageable);
+
+  // 특정 유저의 특정 Heritage에 대한 다른 게시글이 있는지 확인 (현재 게시글 제외)
+  boolean existsByUserAndHeritageAndIdNot(User user, Heritage heritage, Long id);
 }

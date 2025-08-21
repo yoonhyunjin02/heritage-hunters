@@ -183,11 +183,11 @@
    * 모든 드롭다운 메뉴를 닫습니다.
    * 
    * @description
-   * - 페이지 내 모든 .dropdown-menu 요소에서 'show' 클래스 제거
+   * - 페이지 내 모든 .modal-dropdown-menu 요소에서 'show' 클래스 제거
    * - 다른 드롭다운 열기 전 정리 작업에 사용
    */
   function closeAllDropdowns() {
-    document.querySelectorAll('.dropdown-menu').forEach(
+    document.querySelectorAll('.modal-dropdown-menu').forEach(
         el => el.classList.remove('show'));
   }
 
