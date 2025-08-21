@@ -308,6 +308,22 @@
 }
 
 /*----------------------------------------
+  Empty State Message
+----------------------------------------*/
+.no-results-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #6c757d;
+}
+
+.no-results-message p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/*----------------------------------------
   Responsive Breakpoints
 ----------------------------------------*/
 @media (max-width: var(--bp-tablet)) {

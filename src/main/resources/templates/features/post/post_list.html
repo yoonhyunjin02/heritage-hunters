@@ -2,7 +2,7 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <th:block th:insert="~{fragments/head :: common-head('게시글 페이지')}"></th:block>
+  <th:block th:insert="~{fragments/head :: common-head('Post')}"></th:block>
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <meta name="gmaps-api-key" th:content="${@environment.getProperty('google.maps.api-key')}"/>
@@ -18,161 +18,172 @@
 <div class="page-wrapper">
   <main class="main-content container-max">
 
-  <!-- 검색/필터 -->
-  <section class="search-filter-section">
-    <form th:action="@{/posts}" method="get" class="search-form" id="searchForm">
-      <div class="search-container">
-        <input type="text" name="keyword" th:value="${param.keyword}"
-               placeholder="문화유산 또는 지역을 입력해주세요" class="search-input" id="searchInput">
-        <button type="submit" class="search-btn" title="검색">검색</button>
-      </div>
+    <!-- 검색/필터 -->
+    <section class="search-filter-section">
+      <form th:action="@{/posts}" method="get" class="search-form" id="searchForm">
+        <div class="search-container">
+          <input type="text" name="keyword" th:value="${param.keyword}"
+                 placeholder="문화유산 또는 지역을 입력해주세요" class="search-input" id="searchInput">
+          <button type="submit" class="search-btn" title="검색">검색</button>
+        </div>
 
-      <div class="post-filter-controls">
-        <div class="post-filters-left">
-          <div class="post-filter region-filter">
-            <select name="region" class="region-filter-select" onchange="submitForm()">
-              <option value="">전체 지역</option>
-              <option
-                  th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
-                  th:if="${entry.key != '00'}"
-                  th:value="${entry.key}"
-                  th:selected="${region == entry.key}"
-                  th:text="${entry.value}"></option>
-            </select>
-          </div>
-          
-          <div class="post-filter sort-filter">
-            <div class="sort-filter-tabs">
-              <input type="radio" name="sort" value="createdAt" id="sort-time"
-                     th:checked="${param.sort == null or param.sort == 'createdAt'}"
-                     onchange="submitForm()">
-              <label for="sort-time" class="sort-tab">최신순</label>
-
-              <input type="radio" name="sort" value="viewCount" id="sort-view"
-                     th:checked="${param.sort == 'viewCount'}" onchange="submitForm()">
-              <label for="sort-view" class="sort-tab">조회순</label>
-
-              <input type="radio" name="sort" value="likeCount" id="sort-like"
-                     th:checked="${param.sort == 'likeCount'}" onchange="submitForm()">
-              <label for="sort-like" class="sort-tab">좋아요순</label>
-
-              <input type="radio" name="sort" value="commentCount" id="sort-comment"
-                     th:checked="${param.sort == 'commentCount'}" onchange="submitForm()">
-              <label for="sort-comment" class="sort-tab">댓글순</label>
+        <div class="post-filter-controls">
+          <div class="post-filters-left">
+            <div class="post-filter region-filter">
+              <select name="region" class="region-filter-select" onchange="submitForm()">
+                <option value="">전체 지역</option>
+                <option
+                    th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
+                    th:if="${entry.key != '00'}"
+                    th:value="${entry.key}"
+                    th:selected="${region == entry.key}"
+                    th:text="${entry.value}"></option>
+              </select>
             </div>
-          </div>
-        </div>
-        
-        <div class="post-actions-right">
-          <button type="button" id="clearFiltersBtn" class="post-action-btn reset-btn">초기화</button>
-          <button type="button" id="openPostModal" class="post-action-btn new-post-btn"
-                  sec:authorize="isAuthenticated()" data-action="open-post-modal">게시글 작성</button>
-        </div>
-      </div>
 
-      <input type="hidden" name="direction" th:value="${param.direction ?: 'desc'}">
-      <input type="hidden" name="page" value="0">
-    </form>
-    <div class="search-filter-divider"></div>
-  </section>
+            <div class="post-filter sort-filter">
+              <div class="sort-filter-tabs">
+                <input type="radio" name="sort" value="createdAt" id="sort-time"
+                       th:checked="${sort == null or sort == 'createdAt'}"
+                       onchange="submitForm()">
+                <label for="sort-time" class="sort-tab"
+                       th:classappend="${sort == null or sort == 'createdAt' ? 'active-sort' : ''}">최신순</label>
 
-  <!-- 게시글 그리드 -->
-  <section class="posts-main-section">
-    <div class="posts-grid" id="postsContainer" th:if="${posts != null and !posts.empty}">
-      <article class="post-card"
-               th:each="post, stat : ${posts.content}"
-               th:data-post-id="${post.id}"
-               th:data-index="${stat.index}">
+                <input type="radio" name="sort" value="viewCount" id="sort-view"
+                       th:checked="${sort == 'viewCount'}" onchange="submitForm()">
+                <label for="sort-view" class="sort-tab"
+                       th:classappend="${sort == 'viewCount' ? 'active-sort' : ''}">조회순</label>
 
-        <!-- 클릭 이동: 이미지 + 유물 종류 -->
-        <div class="post-link" th:data-post-id="${post.id}" data-action="open-detail"
-             style="cursor: pointer;">
+                <input type="radio" name="sort" value="likeCount" id="sort-like"
+                       th:checked="${sort == 'likeCount'}" onchange="submitForm()">
+                <label for="sort-like" class="sort-tab"
+                       th:classappend="${sort == 'likeCount' ? 'active-sort' : ''}">좋아요순</label>
 
-          <!-- ① 이미지 -->
-          <div class="post-image-container">
-            <img th:if="${post.mainImageUrl != null and !post.mainImageUrl.isEmpty()}"
-                 th:src="${post.mainImageUrl}"
-                 th:alt="${(post.heritage != null ? post.heritage.name : '사진') + ' - ' + post.content}"
-                 class="post-image" loading="lazy">
-            <div class="image-count-badge"
-                 th:if="${post.images != null and #lists.size(post.images) > 1}">
-              <img class="camera-svg" th:src="@{/images/icons/cards.svg}" /> <span th:text="${#lists.size(post.images)}">2</span>
+                <input type="radio" name="sort" value="commentCount" id="sort-comment"
+                       th:checked="${sort == 'commentCount'}" onchange="submitForm()">
+                <label for="sort-comment" class="sort-tab"
+                       th:classappend="${sort == 'commentCount' ? 'active-sort' : ''}">댓글순</label>
+              </div>
             </div>
           </div>
 
-          <!-- ② 유물 종류 -->
-          <div class="post-info compact">
-            <div class="designation-row">
+          <div class="post-actions-right">
+            <button type="button" id="clearFiltersBtn" class="post-action-btn reset-btn">초기화
+            </button>
+            <button type="button" id="openPostModal" class="post-action-btn new-post-btn"
+                    sec:authorize="isAuthenticated()" data-action="open-post-modal">게시글 작성
+            </button>
+          </div>
+        </div>
+
+        <input type="hidden" name="direction" th:value="${param.direction ?: 'desc'}">
+        <input type="hidden" name="page" value="0">
+      </form>
+      <div class="search-filter-divider"></div>
+    </section>
+
+    <!-- 게시글 그리드 -->
+    <section class="posts-main-section">
+      <div class="posts-grid" id="postsContainer" th:if="${posts != null and !posts.empty}">
+        <article class="post-card"
+                 th:each="post, stat : ${posts.content}"
+                 th:data-post-id="${post.id}"
+                 th:data-index="${stat.index}">
+
+          <!-- 클릭 이동: 이미지 + 유물 종류 -->
+          <div class="post-link" th:data-post-id="${post.id}" data-action="open-detail"
+               style="cursor: pointer;">
+
+            <!-- ① 이미지 -->
+            <div class="post-image-container">
+              <img th:if="${post.mainImageUrl != null and !post.mainImageUrl.isEmpty()}"
+                   th:src="${post.mainImageUrl}"
+                   th:alt="${(post.heritage != null ? post.heritage.name : '사진') + ' - ' + post.content}"
+                   class="post-image" loading="lazy">
+              <div class="image-count-badge"
+                   th:if="${post.images != null and #lists.size(post.images) > 1}">
+                <img class="camera-svg" th:src="@{/images/icons/cards.svg}"/> <span
+                  th:text="${#lists.size(post.images)}">2</span>
+              </div>
+            </div>
+
+            <!-- ② 유물 종류 -->
+            <div class="post-info compact">
+              <div class="designation-row">
               <span class="designation-pill"
                     th:text="${post.heritage != null ? T(org.hh.heritagehunters.domain.search.util.DesignationCodeMapper).getKoreanName(post.heritage.designation) : '미분류'}">
                 미분류
               </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- ③ 액션(좋아요/댓글) : a 바깥 -->
-        <div class="post-actions" sec:authorize="isAuthenticated()">
-          <button type="button" class="icon-action like-button"
-                  th:data-post-id="${post.id}"
-                  th:classappend="${post.likedByCurrentUser} ? ' liked' : ''"
-                  th:attr="aria-pressed=${post.likedByCurrentUser}"
-                  title="좋아요">
-            <!-- 하트 -->
-            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-              <path
-                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0-0-7.78z"
-                  stroke="currentColor" stroke-width="2"
-                  th:fill="${post.likedByCurrentUser} ? 'currentColor' : 'none'"></path>
-            </svg>
-            <span class="sr-only">좋아요</span>
-          </button>
+          <!-- ③ 액션(좋아요/댓글) : a 바깥 -->
+          <div class="post-actions" sec:authorize="isAuthenticated()">
+            <button type="button" class="icon-action like-button"
+                    th:data-post-id="${post.id}"
+                    th:classappend="${post.likedByCurrentUser} ? ' liked' : ''"
+                    th:attr="aria-pressed=${post.likedByCurrentUser}"
+                    title="좋아요">
+              <!-- 하트 -->
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0-0-7.78z"
+                    stroke="currentColor" stroke-width="2"
+                    th:fill="${post.likedByCurrentUser} ? 'currentColor' : 'none'"></path>
+              </svg>
+              <span class="sr-only">좋아요</span>
+            </button>
 
-          <button class="icon-action comment-btn"
-                  th:data-post-id="${post.id}" data-action="open-detail-comment" title="댓글 달기">
-            <!-- 말풍선 -->
-            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-                    stroke="currentColor" stroke-width="2" fill="none"/>
-            </svg>
-          </button>
+            <button class="icon-action comment-btn"
+                    th:data-post-id="${post.id}" data-action="open-detail-comment" title="댓글 달기">
+              <!-- 말풍선 -->
+              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                      stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </button>
 
-          <!-- 통계 표시 -->
-          <div class="stats">
-            <span class="stat"><b th:text="${post.likeCount}">0</b> 좋아요</span>
-            <span class="stat"><b th:text="${post.commentCount}">0</b> 댓글</span>
+            <!-- 통계 표시 -->
+            <div class="stats">
+              <span class="stat"><b th:text="${post.likeCount}">0</b> 좋아요</span>
+              <span class="stat"><b th:text="${post.commentCount}">0</b> 댓글</span>
+            </div>
           </div>
-        </div>
 
-        <!-- 비로그인: 통계만 -->
-        <div class="post-actions" sec:authorize="!isAuthenticated()">
-          <div class="stats">
-            <span class="stat"><b th:text="${post.likeCount}">0</b> 좋아요</span>
-            <span class="stat"><b th:text="${post.commentCount}">0</b> 댓글</span>
+          <!-- 비로그인: 통계만 -->
+          <div class="post-actions" sec:authorize="!isAuthenticated()">
+            <div class="stats">
+              <span class="stat"><b th:text="${post.likeCount}">0</b> 좋아요</span>
+              <span class="stat"><b th:text="${post.commentCount}">0</b> 댓글</span>
+            </div>
           </div>
-        </div>
 
-        <!-- ⑤ 작성 날짜 -->
-        <div class="post-meta">
-          <time class="post-date" th:datetime="${post.createdAt}"
-                th:text="${#temporals.format(post.createdAt, 'yy/MM/dd')}">25/08/05
-          </time>
-        </div>
-      </article>
-    </div>
+          <!-- ⑤ 작성 날짜 -->
+          <div class="post-meta">
+            <time class="post-date" th:datetime="${post.createdAt}"
+                  th:text="${#temporals.format(post.createdAt, 'yy/MM/dd')}">25/08/05
+            </time>
+          </div>
+        </article>
+      </div>
 
-    <!-- 페이지네이션 -->
-    <nav class="pagination-nav" th:if="${posts != null}">
-      <div class="pagination">
-        <a th:if="${posts.number > 0}"
-           th:href="@{/posts(page=0, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-           class="page-btn first-page" title="첫 페이지">‹‹</a>
+      <div class="no-posts-message" th:if="${posts == null or posts.empty}">
+        <p>게시글이 없습니다. <br> 문화유산을 탐험하고, 새로운 게시글을 작성해보세요!</p>
+      </div>
 
-        <a th:if="${posts.number > 0}"
-           th:href="@{/posts(page=${posts.number - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-           class="page-btn prev-page">‹</a>
+      <!-- 페이지네이션 -->
+      <nav class="pagination-nav" th:if="${posts != null}">
+        <div class="pagination">
+          <a th:if="${posts.number > 0}"
+             th:href="@{/posts(page=0, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
+             class="page-btn first-page" title="첫 페이지">‹‹</a>
 
-        <div class="page-numbers">
+          <a th:if="${posts.number > 0}"
+             th:href="@{/posts(page=${posts.number - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
+             class="page-btn prev-page">‹</a>
+
+          <div class="page-numbers">
           <span th:each="i : ${pageNumbers}">
             <a th:if="${i != currentPage + 1}"
                th:href="@{/posts(page=${i - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
@@ -180,18 +191,18 @@
             <span th:if="${i == currentPage + 1}" th:text="${i}"
                   class="page-btn page-number active"></span>
           </span>
+          </div>
+
+          <a th:if="${posts.number < posts.totalPages - 1}"
+             th:href="@{/posts(page=${posts.number + 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
+             class="page-btn next-page">›</a>
+
+          <a th:if="${posts.number < posts.totalPages - 1}"
+             th:href="@{/posts(page=${posts.totalPages - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
+             class="page-btn last-page" title="마지막 페이지">››</a>
         </div>
-
-        <a th:if="${posts.number < posts.totalPages - 1}"
-           th:href="@{/posts(page=${posts.number + 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-           class="page-btn next-page">›</a>
-
-        <a th:if="${posts.number < posts.totalPages - 1}"
-           th:href="@{/posts(page=${posts.totalPages - 1}, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
-           class="page-btn last-page" title="마지막 페이지">››</a>
-      </div>
-    </nav>
-  </section>
+      </nav>
+    </section>
   </main>
 </div>
 

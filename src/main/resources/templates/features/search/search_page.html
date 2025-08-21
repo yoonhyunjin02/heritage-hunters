@@ -128,6 +128,10 @@
               </div>
             </div>
 
+            <div class="no-results-message" th:if="${param.searchTriggered != null and results != null and results.empty}">
+              <p>검색 결과가 없습니다. <br> 다른 키워드 또는 필터 조건으로 검색해보세요!</p>
+            </div>
+
             <nav class="search__pagination" th:if="${results != null and !results.empty}">
               <ul class="search__pagination-list">
                 <!-- 첫 페이지로 -->

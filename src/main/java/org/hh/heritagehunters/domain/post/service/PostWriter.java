@@ -1,13 +1,17 @@
 package org.hh.heritagehunters.domain.post.service;
 
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.hh.heritagehunters.common.exception.BadRequestException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.oauth.entity.User;
+import org.hh.heritagehunters.domain.oauth.repository.UserRepository;
 import org.hh.heritagehunters.domain.post.dto.request.PostCreateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.request.PostUpdateRequestDto;
 import org.hh.heritagehunters.domain.post.entity.Post;
 import org.hh.heritagehunters.domain.post.repository.PostRepository;
+import org.hh.heritagehunters.domain.profile.entity.UserStamp;
+import org.hh.heritagehunters.domain.profile.repository.UserStampRepository;
 import org.hh.heritagehunters.domain.search.entity.Heritage;
 import org.hh.heritagehunters.domain.search.repository.HeritageRepository;
 import org.springframework.stereotype.Service;
@@ -21,6 +25,8 @@ public class PostWriter {
 
   private final PostRepository postRepository;
   private final HeritageRepository heritageRepository;
+  private final UserRepository userRepository;
+  private final UserStampRepository userStampRepository;
 
   /**
    * 새로운 게시글을 생성합니다
@@ -37,10 +43,14 @@ public class PostWriter {
     Heritage nearest = findNearestHeritage(request.getLat(), request.getLng());
 
     Post post = Post.create(user, nearest, request.getContent(), request.getLocation());
-    // (선택) 유물 연동 시 스코어 +1 (null-safe)
+    // 유물 연동 시 스코어 +1 및 우표 획득
     if (nearest != null) {
       Integer s = user.getScore();
       user.setScore((s == null ? 0 : s) + 1);
+      userRepository.save(user); // User 점수 변경사항 저장
+      
+      // 우표 중복 체크 및 생성
+      createStampIfNotExists(user.getId(), nearest.getId());
     }
     return postRepository.save(post);
   }
@@ -62,24 +72,57 @@ public class PostWriter {
    * @param post 삭제할 게시글 엔티티
    */
   public void delete(Post post) {
+    // Heritage 연동 게시글이었다면 점수 차감 및 우표 삭제
+    if (post.getHeritage() != null) {
+      User user = post.getUser();
+      
+      // 점수 차감 (-1점)
+      Integer currentScore = user.getScore();
+      user.setScore(Math.max(0, (currentScore == null ? 0 : currentScore) - 1));
+      userRepository.save(user);
+      
+      // 해당 Heritage의 다른 게시글이 있는지 확인
+      boolean hasOtherPosts = postRepository.existsByUserAndHeritageAndIdNot(user, post.getHeritage(), post.getId());
+      
+      // 다른 게시글이 없으면 우표도 삭제
+      if (!hasOtherPosts) {
+        // 기존 우표 목록에서 해당 Heritage 우표 찾아서 삭제
+        userStampRepository.findObtainedStamps(user.getId())
+            .stream()
+            .filter(stamp -> stamp.getId().equals(post.getHeritage().getId()))
+            .findFirst()
+            .ifPresent(stamp -> {
+              UserStamp stampToDelete = new UserStamp(user.getId(), stamp.getId(), stamp.getEarnedAt());
+              userStampRepository.delete(stampToDelete);
+            });
+      }
+    }
+    
     postRepository.delete(post);
   }
 
   /**
-   * 지정된 좌표에서 가장 가까운 문화유산을 찾습니다
+   * 지정된 좌표에서 200m 이내의 가장 가까운 문화유산을 찾습니다
    *
    * @param lat 위도
    * @param lng 경도
-   * @return 가장 가까운 문화유산 (없으면 null)
+   * @return 200m 이내의 가장 가까운 문화유산 (없으면 null)
    */
   private Heritage findNearestHeritage(Double lat, Double lng) {
     if (lat == null || lng == null) {
       return null;
     }
 
-    // 모든 문화유산을 검색하여 가장 가까운 것을 찾습니다
+    final double MAX_DISTANCE_METERS = 200.0; // 200m 이내에서만 점수 지급
+
+    // 200m 이내의 문화유산 중 가장 가까운 것을 찾습니다
     return heritageRepository.findAll().stream()
         .filter(h -> h.getLatitude() != null && h.getLongitude() != null)
+        .filter(h -> {
+          double distance = calculateDistance(lat, lng, 
+              h.getLatitude().doubleValue(), h.getLongitude().doubleValue());
+          return distance <= MAX_DISTANCE_METERS;
+        })
         .min((h1, h2) -> {
           double dist1 = calculateDistance(lat, lng, h1.getLatitude().doubleValue(),
               h1.getLongitude().doubleValue());
@@ -92,7 +135,7 @@ public class PostWriter {
 
 
   /**
-   * Haversine 공식으로 두 좌표 간 거리를 계산합니다 (km 단위)
+   * Haversine 공식으로 두 좌표 간 거리를 계산합니다 (미터 단위)
    */
   private double calculateDistance(double lat1, double lng1, double lat2, double lng2) {
     final int R = 6371; // 지구 반지름 (km)
@@ -102,7 +145,25 @@ public class PostWriter {
         + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
         * Math.sin(lngDistance / 2) * Math.sin(lngDistance / 2);
     double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+    return R * c * 1000; // km를 미터로 변환
+  }
+
+  /**
+   * 우표가 존재하지 않으면 새로 생성합니다
+   *
+   * @param userId 사용자 ID
+   * @param heritageId 문화유산 ID
+   */
+  private void createStampIfNotExists(Long userId, Long heritageId) {
+    // 기존 우표 목록에서 해당 Heritage 우표가 있는지 확인
+    boolean hasStamp = userStampRepository.findObtainedStamps(userId)
+        .stream()
+        .anyMatch(stamp -> stamp.getId().equals(heritageId));
+    
+    if (!hasStamp) {
+      UserStamp newStamp = new UserStamp(userId, heritageId, LocalDateTime.now());
+      userStampRepository.save(newStamp);
+    }
   }
 
 }
