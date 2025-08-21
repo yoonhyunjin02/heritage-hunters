@@ -85,17 +85,34 @@ public class ProfileApiController {
 
   // 프로필 정보 수정 (프로필사진, 닉네임, 한줄소개)
   @PutMapping("/update")
+  @Operation(
+      summary = "프로필 사진, 닉네임, 한 줄 소개 수정",
+      description = "사용자의 프로필 사진, 닉네임, 한 줄 소개를 수정합니다."
+  )
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", description = "프로필 수정 성공"),
+      @ApiResponse(responseCode = "401", description = "로그인 필요",
+          content = @Content(schema = @Schema(implementation = ApiExceptionHandler.ApiErrorResponse.class))),
+      @ApiResponse(responseCode = "403", description = "접근 권한 없음",
+          content = @Content(schema = @Schema(implementation = ApiExceptionHandler.ApiErrorResponse.class))),
+      @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
+          content = @Content(schema = @Schema(implementation = ApiExceptionHandler.ApiErrorResponse.class)))
+  })
   public ResponseEntity<ProfileResponseDto> updateProfile(
+      @Parameter(description = "수정할 사용자 ID", required = true, example = "1")
       @PathVariable Long userId,
+      @Parameter(hidden = true)
       @AuthenticationPrincipal CustomUserDetails currentUserDetails,
+      @Parameter(description = "닉네임, 한 줄 소개")
       @Valid @ModelAttribute ProfileUpdateRequestDto requestDto,
+      @Parameter(description = "프로필 사진")
       @RequestParam(value = "profileImage", required = false) MultipartFile profileImage) {
 
     if (currentUserDetails == null || currentUserDetails.getUser() == null) {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
     if (!currentUserDetails.getUser().getId().equals(userId)) {
-      throw new ForbiddenException(ErrorCode.OWNER_ONLY);
+      throw new ForbiddenException(ErrorCode.ACCESS_DENIED);
     }
 
     User updated = userFacade.updateProfile(userId, currentUserDetails.getUser(), requestDto, profileImage);
