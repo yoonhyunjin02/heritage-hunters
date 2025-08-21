@@ -49,7 +49,7 @@ public class ProfileApiController {
   }
 
   // 프로필 정보 수정 (프로필사진, 닉네임, 한줄소개)
-  @PutMapping
+  @PutMapping("/update")
   public ResponseEntity<ProfileResponseDto> updateProfile(
       @PathVariable Long userId,
       @AuthenticationPrincipal CustomUserDetails currentUserDetails,
