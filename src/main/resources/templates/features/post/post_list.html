@@ -2,7 +2,7 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <th:block th:insert="~{fragments/head :: common-head('게시글 페이지')}"></th:block>
+  <th:block th:insert="~{fragments/head :: common-head('Post')}"></th:block>
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <meta name="gmaps-api-key" th:content="${@environment.getProperty('google.maps.api-key')}"/>
