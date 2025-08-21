@@ -9,24 +9,14 @@ import org.hh.heritagehunters.common.security.CustomUserDetails;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.post.application.PostFacade;
 import org.hh.heritagehunters.domain.post.dto.request.CommentCreateRequestDto;
-import org.hh.heritagehunters.domain.post.dto.request.PostUpdateRequestDto;
+import org.hh.heritagehunters.domain.post.dto.request.PostContentUpdateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.service.PostReader;
 import org.hh.heritagehunters.domain.post.dto.response.CommentResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.LikeResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,21 +37,23 @@ public class ProfileModalApiController {
     return postFacade.detail(postId, currentUser);
   }
 
-  // 게시글 수정
-  @PutMapping
-  public ResponseEntity<PostDetailResponseDto> updatePost(
+  // 게시글 수정 (본문 텍스트만 수정 가능)
+  @PatchMapping
+  public ResponseEntity<PostDetailResponseDto> updatePostContent(
       @PathVariable Long userId,
       @PathVariable Long postId,
       @AuthenticationPrincipal CustomUserDetails currentUserDetails,
-      @Valid @ModelAttribute PostUpdateRequestDto requestDto,
-      @RequestParam(value = "images", required = false) List<MultipartFile> newImages,
-      @RequestParam(value = "keepImages", required = false) List<Long> keepImageIds) {
+      @Valid @RequestBody PostContentUpdateRequestDto requestDto) {
 
     if (currentUserDetails == null || currentUserDetails.getUser() == null) {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
+    // 소유자 검증 (경로 userId와 인증 사용자 일치)
+    if (!currentUserDetails.getUser().getId().equals(userId)) {
+      throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
+    }
 
-    postFacade.update(postId, currentUserDetails.getUser(), requestDto, newImages, keepImageIds);
+    postFacade.updateContentOnly(postId, currentUserDetails.getUser(), requestDto.getContent());
     return ResponseEntity.ok(postFacade.detail(postId, currentUserDetails.getUser()));
   }
 
@@ -78,12 +70,12 @@ public class ProfileModalApiController {
     }
 
     postFacade.addComment(postId, currentUserDetails.getUser(), requestDto);
-
-    // 전체 댓글 리스트 반환 → 프론트에서 갱신 가능
-    return ResponseEntity.ok(postReader.loadComments(postId).stream().map(CommentResponseDto::from).toList());
+    return ResponseEntity.ok(
+        postReader.loadComments(postId).stream().map(CommentResponseDto::from).toList()
+    );
   }
 
-  // 좋아요 토글
+  // 좋아요 토글 (소유자 조건 없음)
   @PostMapping("/like")
   public ResponseEntity<LikeResponseDto> toggleLike(
       @PathVariable Long userId,
@@ -96,7 +88,6 @@ public class ProfileModalApiController {
 
     boolean isLiked = postFacade.toggleLike(postId, currentUserDetails.getUser());
     int likeCount = postReader.getById(postId).getLikeCount();
-
     return ResponseEntity.ok(new LikeResponseDto(isLiked, likeCount));
   }
 
@@ -110,9 +101,11 @@ public class ProfileModalApiController {
     if (currentUserDetails == null || currentUserDetails.getUser() == null) {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
+    if (!currentUserDetails.getUser().getId().equals(userId)) {
+      throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
+    }
 
     postFacade.delete(postId, currentUserDetails.getUser());
-    return ResponseEntity.noContent().build(); // 204 반환
+    return ResponseEntity.noContent().build();
   }
-
 }

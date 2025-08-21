@@ -2,6 +2,7 @@ package org.hh.heritagehunters.domain.profile.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.hh.heritagehunters.common.exception.ForbiddenException;
 import org.hh.heritagehunters.common.exception.UnauthorizedException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.common.security.CustomUserDetails;
@@ -14,13 +15,7 @@ import org.hh.heritagehunters.domain.profile.dto.ProfileUpdateRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -64,10 +59,11 @@ public class ProfileApiController {
     if (currentUserDetails == null || currentUserDetails.getUser() == null) {
       throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
     }
+    if (!currentUserDetails.getUser().getId().equals(userId)) {
+      throw new ForbiddenException(ErrorCode.OWNER_ONLY);
+    }
 
     User updated = userFacade.updateProfile(userId, currentUserDetails.getUser(), requestDto, profileImage);
     return ResponseEntity.ok(ProfileResponseDto.from(updated));
   }
-
-
 }

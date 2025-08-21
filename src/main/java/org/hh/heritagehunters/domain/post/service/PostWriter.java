@@ -57,6 +57,18 @@ public class PostWriter {
   }
 
   /**
+   * 게시글 본문만 변경합니다.
+   */
+  public void updateContent(Post post, String newContent) {
+    if (newContent == null || newContent.trim().isEmpty()) {
+      throw new BadRequestException(ErrorCode.INVALID_INPUT_VALUE);
+    }
+    post.setContent(newContent);
+    postRepository.save(post);
+  }
+
+
+  /**
    * 게시글을 삭제합니다
    *
    * @param post 삭제할 게시글 엔티티
