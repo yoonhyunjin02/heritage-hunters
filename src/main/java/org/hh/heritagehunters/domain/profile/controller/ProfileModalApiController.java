@@ -8,11 +8,11 @@ import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.common.security.CustomUserDetails;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.post.application.PostFacade;
+import org.hh.heritagehunters.domain.post.dto.CommentDto;
 import org.hh.heritagehunters.domain.post.dto.request.CommentCreateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.request.PostContentUpdateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.service.PostReader;
-import org.hh.heritagehunters.domain.post.dto.response.CommentResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.LikeResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -57,9 +57,24 @@ public class ProfileModalApiController {
     return ResponseEntity.ok(postFacade.detail(postId, currentUserDetails.getUser()));
   }
 
+  // 댓글 조회
+  @GetMapping("/comments")
+  public ResponseEntity<List<CommentDto>> getComments(
+      @PathVariable Long userId,
+      @PathVariable Long postId,
+      @AuthenticationPrincipal CustomUserDetails currentUserDetails) {
+
+    if (currentUserDetails == null || currentUserDetails.getUser() == null) {
+      throw new UnauthorizedException(ErrorCode.LOGIN_REQUIRED);
+    }
+
+    List<CommentDto> comments = postReader.loadComments(postId).stream().map(CommentDto::from).toList();
+    return ResponseEntity.ok(comments);
+  }
+
   // 댓글 작성
   @PostMapping("/comments")
-  public ResponseEntity<List<CommentResponseDto>> createComment(
+  public ResponseEntity<Void> createComment(
       @PathVariable Long userId,
       @PathVariable Long postId,
       @AuthenticationPrincipal CustomUserDetails currentUserDetails,
@@ -70,9 +85,7 @@ public class ProfileModalApiController {
     }
 
     postFacade.addComment(postId, currentUserDetails.getUser(), requestDto);
-    return ResponseEntity.ok(
-        postReader.loadComments(postId).stream().map(CommentResponseDto::from).toList()
-    );
+    return ResponseEntity.noContent().build();
   }
 
   // 좋아요 토글 (소유자 조건 없음)

@@ -12,11 +12,13 @@ import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.post.dto.request.CommentCreateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.request.PostCreateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.request.PostUpdateRequestDto;
+import org.hh.heritagehunters.domain.post.dto.response.CommentResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostCreateResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostDetailResponseDto;
 import org.hh.heritagehunters.domain.post.dto.response.PostListResponseDto;
 import org.hh.heritagehunters.domain.post.entity.Comment;
 import org.hh.heritagehunters.domain.post.entity.Post;
+import org.hh.heritagehunters.domain.post.repository.CommentRepository;
 import org.hh.heritagehunters.domain.post.service.CommentService;
 import org.hh.heritagehunters.domain.post.service.ImageService;
 import org.hh.heritagehunters.domain.post.service.LikeService;
@@ -37,6 +39,7 @@ public class PostFacade {
   private final ImageService imageService;
   private final LikeService likeService;
   private final CommentService commentService;
+  private final CommentRepository commentRepository;
 
   /**
    * 게시글 목록을 조회합니다
@@ -204,6 +207,26 @@ public class PostFacade {
   public void addComment(Long postId, User user, CommentCreateRequestDto dto) {
     commentService.add(postId, user, dto);
   }
+
+  /**
+   * 게시글에 댓글을 추가한 후, 댓글 목록 불러오기까지 한 트랜잭션으로 묶습니다.
+   *
+   * @param postId 게시글 ID
+   * @param user   댓글 작성자
+   * @param dto    댓글 생성 데이터
+   */
+  @Transactional
+  public List<CommentResponseDto> addCommentAndFetchAll(Long postId, User user, CommentCreateRequestDto dto) {
+    // 댓글 저장 + post.commentCount 업데이트
+    commentService.add(postId, user, dto);
+
+    // 댓글 + 작성자를 fetch join으로 한 번에 가져오고, 여기서 DTO로 변환
+    return commentRepository.findAllByPostIdWithUser(postId)
+        .stream()
+        .map(CommentResponseDto::from)
+        .toList();
+  }
+
 
 
   // PostFacade
