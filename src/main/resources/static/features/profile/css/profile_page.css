@@ -217,6 +217,7 @@ main {
   align-items: center;
   justify-content: center;
   background-image: url("/images/stamp/stamp_bg.png");
+  background-repeat: no-repeat;
   background-position: center;
   background-size: contain;
   transition: transform 0.2s ease;
