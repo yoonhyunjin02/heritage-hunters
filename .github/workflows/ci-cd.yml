@@ -1,0 +1,53 @@
+name: CI - Build & Push to ECR
+
+on:
+  push:
+    branches: [ "main" ]   # 배포 브랜치가 다르면 여기 바꿔줘
+
+env:
+  AWS_REGION: eu-north-1
+  ECR_REPO: heritage-hunters
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write   # OIDC
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::610964304844:role/GithubActionsEcrPushRole
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Prepare tags
+        id: vars
+        run: |
+          echo "ECR_REG=${{ steps.ecr.outputs.registry }}" >> $GITHUB_OUTPUT
+          echo "TAG_SHA=sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build & Push (linux/amd64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ steps.vars.outputs.ECR_REG }}/${{ env.ECR_REPO }}:latest
+            ${{ steps.vars.outputs.ECR_REG }}/${{ env.ECR_REPO }}:${{ steps.vars.outputs.TAG_SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
