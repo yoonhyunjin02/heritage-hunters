@@ -116,10 +116,10 @@
 }
 
 /* 드롭다운 */
-.dropdown {
+.modal-dropdown {
   position: relative;
 }
-.dropdown-menu {
+.modal-dropdown-menu {
   position: absolute;
   top: 2.25rem;
   right: 0;
@@ -132,14 +132,14 @@
   z-index: 1000;
   border: 1px solid var(--gray-200);
 }
-.dropdown-menu.show {
+.modal-dropdown-menu.show {
   display: block;
   animation: fadeInDown 0.2s ease;
 }
-.dropdown:focus-within .dropdown-menu {
+.modal-dropdown:focus-within .modal-dropdown-menu {
   display: block;
 }
-.dropdown-item {
+.modal-dropdown-item {
   display: block;
   width: 100%;
   padding: 0.5rem 0.75rem;
@@ -152,7 +152,7 @@
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
-.dropdown-item:hover {
+.modal-dropdown-item:hover {
   background: var(--gray-050);
   color: var(--stone-800);
 }
@@ -541,9 +541,8 @@
   color: #777;
 }
 
-.btn-primary {
-  background: #2b3f33;
-  color: white;
+.btn-primary,
+.btn-secondary {
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
@@ -552,9 +551,22 @@
   font-weight: 600;
   transition: all 0.2s ease;
 }
+.btn-primary {
+  background: var(--stone-800);
+  color: white;
+}
 
 .btn-primary:hover {
-  background: #1e2b25;
+  background: var(--sand-600);
+}
+
+.btn-secondary {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.btn-secondary:hover {
+  background: var(--gray-300);
 }
 
 /* ========== 모달 푸터 & 버튼 ========== */
