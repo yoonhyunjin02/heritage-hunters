@@ -23,7 +23,6 @@ export default function initProfileEdit() {
   form.onsubmit = async (e) => {
     e.preventDefault();
 
-    // 파일 포함한 폼 데이터 생성
     const formData = new FormData(form);
 
     try {
@@ -31,16 +30,23 @@ export default function initProfileEdit() {
 
       alert("프로필 수정 완료");
 
-      // profileView 내부 요소만 업데이트
-      profileView.querySelector(".avatar__img").src = res.profileImageUrl;
-      profileView.querySelector(".user-meta__nickname").textContent = res.nickname;
-      profileView.querySelector(".user-meta__bio").textContent = res.bio || "";
+      getEl(".avatar__img", profileView).src = res.profileImageUrl;
+      getEl(".avatar__img", profileView).alt = res.nickname;
+      getEl(".user-meta__nickname", profileView).textContent = res.nickname;
+      getEl(".user-meta__bio", profileView).textContent = res.bio || "";
 
       form.classList.add("hidden");
       profileView.classList.remove("hidden");
     } catch (err) {
       console.error("프로필 수정 실패:", err);
-      alert("프로필 수정 실패");
+      // 서버가 준 메시지나 status를 alert에
+      if (err.status >= 400 && err.status < 500) {
+        alert(`요청 오류: ${err.message}`);
+      } else if (err.status >= 500) {
+        alert(`서버 오류: ${err.message}`);
+      } else {
+        alert(`알 수 없는 오류: ${err.message}`);
+      }
     }
   };
 }

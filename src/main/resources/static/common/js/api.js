@@ -6,6 +6,36 @@ export function getCsrfHeaders() {
   return { [header]: token };
 }
 
+// 에러 응답 처리 유틸
+async function handleErrorResponse(res) {
+  let userMessage = "알 수 없는 오류가 발생했습니다."; // 기본값
+  let debugMessage = res.statusText;
+
+  try {
+    const errData = await res.json();
+    if (errData?.message) {
+      debugMessage = errData.message;
+      // 4xx일 때만 서버 메시지를 그대로 사용자에게 전달
+      if (res.status >= 400 && res.status < 500) {
+        userMessage = errData.message;
+      } else if (res.status >= 500) {
+        userMessage = "서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.";
+      }
+    }
+  } catch {
+    try {
+      const text = await res.text();
+      debugMessage = text || debugMessage;
+    } catch {}
+  }
+
+  console.error(`API Error ${res.status}:`, debugMessage); // 개발자 콘솔용
+
+  const error = new Error(userMessage);
+  error.status = res.status;
+  throw error;
+}
+
 async function fetchJSON(url, options = {}) {
   const res = await fetch(url, {
     headers: {
@@ -17,7 +47,7 @@ async function fetchJSON(url, options = {}) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    await handleErrorResponse(res);
   }
 
   if (res.status === 204) {
@@ -59,7 +89,7 @@ export async function putMultipart(url, formData) {
   });
 
   if (!res.ok) {
-    throw new Error(res.statusText);
+    await handleErrorResponse(res);
   }
 
   const text = await res.text();
