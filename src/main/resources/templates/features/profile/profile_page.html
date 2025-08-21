@@ -3,9 +3,9 @@
   <head>
     <th:block th:insert="~{fragments/head :: common-head('Profile')}"></th:block>
 
-    <!-- POST 요청을 위한 CSRF 헤더 -->
-    <meta name="_csrf" content="[[${_csrf.token}]]" />
-    <meta name="_csrf_header" content="[[${_csrf.headerName}]]" />
+    <!-- CSRF 헤더 -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/features/profile/css/profile_page.css}" />
@@ -49,7 +49,7 @@
           </div>
 
           <!-- 편집 모드 폼 -->
-          <form id="profileHeaderEdit" class="profile-header__edit" hidden enctype="multipart/form-data">
+          <form id="profileHeaderEdit" class="profile-header__edit hidden" enctype="multipart/form-data">
             <div class="avatar-edit">
               <label for="profileImageInput" class="sr-only">프로필 사진 업로드</label>
               <input type="file" id="profileImageInput" name="profileImage" accept="image/*" />
@@ -95,14 +95,12 @@
             <li class="stamp-card" th:each="stamp : ${stamps}" th:classappend="${stamp.obtained} ? ' is-obtained' : ' is-locked'">
               <div class="stamp-card__name" th:text="${stamp.name}">우표 이름</div>
               <div class="stamp-card__image">
-                <img th:src="${stamp.imageUrl}" th:alt="${stamp.name}" loading="lazy" data-fallback="/images/placeholders/no-image.png" />
+                <div class="stamp-card__image-bg">
+                  <img th:src="${stamp.imageUrl}" th:alt="${stamp.name}" loading="lazy" data-fallback="/images/placeholders/no-image.png" />
+                </div>
               </div>
               <div class="stamp-card__date" th:if="${stamp.obtainedAt != null}">
-                <span class="stamp-card__date-label">획득일</span>
                 <time th:text="${#temporals.format(stamp.obtainedAt, 'yyyy.MM.dd')}"></time>
-              </div>
-              <div class="stamp-card__date is-pending" th:if="${stamp.obtainedAt == null}">
-                <span>미획득</span>
               </div>
             </li>
           </ul>
@@ -140,7 +138,7 @@
             </li>
           </ul>
           <div class="infinite-sentinel" data-sentinel aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/posts'}" aria-busy="false">
-            <p class="infinite-sentinel__loading" hidden>다음 글을 불러오는 중입니다...</p>
+            <p class="infinite-sentinel__loading loading-text hidden">다음 글을 불러오는 중입니다...</p>
           </div>
           <p class="empty-hint" th:if="${#lists.isEmpty(initialPosts)}">아직 올린 게시물이 없어요.</p>
         </div>
@@ -185,7 +183,7 @@
             </li>
           </ul>
           <div class="infinite-sentinel" data-sentinel aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/likes'}" aria-busy="false">
-            <p class="infinite-sentinel__loading">다음 글을 불러오는 중입니다...</p>
+            <p class="infinite-sentinel__loading loading-text hidden">다음 글을 불러오는 중입니다...</p>
           </div>
           <p class="empty-hint" th:if="${#lists.isEmpty(initialLiked)}">아직 '좋아요' 누른 게시물이 없어요.</p>
         </div>
@@ -215,7 +213,7 @@
             <h1 id="postDetailTitle" class="modal-title">게시글 상세</h1>
             <div class="header-actions">
               <div class="post-actions" hidden>
-                <div class="dropdown">
+                <div class="modal-dropdown">
                   <button
                     class="icon-btn"
                     aria-haspopup="true"
@@ -226,9 +224,9 @@
                   >
                     ⋯
                   </button>
-                  <div class="dropdown-menu" id="postDropdown" role="menu" hidden>
-                    <button type="button" class="dropdown-item" role="menuitem" data-action="edit-post">수정</button>
-                    <button type="button" class="dropdown-item delete-item" role="menuitem" data-action="delete-post">삭제</button>
+                  <div class="modal-dropdown-menu" id="postDropdown" role="menu" hidden>
+                    <button type="button" class="modal-dropdown-item" role="menuitem" data-action="edit-post">수정</button>
+                    <button type="button" class="modal-dropdown-item delete-item" role="menuitem" data-action="delete-post">삭제</button>
                   </div>
                 </div>
               </div>
