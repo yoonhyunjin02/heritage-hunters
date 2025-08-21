@@ -433,6 +433,21 @@
   color: var(--secondary-color);
 }
 
+/* 빈 상태 메시지 */
+.no-posts-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--secondary-color);
+}
+
+.no-posts-message p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
 /* 페이지네이션 */
 .pagination-nav {
   text-align: center;
@@ -571,5 +586,14 @@
 
   .post-actions-right {
     gap: 0px;
+  }
+
+  /* 모바일에서 빈 상태 메시지 */
+  .no-posts-message {
+    padding: 2rem 1rem;
+  }
+
+  .no-posts-message p {
+    font-size: 1rem;
   }
 }

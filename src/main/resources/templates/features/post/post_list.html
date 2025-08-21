@@ -168,6 +168,10 @@
         </article>
       </div>
 
+      <div class="no-posts-message" th:if="${posts == null or posts.empty}">
+        <p>게시글이 없습니다. <br> 문화유산을 탐험하고, 새로운 게시글을 작성해보세요!</p>
+      </div>
+
       <!-- 페이지네이션 -->
       <nav class="pagination-nav" th:if="${posts != null}">
         <div class="pagination">
