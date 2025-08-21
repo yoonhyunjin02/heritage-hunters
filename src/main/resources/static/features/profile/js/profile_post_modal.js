@@ -211,6 +211,7 @@ export default function initPostModal() {
     try {
       await deleteJSON(`/profile/${getUserIdFromUrl()}/posts/${modal.dataset.postId}`);
       closeModal();
+      alert("게시글을 삭제하었습니다.");
       window.location.reload();
     } catch (e) {
       console.error("게시글 삭제 실패:", e);
