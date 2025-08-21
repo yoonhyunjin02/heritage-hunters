@@ -56,7 +56,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   // 특정 유저가 '좋아요'한 게시물 목록 (최신순)
   @EntityGraph(attributePaths = {"user", "heritage"})
-  @Query("select l.post from Like l where l.user.id = :userId order by l.post.id desc")
+  @Query("select l.post from Like l where l.user.id = :userId order by l.createdAt desc")
   Page<Post> findLikedPostsByUserId(@Param("userId") Long userId, Pageable pageable);
 
   // 특정 유저의 특정 Heritage에 대한 다른 게시글이 있는지 확인 (현재 게시글 제외)

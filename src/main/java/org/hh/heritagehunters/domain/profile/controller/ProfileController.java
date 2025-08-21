@@ -30,7 +30,6 @@ public class ProfileController {
     return "redirect:/profile/" + customUserDetails.getId();
   }
 
-
   @GetMapping("/{userId}")
   public String view(@PathVariable Long userId,
       @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -59,10 +58,6 @@ public class ProfileController {
     );
     model.addAttribute("initialLiked", firstLiked.getContent());
     model.addAttribute("hasNextLiked", firstLiked.hasNext());
-
-    log.info("hasNextPosts={}", firstPosts.hasNext());
-    log.info("hasNextLiked={}", firstLiked.hasNext());
-
 
     return "features/profile/profile_page";
   }

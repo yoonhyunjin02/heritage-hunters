@@ -27,6 +27,7 @@ public class ProfileQueryService {
         u.getId(),
         u.getNickname(),
         u.getEmail(),
+        u.getBio(),
         u.getProfileImage(),
         u.getScore()
     );

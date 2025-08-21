@@ -1,59 +1,48 @@
-// infinite_scroller.js
-import { fetchJSON } from "./utils.js";
+import { getUserIdFromUrl } from "./utils.js";
+import { renderPostCard } from "./post_renderer.js";
+import { getEl, getEls } from "/common/js/utils/dom.js";
+import { getJSON } from "/common/js/api.js";
 
-export class InfiniteScroller {
-  constructor({ listEl, sentinelEl, endpoint, params = {}, renderItem }) {
-    this.listEl = listEl;
-    this.sentinelEl = sentinelEl;
-    this.endpoint = endpoint;
-    this.params = { ...params };
-    this.renderItem = renderItem;
-    this.done = false;
-    this.loading = false;
+/**
+ * 프로필 페이지 무한 스크롤 초기화
+ */
+export default function initInfiniteScroll() {
+  const userId = getUserIdFromUrl();
 
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => entry.isIntersecting && this.loadMore());
-      },
-      { rootMargin: "800px 0px" }
-    );
-  }
+  getEls("[data-sentinel]").forEach((sentinel) => {
+    const panel = sentinel.closest(".tab-panel");
+    let endpoint = sentinel.dataset.endpoint;
+    const loadingText = getEl(".infinite-sentinel__loading", sentinel);
+    const size = Number(panel.dataset.size) || 9;
 
-  buildURL() {
-    if (!this.endpoint || this.endpoint.includes("/undefined")) {
-      throw new Error(`잘못된 endpoint: ${this.endpoint}`);
+    if (!endpoint.startsWith("/profile/")) {
+      endpoint = `/profile/${userId}${endpoint}`;
     }
-    const url = new URL(this.endpoint, window.location.origin);
-    Object.entries(this.params).forEach(([k, v]) => v != null && url.searchParams.set(k, v));
-    return url.toString();
-  }
 
-  parsePaging(data) {
-    const items = data.items || data.content || [];
-    const hasMore = data.hasMore ?? data.last === false;
-    const nextPage = (this.params.page ?? 0) + 1;
-    return { items, nextCursor: nextPage, hasMore };
-  }
+    const observer = new IntersectionObserver(onIntersect, { threshold: 0.1 });
+    observer.observe(sentinel);
 
-  async loadMore() {
-    if (this.loading || this.done) return;
-    this.loading = true;
-    try {
-      const data = await fetchJSON(this.buildURL());
-      const { items, nextCursor, hasMore } = this.parsePaging(data);
-      items.forEach((item) => this.listEl.appendChild(this.renderItem(item)));
-      if (!hasMore) {
-        this.done = true;
-        this.observer.disconnect();
-      } else {
-        this.params.page = nextCursor;
+    async function onIntersect(entries) {
+      for (const entry of entries) {
+        if (!entry.isIntersecting || panel.dataset.hasNext !== "true") return;
+
+        panel.setAttribute("aria-busy", "true");
+        const nextPage = Number(panel.dataset.page) + 1;
+        loadingText.classList.remove("hidden");
+
+        try {
+          const data = await getJSON(`${endpoint}?page=${nextPage}&size=${size}`);
+          const listEl = getEl(".post-grid", panel);
+          data.content.forEach((post) => listEl.appendChild(renderPostCard(post)));
+          panel.dataset.page = nextPage;
+          panel.dataset.hasNext = String(!data.last);
+        } catch (e) {
+          console.error("무한 스크롤 오류:", e);
+        } finally {
+          panel.setAttribute("aria-busy", "false");
+          loadingText.classList.add("hidden");
+        }
       }
-    } finally {
-      this.loading = false;
     }
-  }
-
-  start() {
-    if (this.sentinelEl) this.observer.observe(this.sentinelEl);
-  }
+  });
 }
