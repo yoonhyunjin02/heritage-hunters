@@ -32,7 +32,7 @@ export default function initProfileEdit() {
       alert("프로필 수정 완료");
 
       // profileView 내부 요소만 업데이트
-      profileView.querySelector(".avatar__img").src = res.profileImage;
+      profileView.querySelector(".avatar__img").src = res.profileImageUrl;
       profileView.querySelector(".user-meta__nickname").textContent = res.nickname;
       profileView.querySelector(".user-meta__bio").textContent = res.bio || "";
 
