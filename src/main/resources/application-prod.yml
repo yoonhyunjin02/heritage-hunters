@@ -43,6 +43,7 @@ spring:
               - name
               - email
               - profileImage
+            provider: naver
       provider:
         naver:
           authorization-uri: https://nid.naver.com/oauth2.0/authorize
