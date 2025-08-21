@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
-    <th:block th:insert="~{fragments/head :: common-head('Profile')}"></th:block>
+    <th:block th:insert="~{fragments/head :: common-head('Profile/'+${user.nickname})}"></th:block>
 
     <!-- CSRF 헤더 -->
     <meta name="_csrf" th:content="${_csrf.token}" />
@@ -83,7 +83,9 @@
       <!-- 탭 -->
       <nav class="profile-tabs container-max" role="tablist" aria-label="프로필 탭">
         <button class="tab-btn" id="tab-stamps" role="tab" aria-controls="panel-stamps" aria-selected="false" tabindex="-1">얻은 우표</button>
-        <button class="tab-btn is-active" id="tab-posts" role="tab" aria-controls="panel-posts" aria-selected="true">내가 올린 게시물</button>
+        <button class="tab-btn is-active" id="tab-posts" role="tab" aria-controls="panel-posts" aria-selected="true">
+          <span th:if="${isOwner}">내가 올린 </span>게시물
+        </button>
         <button class="tab-btn" id="tab-liked" role="tab" aria-controls="panel-liked" aria-selected="false" tabindex="-1">'좋아요' 누른 게시물</button>
       </nav>
 
