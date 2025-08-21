@@ -92,7 +92,7 @@
   align-items: center;
   gap: 10px;
 }
-.modal-close {
+.icon-btn {
   background: none;
   border: none;
   font-size: 1.25rem;
@@ -103,8 +103,8 @@
   height: 2.25rem;
   transition: background 0.2s ease, color 0.2s ease;
 }
-.modal-close:hover,
-.modal-close:focus-visible {
+.icon-btn:hover,
+.icon-btn:focus-visible {
   background: var(--gray-100);
   color: var(--gray-900);
 }
