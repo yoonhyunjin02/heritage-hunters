@@ -23,6 +23,15 @@
   overflow: visible;
 }
 
+/* 숨기기 */
+.hidden {
+  display: none !important;
+}
+
+main {
+  border-left: 0.625rem solid var(--stone-800);
+  border-right: 0.625rem solid var(--stone-800);
+}
 /* ========== 상단 프로필 영역 ========== */
 .profile-header {
   display: grid;
@@ -38,6 +47,12 @@
   align-items: center;
 }
 
+#profileHeaderView {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
 .avatar {
   width: 6rem;
   height: 6rem;
@@ -195,14 +210,25 @@
   overflow: hidden;
   aspect-ratio: 1 / 1;
 }
-.stamp-card__image img {
-  width: 80%;
-  height: 80%;
-  object-fit: contain;
+.stamp-card__image-bg {
+  width: 90%;
+  height: 90%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url("/images/stamp/stamp_bg.png");
+  background-position: center;
+  background-size: contain;
   transition: transform 0.2s ease;
 }
+.stamp-card__image img {
+  width: 86%;
+  height: 86%;
+  object-fit: contain;
+  background: var(--beige-50);
+}
 @media (hover: hover) {
-  .stamp-card:hover .stamp-card__image img {
+  .stamp-card:hover .stamp-card__image-bg {
     transform: scale(1.03);
   }
 }
@@ -213,13 +239,14 @@
 }
 .stamp-card__date {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
   gap: 0.375rem;
   font-size: 0.875rem;
-  color: var(--gray-700);
+  color: var(--gray-400);
+  font-style: italic;
 }
 .stamp-card__date-label {
-  color: var(--gray-800);
   font-weight: 600;
 }
 .stamp-card.is-locked .stamp-card__image img {
