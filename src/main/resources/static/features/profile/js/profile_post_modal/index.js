@@ -21,25 +21,35 @@ export default function initPostModal() {
   const comments = createComments({ ...state, renderDetail });
 
   function renderDetail(data) {
+    const commentCount = Array.isArray(data.comments) ? data.comments.length : data.commentCount ?? 0;
+    const newData = { ...data, commentCount };
+
     core.clearDetail();
-    core.togglePostActions(data.owner);
-    modal.dataset.authorId = data.userId;
-    core.renderHeader(data);
-    getEl("#postContent").textContent = data.content || "";
-    getEl("#postLocation").textContent = data.location || "위치 정보 없음";
-    gallery.setImages(data.images || []);
-    renderStats(data);
-    comments.renderComments(data);
-    bindDynamicEventListeners(data);
+    core.togglePostActions(newData.owner);
+    modal.dataset.authorId = newData.userId;
+    core.renderHeader(newData);
+    getEl("#postContent").textContent = newData.content || "";
+    getEl("#postLocation").textContent = newData.location || "위치 정보 없음";
+    gallery.setImages(newData.images || []);
+    renderStats(newData);
+    comments.renderComments(newData);
+    bindDynamicEventListeners(newData);
   }
 
   function renderStats({ viewCount, likeCount, commentCount, liked }) {
     getEl("#viewCount").textContent = viewCount ?? 0;
     getEl("#likeCount").textContent = likeCount ?? 0;
     getEl("#commentCount").textContent = commentCount ?? 0;
+
     const likeBtn = getEl("#likeBtn");
     likeBtn.classList.toggle("liked", liked);
     likeBtn.setAttribute("aria-pressed", String(liked));
+
+    // 버튼 내부의 <img> 아이콘 교체
+    const iconImg = likeBtn.querySelector("img");
+    if (iconImg) {
+      iconImg.src = liked ? "/images/icons/heart-filled.svg" : "/images/icons/heart-empty.svg";
+    }
   }
 
   function bindDynamicEventListeners(data) {
@@ -56,6 +66,16 @@ export default function initPostModal() {
   getEl(".gallery-nav.prev", modal)?.addEventListener("click", gallery.prevImage);
   getEl(".gallery-nav.next", modal)?.addEventListener("click", gallery.nextImage);
 
+  // 댓글 버튼 클릭 시 textarea로 포커스 이동
+  modal.addEventListener("click", (e) => {
+    const btn = e.target.closest('[data-action="focus-comment-input"]');
+    if (!btn) return;
+    const textarea = getEl("#commentTextarea", modal);
+    if (textarea) {
+      textarea.focus();
+      textarea.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  });
   async function onThumbClick(e) {
     const card = e.target.closest(".post-thumb");
     if (!card?.dataset.postId) return;

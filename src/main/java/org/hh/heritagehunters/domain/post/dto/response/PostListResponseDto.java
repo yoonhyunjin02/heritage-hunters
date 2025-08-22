@@ -14,7 +14,7 @@ public class PostListResponseDto {
 
   @Schema(description = "게시글 ID", example = "1")
   private Long id;
-  @Schema(description = "게시글 내용", example = "경복궁에서 잘은 사진 찍었어요!")
+  @Schema(description = "게시글 내용", example = "경복궁에서 사진 찍었어요!")
   private String content;
   @Schema(description = "위치", example = "경복궁")
   private String location;
@@ -93,6 +93,33 @@ public class PostListResponseDto {
             .map(image -> image.getUrl())
             .toList())
         .mainImageUrl(post.getImages().isEmpty() ? null : post.getImages().get(0).getUrl())
+        .build();
+  }
+
+  /**
+   * Service에서 미리 조회한 썸네일 URL을 주입하는 팩토리 메서드
+   */
+  public static PostListResponseDto fromEntityAndThumb(Post post, boolean likedByCurrentUser, String thumbnailUrl) {
+    return PostListResponseDto.builder()
+        .id(post.getId())
+        .content(post.getContent())
+        .location(post.getLocation())
+        .createdAt(post.getCreatedAt())
+        .viewCount(post.getViewCount())
+        .likeCount(post.getLikeCount())
+        .commentCount(post.getCommentCount())
+        .likedByCurrentUser(likedByCurrentUser)
+        .heritage(post.getHeritage() != null ? HeritageInfo.builder()
+            .id(post.getHeritage().getId())
+            .name(post.getHeritage().getName())
+            .designation(post.getHeritage().getDesignation())
+            .build() : null)
+        .user(UserInfo.builder()
+            .id(post.getUser().getId())
+            .nickname(post.getUser().getNickname())
+            .profileImage(post.getUser().getProfileImage())
+            .build())
+        .mainImageUrl(thumbnailUrl)
         .build();
   }
 }

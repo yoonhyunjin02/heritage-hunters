@@ -1,3 +1,4 @@
+// profile_main.js
 import initTabs from "./tabs.js";
 import initInfiniteScroll from "./infinite_scroller.js";
 import initPostModal from "./profile_post_modal/index.js";

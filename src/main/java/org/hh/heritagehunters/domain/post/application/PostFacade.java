@@ -2,6 +2,7 @@ package org.hh.heritagehunters.domain.post.application;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -227,29 +228,34 @@ public class PostFacade {
         .toList();
   }
 
-
-
-  // PostFacade
   @Transactional(readOnly = true)
   public Page<PostListResponseDto> userPosts(Long targetUserId, User currentUser, int page, int size) {
     Page<Post> posts = postReader.getUserPosts(targetUserId, page, size);
-    return mapWithLikeFlag(posts, currentUser);
+    return mapWithLikeAndThumbnails(posts, currentUser);
   }
 
   @Transactional(readOnly = true)
   public Page<PostListResponseDto> likedPosts(Long targetUserId, User currentUser, int page, int size) {
     Page<Post> posts = postReader.getLikedPosts(targetUserId, page, size);
-    return mapWithLikeFlag(posts, currentUser);
+    return mapWithLikeAndThumbnails(posts, currentUser);
   }
 
-  private Page<PostListResponseDto> mapWithLikeFlag(Page<Post> posts, User currentUser) {
-    Set<Long> likedIds = Collections.emptySet();
-    if (currentUser != null && !posts.isEmpty()) {
-//      List<Long> postIds = posts.getContent().stream().map(Post::getId).toList();
-      likedIds = postReader.findLikedPostIds(currentUser.getId(), posts.stream().toList());
-    }
-    Set<Long> finalLiked = likedIds; // effectively final
-    return posts.map(p -> PostListResponseDto.from(p, finalLiked.contains(p.getId())));
+  private Page<PostListResponseDto> mapWithLikeAndThumbnails(Page<Post> posts, User currentUser) {
+    if (posts.isEmpty()) return posts.map(p -> PostListResponseDto.fromEntityAndThumb(p, false, null));
+
+    List<Long> postIds = posts.getContent().stream().map(Post::getId).toList();
+
+    Set<Long> likedIds = (currentUser == null)
+        ? Collections.emptySet()
+        : postReader.findLikedInPostIds(currentUser.getId(), postIds);
+
+    Map<Long, String> thumbMap = postReader.findThumbnailUrls(postIds);
+
+    return posts.map(p -> PostListResponseDto.fromEntityAndThumb(
+        p,
+        likedIds.contains(p.getId()),
+        thumbMap.get(p.getId())
+    ));
   }
 
   /**

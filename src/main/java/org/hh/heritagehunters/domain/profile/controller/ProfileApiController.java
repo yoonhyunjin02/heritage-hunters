@@ -33,9 +33,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class ProfileApiController {
 
   private final PostFacade postFacade;
-  private final UserFacade userFacade; // 프로필 수정용
+  private final UserFacade userFacade;
 
-  // 내 게시글 목록 조회
   @Operation(
       summary = "사용자 게시글 조회",
       description = "특정 사용자가 작성한 게시글을 페이징하여 조회, 로그인한 사용자의 좋아요 상태도 포함"
@@ -59,7 +58,6 @@ public class ProfileApiController {
     return postFacade.userPosts(userId, current, page, size);
   }
 
-  // 내가 좋아요 누른 글 목록 조회
   @Operation(
       summary = "사용자가 좋아요한 게시글 조회",
       description = "특정 사용자가 좋아요를 누른 게시글을 페이징하여 조회합니다."
@@ -83,7 +81,6 @@ public class ProfileApiController {
     return postFacade.likedPosts(userId, current, page, size);
   }
 
-  // 프로필 정보 수정 (프로필사진, 닉네임, 한줄소개)
   @PutMapping("/update")
   @Operation(
       summary = "프로필 사진, 닉네임, 한 줄 소개 수정",

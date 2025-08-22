@@ -16,44 +16,61 @@
     <div th:replace="~{fragments/header :: common-header}"></div>
 
     <main>
-      <!-- 프로필 상단 -->
-      <section class="profile-header container-max" aria-labelledby="profile-title">
+      <!-- 프로필 상단 (읽기 전용) -->
+      <section id="profileHeaderSection" class="profile-header container-max" aria-labelledby="profile-title">
         <h1 id="profile-title" class="visually-hidden">프로필</h1>
 
         <div class="profile-header__left">
-          <!-- 읽기 전용 뷰 -->
-          <div id="profileHeaderView">
-            <div class="avatar">
-              <img
-                class="avatar__img"
-                th:src="${user.profileImage}"
-                th:alt="${user.nickname} + '님의 프로필 사진'"
-                loading="lazy"
-                data-fallback="/images/placeholders/no-image.png"
-              />
-            </div>
-
-            <div class="user-meta">
-              <div class="user-meta__row">
-                <span class="user-meta__nickname" th:text="${user.nickname}">닉네임</span>
-              </div>
-              <div class="user-meta__row">
-                <span class="user-meta__email" th:text="${user.email}">email@example.com</span>
-              </div>
-              <div class="user-meta__row">
-                <span class="user-meta__bio" th:text="${user.bio ?: ''}">한 줄 소개</span>
-              </div>
-            </div>
-
-            <button type="button" id="editProfileBtn" class="edit-profile-button" th:if="${isOwner}" aria-label="프로필 수정">프로필 수정</button>
+          <div class="avatar">
+            <img
+              class="avatar__img"
+              th:src="${user.profileImage}"
+              th:alt="${user.nickname} + '님의 프로필 사진'"
+              loading="lazy"
+              data-fallback="/images/placeholders/no-image.png"
+            />
           </div>
 
-          <!-- 편집 모드 폼 -->
-          <form id="profileHeaderEdit" class="profile-header__edit hidden" enctype="multipart/form-data">
+          <div class="user-meta">
+            <div class="user-meta__row">
+              <span class="user-meta__nickname" th:text="${user.nickname}">닉네임</span>
+            </div>
+            <div class="user-meta__row">
+              <span class="user-meta__email" th:text="${user.email}">email@example.com</span>
+            </div>
+            <div class="user-meta__row">
+              <span class="user-meta__bio" th:text="${user.bio ?: ''}">한 줄 소개</span>
+            </div>
+          </div>
+          <button type="button" id="editProfileBtn" class="edit-profile-button" th:if="${isOwner}" aria-label="프로필 수정">프로필 수정</button>
+        </div>
+
+        <div class="profile-header__right" aria-label="점수" aria-live="polite">
+          <span class="score__label">점수</span>
+          <strong class="score__value" th:text="${#numbers.formatInteger(user.score, 0)}">0</strong>
+        </div>
+      </section>
+
+      <!-- 프로필 편집 (폼) -->
+      <section id="profileHeaderEditSection" class="profile-header container-max hidden" aria-labelledby="edit-profile-title">
+        <h1 id="edit-profile-title" class="visually-hidden">프로필 수정</h1>
+
+        <form id="profileHeaderEditForm" enctype="multipart/form-data" class="edit-profile-form">
+          <div class="profile-edit-inputs">
             <div class="avatar-edit">
-              <label for="profileImageInput" class="sr-only">프로필 사진 업로드</label>
-              <input type="file" id="profileImageInput" name="profileImage" accept="image/*" />
-              <img id="avatarPreview" class="avatar__img" src="" alt="프로필 사진 프리뷰" loading="lazy" data-fallback="/images/placeholders/no-image.png" />
+              <label for="profileImageInput" class="avatar-label">
+                <img
+                  id="avatarPreview"
+                  class="avatar__img"
+                  th:src="${user.profileImage}"
+                  alt="프로필 사진 프리뷰"
+                  loading="lazy"
+                  data-fallback="/images/placeholders/no-image.png"
+                />
+                <!-- 오버레이 -->
+                <div class="avatar-overlay">파일 선택하기</div>
+              </label>
+              <input type="file" id="profileImageInput" name="profileImage" accept="image/.jpg, image/.jpeg, image/.png" />
             </div>
 
             <div class="user-meta">
@@ -66,18 +83,12 @@
                 <textarea id="bioInput" name="bio" maxlength="100" rows="2" th:text="${user.bio ?: ''}"></textarea>
               </div>
             </div>
-
-            <div class="profile-edit-buttons">
-              <button type="button" id="cancelProfileEdit" class="btn-secondary">취소</button>
-              <button type="submit" class="btn-primary">저장</button>
-            </div>
-          </form>
-        </div>
-
-        <div class="profile-header__right" aria-label="점수" aria-live="polite">
-          <span class="score__label">점수</span>
-          <strong class="score__value" th:text="${#numbers.formatInteger(user.score, 0)}">0</strong>
-        </div>
+          </div>
+          <div class="profile-edit-buttons">
+            <button type="button" id="cancelProfileEdit" class="btn-secondary">취소</button>
+            <button type="submit" class="btn-primary">저장</button>
+          </div>
+        </form>
       </section>
 
       <!-- 탭 -->
@@ -110,39 +121,23 @@
         </div>
 
         <!-- 내가 올린 게시물 -->
-        <div id="panel-posts" class="tab-panel" role="tabpanel" aria-labelledby="tab-posts" data-size="9" data-page="0" th:attr="data-has-next=${hasNextPosts}">
+        <div
+          id="panel-posts"
+          class="tab-panel"
+          role="tabpanel"
+          aria-labelledby="tab-posts"
+          data-size="9"
+          data-page="-1"
+          data-has-next="true"
+          data-loaded="false"
+        >
           <ul class="post-grid" role="list" data-infinite="posts" aria-live="polite" aria-busy="false">
-            <li class="post-card" th:each="post : ${initialPosts}">
-              <a
-                href="#"
-                class="post-thumb"
-                th:attr="data-post-id=${post.id}"
-                th:aria-label="${post.heritage != null ? post.heritage.name + ' 상세 보기' : '게시물 상세 보기'}"
-              >
-                <img
-                  class="post-thumb__img"
-                  th:src="${post.mainImageUrl}"
-                  th:alt="${post.heritage != null ? post.heritage.name : '게시물 이미지'}"
-                  loading="lazy"
-                  data-fallback="/images/placeholders/no-image.png"
-                />
-                <div class="post-thumb__overlay">
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">♥</span>
-                    <span class="overlay-item__count" th:text="${post.likeCount}">0</span>
-                  </span>
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">💬</span>
-                    <span class="overlay-item__count" th:text="${post.commentCount}">0</span>
-                  </span>
-                </div>
-              </a>
-            </li>
+            <!-- JS가 첫 페이지 로드 시 채움 -->
           </ul>
+          <p class="empty-hint hidden">아직 올린 게시물이 없어요.</p>
           <div class="infinite-sentinel" data-sentinel aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/posts'}" aria-busy="false">
             <p class="infinite-sentinel__loading loading-text hidden">다음 글을 불러오는 중입니다...</p>
           </div>
-          <p class="empty-hint" th:if="${#lists.isEmpty(initialPosts)}">아직 올린 게시물이 없어요.</p>
         </div>
 
         <!-- 좋아요 -->
@@ -153,41 +148,17 @@
           aria-labelledby="tab-liked"
           hidden
           data-size="9"
-          data-page="0"
-          th:attr="data-has-next=${hasNextLiked}"
+          data-page="-1"
+          data-has-next="true"
+          data-loaded="false"
         >
           <ul class="post-grid" role="list" data-infinite="liked" aria-live="polite" aria-busy="false">
-            <li class="post-card" th:each="post : ${initialLiked}">
-              <a
-                href="#"
-                class="post-thumb"
-                th:attr="data-post-id=${post.id}"
-                th:aria-label="${post.heritage != null ? post.heritage.name + ' 상세 보기' : '게시물 상세 보기'}"
-              >
-                <img
-                  class="post-thumb__img"
-                  th:src="${post.mainImageUrl}"
-                  th:alt="${post.heritage != null ? post.heritage.name : '게시물 이미지'}"
-                  loading="lazy"
-                  data-fallback="/images/placeholders/no-image.png"
-                />
-                <div class="post-thumb__overlay">
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">♥</span>
-                    <span class="overlay-item__count" th:text="${post.likeCount}">0</span>
-                  </span>
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">💬</span>
-                    <span class="overlay-item__count" th:text="${post.commentCount}">0</span>
-                  </span>
-                </div>
-              </a>
-            </li>
+            <!-- JS가 첫 페이지 로드 시 채움 -->
           </ul>
+          <p class="empty-hint hidden">아직 '좋아요' 누른 게시물이 없어요.</p>
           <div class="infinite-sentinel" data-sentinel aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/likes'}" aria-busy="false">
             <p class="infinite-sentinel__loading loading-text hidden">다음 글을 불러오는 중입니다...</p>
           </div>
-          <p class="empty-hint" th:if="${#lists.isEmpty(initialLiked)}">아직 '좋아요' 누른 게시물이 없어요.</p>
         </div>
       </section>
     </main>
@@ -285,22 +256,15 @@
                 </section>
 
                 <section class="actions-box" aria-live="polite">
+                  <!-- 좋아요 버튼 -->
                   <button type="button" id="likeBtn" class="icon-action like-button" data-post-id="" aria-pressed="false" title="좋아요">
-                    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-                      <path
-                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        fill="none"
-                      ></path>
-                    </svg>
+                    <img src="/images/icons/heart-empty.svg" alt="좋아요" width="24" height="24" />
                     <span class="sr-only">좋아요</span>
                   </button>
 
+                  <!-- 댓글 버튼 -->
                   <button class="icon-action" title="댓글 달기" aria-label="댓글 달기" data-action="focus-comment-input">
-                    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" fill="none" />
-                    </svg>
+                    <img src="/images/icons/comment.svg" alt="댓글" width="24" height="24" />
                   </button>
 
                   <div class="stats">
@@ -310,7 +274,10 @@
                   </div>
                 </section>
 
-                <section class="comments-list" id="commentList"></section>
+                <section class="comments-list" id="commentListSection">
+                  <div id="commentList"></div>
+                  <p id="noCommentsHint" class="empty-hint hidden">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>
+                </section>
 
                 <section class="login-notice" id="loginNotice" hidden>댓글을 작성하려면 <a href="/login">로그인</a>이 필요합니다.</section>
 

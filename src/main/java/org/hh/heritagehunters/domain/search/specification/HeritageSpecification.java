@@ -27,7 +27,7 @@ public class HeritageSpecification {
   }
 
   /**
-   * 키워드 검색 (이름·한자명·영문명·설명 필드에 LIKE)
+   * 키워드 검색 (이름·한자명·설명 필드에 LIKE)
    */
   private static Specification<Heritage> byKeyword(String keyword) {
     return (root, query, cb) -> {
