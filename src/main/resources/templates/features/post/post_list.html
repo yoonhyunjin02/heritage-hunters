@@ -173,7 +173,7 @@
       </div>
 
       <!-- 페이지네이션 -->
-      <nav class="pagination-nav" th:if="${posts != null}">
+      <nav class="pagination-nav" th:if="${posts != null and !posts.empty}">
         <div class="pagination">
           <a th:if="${posts.number > 0}"
              th:href="@{/posts(page=0, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
