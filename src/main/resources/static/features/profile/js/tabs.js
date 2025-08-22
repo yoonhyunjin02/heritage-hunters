@@ -1,3 +1,4 @@
+// tabs.js
 import { getEls } from "/common/js/utils/dom.js";
 
 /**

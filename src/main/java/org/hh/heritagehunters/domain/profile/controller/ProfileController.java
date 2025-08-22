@@ -1,12 +1,11 @@
 package org.hh.heritagehunters.domain.profile.controller;
 
+import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hh.heritagehunters.common.security.CustomUserDetails;
 import org.hh.heritagehunters.domain.post.application.PostFacade;
-import org.hh.heritagehunters.domain.post.dto.response.PostListResponseDto;
 import org.hh.heritagehunters.domain.profile.service.ProfileQueryService;
-import org.springframework.data.domain.Page;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,7 +23,6 @@ public class ProfileController {
   @GetMapping
   public String myProfile(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
     if (customUserDetails == null) {
-      // 로그인 안 했으면 로그인 페이지로
       return "redirect:/login";
     }
     return "redirect:/profile/" + customUserDetails.getId();
@@ -41,23 +39,11 @@ public class ProfileController {
     boolean isOwner = customUserDetails != null && customUserDetails.getId().equals(userId);
     model.addAttribute("isOwner", isOwner);
 
-    // 내가 올린 게시물 첫 페이지
-    Page<PostListResponseDto> firstPosts = postFacade.userPosts(
-        userId,
-        customUserDetails != null ? customUserDetails.getUser() : null,
-        0, 9
-    );
-    model.addAttribute("initialPosts", firstPosts.getContent());
-    model.addAttribute("hasNextPosts", firstPosts.hasNext());
-
-    // '좋아요' 누른 게시물 첫 페이지
-    Page<PostListResponseDto> firstLiked = postFacade.likedPosts(
-        userId,
-        customUserDetails != null ? customUserDetails.getUser() : null,
-        0, 9
-    );
-    model.addAttribute("initialLiked", firstLiked.getContent());
-    model.addAttribute("hasNextLiked", firstLiked.hasNext());
+    // 목록 데이터는 SSR에서 제외
+    model.addAttribute("initialPosts", Collections.emptyList());
+    model.addAttribute("hasNextPosts", false);
+    model.addAttribute("initialLiked", Collections.emptyList());
+    model.addAttribute("hasNextLiked", false);
 
     return "features/profile/profile_page";
   }

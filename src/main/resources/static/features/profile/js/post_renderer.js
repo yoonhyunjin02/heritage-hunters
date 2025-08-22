@@ -1,3 +1,4 @@
+// post_renderer.js
 /**
  * 프로필 페이지의 포스트 카드 렌더러
  */
@@ -20,10 +21,27 @@ export function renderPostCard(post) {
 
   const overlay = document.createElement("div");
   overlay.className = "post-thumb__overlay";
-  overlay.innerHTML = `
-    <span class="overlay-item"><span aria-hidden="true">♥</span> ${post.likeCount ?? 0}</span>
-    <span class="overlay-item"><span aria-hidden="true">💬</span> ${post.commentCount ?? 0}</span>
-  `;
+
+  // ♥ 아이콘
+  const likeSpan = document.createElement("span");
+  likeSpan.className = "overlay-item";
+  const heart = document.createElement("span");
+  heart.setAttribute("aria-hidden", "true");
+  heart.textContent = "♥";
+  if (post.likedByCurrentUser) {
+    heart.classList.add("liked"); // likedByCurrentUser가 true면 .liked 클래스 추가
+  }
+  likeSpan.append(heart, ` ${post.likeCount ?? 0}`);
+
+  // 💬 아이콘
+  const commentSpan = document.createElement("span");
+  commentSpan.className = "overlay-item";
+  const commentIcon = document.createElement("span");
+  commentIcon.setAttribute("aria-hidden", "true");
+  commentIcon.textContent = "💬";
+  commentSpan.append(commentIcon, ` ${post.commentCount ?? 0}`);
+
+  overlay.append(likeSpan, commentSpan);
 
   a.append(img, overlay);
   li.appendChild(a);

@@ -110,39 +110,23 @@
         </div>
 
         <!-- 내가 올린 게시물 -->
-        <div id="panel-posts" class="tab-panel" role="tabpanel" aria-labelledby="tab-posts" data-size="9" data-page="0" th:attr="data-has-next=${hasNextPosts}">
+        <div
+          id="panel-posts"
+          class="tab-panel"
+          role="tabpanel"
+          aria-labelledby="tab-posts"
+          data-size="9"
+          data-page="-1"
+          data-has-next="true"
+          data-loaded="false"
+        >
           <ul class="post-grid" role="list" data-infinite="posts" aria-live="polite" aria-busy="false">
-            <li class="post-card" th:each="post : ${initialPosts}">
-              <a
-                href="#"
-                class="post-thumb"
-                th:attr="data-post-id=${post.id}"
-                th:aria-label="${post.heritage != null ? post.heritage.name + ' 상세 보기' : '게시물 상세 보기'}"
-              >
-                <img
-                  class="post-thumb__img"
-                  th:src="${post.mainImageUrl}"
-                  th:alt="${post.heritage != null ? post.heritage.name : '게시물 이미지'}"
-                  loading="lazy"
-                  data-fallback="/images/placeholders/no-image.png"
-                />
-                <div class="post-thumb__overlay">
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">♥</span>
-                    <span class="overlay-item__count" th:text="${post.likeCount}">0</span>
-                  </span>
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">💬</span>
-                    <span class="overlay-item__count" th:text="${post.commentCount}">0</span>
-                  </span>
-                </div>
-              </a>
-            </li>
+            <!-- JS가 첫 페이지 로드 시 채움 -->
           </ul>
+          <p class="empty-hint hidden">아직 올린 게시물이 없어요.</p>
           <div class="infinite-sentinel" data-sentinel aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/posts'}" aria-busy="false">
             <p class="infinite-sentinel__loading loading-text hidden">다음 글을 불러오는 중입니다...</p>
           </div>
-          <p class="empty-hint" th:if="${#lists.isEmpty(initialPosts)}">아직 올린 게시물이 없어요.</p>
         </div>
 
         <!-- 좋아요 -->
@@ -153,41 +137,17 @@
           aria-labelledby="tab-liked"
           hidden
           data-size="9"
-          data-page="0"
-          th:attr="data-has-next=${hasNextLiked}"
+          data-page="-1"
+          data-has-next="true"
+          data-loaded="false"
         >
           <ul class="post-grid" role="list" data-infinite="liked" aria-live="polite" aria-busy="false">
-            <li class="post-card" th:each="post : ${initialLiked}">
-              <a
-                href="#"
-                class="post-thumb"
-                th:attr="data-post-id=${post.id}"
-                th:aria-label="${post.heritage != null ? post.heritage.name + ' 상세 보기' : '게시물 상세 보기'}"
-              >
-                <img
-                  class="post-thumb__img"
-                  th:src="${post.mainImageUrl}"
-                  th:alt="${post.heritage != null ? post.heritage.name : '게시물 이미지'}"
-                  loading="lazy"
-                  data-fallback="/images/placeholders/no-image.png"
-                />
-                <div class="post-thumb__overlay">
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">♥</span>
-                    <span class="overlay-item__count" th:text="${post.likeCount}">0</span>
-                  </span>
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">💬</span>
-                    <span class="overlay-item__count" th:text="${post.commentCount}">0</span>
-                  </span>
-                </div>
-              </a>
-            </li>
+            <!-- JS가 첫 페이지 로드 시 채움 -->
           </ul>
+          <p class="empty-hint hidden">아직 '좋아요' 누른 게시물이 없어요.</p>
           <div class="infinite-sentinel" data-sentinel aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/likes'}" aria-busy="false">
             <p class="infinite-sentinel__loading loading-text hidden">다음 글을 불러오는 중입니다...</p>
           </div>
-          <p class="empty-hint" th:if="${#lists.isEmpty(initialLiked)}">아직 '좋아요' 누른 게시물이 없어요.</p>
         </div>
       </section>
     </main>

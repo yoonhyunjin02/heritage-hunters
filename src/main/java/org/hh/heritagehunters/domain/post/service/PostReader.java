@@ -1,14 +1,20 @@
 package org.hh.heritagehunters.domain.post.service;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hh.heritagehunters.common.exception.NotFoundException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.post.entity.Comment;
 import org.hh.heritagehunters.domain.post.entity.Post;
+import org.hh.heritagehunters.domain.post.entity.PostImage;
 import org.hh.heritagehunters.domain.post.repository.CommentRepository;
 import org.hh.heritagehunters.domain.post.repository.LikeRepository;
+import org.hh.heritagehunters.domain.post.repository.PostImageRepository;
 import org.hh.heritagehunters.domain.post.repository.PostRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,17 +32,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostReader {
 
   private final PostRepository postRepository;
+  private final PostImageRepository postImageRepository;
   private final CommentRepository commentRepository;
   private final LikeRepository likeRepository;
 
   /**
    * 게시글 목록을 페이지네이션으로 조회합니다
-   * @param keyword 검색 키워드
-   * @param region 지역 필터
-   * @param sort 정렬 기준
+   *
+   * @param keyword   검색 키워드
+   * @param region    지역 필터
+   * @param sort      정렬 기준
    * @param direction 정렬 방향
-   * @param page 페이지 번호
-   * @param size 페이지 크기
+   * @param page      페이지 번호
+   * @param size      페이지 크기
    * @return 게시글 목록 페이지
    */
   public Page<Post> getPage(String keyword, String region, String sort, String direction, int page, int size) {
@@ -51,6 +59,7 @@ public class PostReader {
 
   /**
    * ID로 게시글을 조회합니다
+   *
    * @param postId 게시글 ID
    * @return 게시글 엔티티
    */
@@ -61,6 +70,7 @@ public class PostReader {
 
   /**
    * 이미지를 포함하여 게시글 정보를 조회합니다
+   *
    * @param postId 게시글 ID
    * @return 이미지가 포함된 게시글 엔티티
    */
@@ -71,6 +81,7 @@ public class PostReader {
 
   /**
    * 게시글의 댓글 목록을 조회합니다
+   *
    * @param postId 게시글 ID
    * @return 댓글 목록
    */
@@ -80,8 +91,9 @@ public class PostReader {
 
   /**
    * 사용자가 좋아요를 누른 게시글 ID 목록을 조회합니다
+   *
    * @param userId 사용자 ID
-   * @param posts 게시글 목록
+   * @param posts  게시글 목록
    * @return 좋아요를 누른 게시글 ID 집합
    */
   public Set<Long> findLikedPostIds(Long userId, List<Post> posts) {
@@ -90,7 +102,8 @@ public class PostReader {
 
   /**
    * 정렬 조건을 생성합니다
-   * @param sort 정렬 기준
+   *
+   * @param sort      정렬 기준
    * @param direction 정렬 방향
    * @return Spring Data Sort 객체
    */
@@ -106,12 +119,31 @@ public class PostReader {
   }
 
   public Page<Post> getUserPosts(Long userId, int page, int size) {
-    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-    return postRepository.findByUserIdOrderByIdDesc(userId, pageable);
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+    return postRepository.findPageWithToOnesByUserId(userId, pageable);
   }
 
   public Page<Post> getLikedPosts(Long userId, int page, int size) {
-    var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
-    return postRepository.findLikedPostsByUserId(userId, pageable);
+    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+    return postRepository.findLikedPostsPageWithToOnes(userId, pageable);
+  }
+
+  public Set<Long> findLikedInPostIds(Long userId, List<Long> postIds) {
+    if (postIds.isEmpty()) {
+      return Collections.emptySet();
+    }
+    return new HashSet<>(likeRepository.findLikedInPostIds(userId, postIds));
+  }
+
+  public Map<Long, String> findThumbnailUrls(List<Long> postIds) {
+    if (postIds.isEmpty()) {
+      return Collections.emptyMap();
+    }
+    return postImageRepository.findThumbnailsByPostIds(postIds).stream()
+        .collect(Collectors.toMap(
+            img -> img.getPost().getId(),
+            PostImage::getUrl,
+            (a, b) -> a
+        ));
   }
 }
