@@ -9,7 +9,10 @@ export default function createActions(state) {
     const btn = getEl("#likeBtn", modal);
     const countEl = getEl("#likeCount", modal);
     const liked = !btn.classList.contains("liked");
+
+    // UI 먼저 반영
     updateLikeUI(liked, countEl);
+
     try {
       const data = await postJSON(`/profile/${getUserIdFromUrl()}/posts/${modal.dataset.postId}/like`);
       updateLikeUI(data.liked, countEl, data.likeCount);
@@ -20,8 +23,17 @@ export default function createActions(state) {
 
   function updateLikeUI(liked, targetEl, forcedCount) {
     const btn = getEl("#likeBtn", modal);
+    const iconImg = btn.querySelector("img");
+
     btn.classList.toggle("liked", liked);
     btn.setAttribute("aria-pressed", String(liked));
+
+    // 좋아요 상태에 따라 SVG 교체
+    if (iconImg) {
+      iconImg.src = liked ? "/images/icons/heart-filled.svg" : "/images/icons/heart-empty.svg";
+    }
+
+    // 좋아요 수 갱신
     targetEl.textContent = forcedCount ?? Number(targetEl.textContent) + (liked ? 1 : -1);
   }
 

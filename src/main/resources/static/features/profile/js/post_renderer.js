@@ -25,20 +25,25 @@ export function renderPostCard(post) {
   // ♥ 아이콘
   const likeSpan = document.createElement("span");
   likeSpan.className = "overlay-item";
-  const heart = document.createElement("span");
-  heart.setAttribute("aria-hidden", "true");
-  heart.textContent = "♥";
-  if (post.likedByCurrentUser) {
-    heart.classList.add("liked"); // likedByCurrentUser가 true면 .liked 클래스 추가
-  }
-  likeSpan.append(heart, ` ${post.likeCount ?? 0}`);
+  const heartIcon = document.createElement("img");
+
+  heartIcon.src = post.likedByCurrentUser ? "/images/icons/heart-filled.svg" : "/images/icons/heart-white.svg";
+  heartIcon.alt = "좋아요";
+  heartIcon.width = 16;
+  heartIcon.height = 16;
+
+  likeSpan.append(heartIcon, ` ${post.likeCount ?? 0}`);
 
   // 💬 아이콘
   const commentSpan = document.createElement("span");
   commentSpan.className = "overlay-item";
-  const commentIcon = document.createElement("span");
-  commentIcon.setAttribute("aria-hidden", "true");
-  commentIcon.textContent = "💬";
+
+  const commentIcon = document.createElement("img");
+  commentIcon.src = "/images/icons/comment-white.svg";
+  commentIcon.alt = "댓글";
+  commentIcon.width = 16;
+  commentIcon.height = 16;
+
   commentSpan.append(commentIcon, ` ${post.commentCount ?? 0}`);
 
   overlay.append(likeSpan, commentSpan);
