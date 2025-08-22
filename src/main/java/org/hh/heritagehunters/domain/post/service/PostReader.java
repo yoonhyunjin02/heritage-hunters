@@ -40,20 +40,22 @@ public class PostReader {
    * @return 게시글 목록 페이지
    */
   public Page<Post> getPage(String keyword, String region, String sort, String direction, int page, int size) {
+
     // 정렬/검증 로직은 기존 PostService.getPostsWithFilters 사용
     Sort sortCondition = createSortCondition(sort, direction);
     Pageable pageable = PageRequest.of(page, size, sortCondition);
-    String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
-    String searchRegion = (region != null && !region.trim().isEmpty()) ? region.trim() : null;
+
+    String searchKeyword = getSearchParam(keyword);
+    String searchRegion = getSearchParam(region);
+
     // 기존 findPostsWithFilters 그대로 활용
     return postRepository.findPostsWithFilters(searchKeyword, searchRegion, pageable);
   }
 
-  /**
-   * ID로 게시글을 조회합니다
-   * @param postId 게시글 ID
-   * @return 게시글 엔티티
-   */
+  private String getSearchParam(String param) {
+    return (param != null && !param.trim().isEmpty()) ? param.trim() : null;
+  }
+
   public Post getById(Long postId) {
     return postRepository.findById(postId)
         .orElseThrow(() -> new NotFoundException(ErrorCode.POST_NOT_FOUND));
@@ -88,14 +90,9 @@ public class PostReader {
     return likeRepository.findLikedPostIds(userId, posts);
   }
 
-  /**
-   * 정렬 조건을 생성합니다
-   * @param sort 정렬 기준
-   * @param direction 정렬 방향
-   * @return Spring Data Sort 객체
-   */
   private Sort createSortCondition(String sort, String direction) {
     Sort.Direction dir = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
+
     return switch (sort != null ? sort.toLowerCase() : "createdat") {
       case "viewcount" -> Sort.by(dir, "viewCount");
       case "likecount" -> Sort.by(dir, "likeCount");
