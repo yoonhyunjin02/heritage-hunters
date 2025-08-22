@@ -7,40 +7,42 @@ export default function initProfileEdit() {
   const editBtn = getEl("#editProfileBtn");
   if (!editBtn) return;
 
-  const profileView = getEl("#profileHeaderView");
-  const form = getEl("#profileHeaderEdit");
+  const viewSection = getEl("#profileHeaderSection");
+  const editSection = getEl("#profileHeaderEditSection");
+  const form = getEl("#profileHeaderEditForm");
   const cancelBtn = getEl("#cancelProfileEdit");
 
   editBtn.addEventListener("click", () => {
-    form.classList.remove("hidden");
-    profileView.classList.add("hidden");
+    viewSection.classList.add("hidden");
+    editSection.classList.remove("hidden");
   });
 
   cancelBtn.addEventListener("click", () => {
-    form.classList.add("hidden");
-    profileView.classList.remove("hidden");
+    editSection.classList.add("hidden");
+    viewSection.classList.remove("hidden");
   });
 
   form.onsubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData(form);
 
     try {
       const res = await putMultipart(`/profile/${getUserIdFromUrl()}/update`, formData);
-
       alert("프로필 수정 완료");
 
-      getEl(".avatar__img", profileView).src = res.profileImageUrl;
-      getEl(".avatar__img", profileView).alt = res.nickname;
-      getEl(".user-meta__nickname", profileView).textContent = res.nickname;
-      getEl(".user-meta__bio", profileView).textContent = res.bio || "";
+      // 읽기 뷰 갱신
+      const avatarImg = getEl(".avatar__img", viewSection);
+      avatarImg.src = res.profileImageUrl;
+      avatarImg.alt = `${res.nickname}님의 프로필 사진`;
 
-      form.classList.add("hidden");
-      profileView.classList.remove("hidden");
+      getEl(".user-meta__nickname", viewSection).textContent = res.nickname;
+      getEl(".user-meta__bio", viewSection).textContent = res.bio || "";
+
+      // 편집 섹션 닫고 읽기 섹션 열기
+      editSection.classList.add("hidden");
+      viewSection.classList.remove("hidden");
     } catch (err) {
       console.error("프로필 수정 실패:", err);
-      // 서버가 준 메시지나 status를 alert에
       if (err.status >= 400 && err.status < 500) {
         alert(`요청 오류: ${err.message}`);
       } else if (err.status >= 500) {
@@ -50,4 +52,14 @@ export default function initProfileEdit() {
       }
     }
   };
+
+  // 이미지 미리보기
+  const profileImageInput = getEl("#profileImageInput");
+  const avatarPreview = getEl("#avatarPreview");
+  profileImageInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      avatarPreview.src = URL.createObjectURL(file);
+    }
+  });
 }

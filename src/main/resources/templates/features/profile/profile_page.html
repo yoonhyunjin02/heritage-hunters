@@ -16,44 +16,61 @@
     <div th:replace="~{fragments/header :: common-header}"></div>
 
     <main>
-      <!-- 프로필 상단 -->
-      <section class="profile-header container-max" aria-labelledby="profile-title">
+      <!-- 프로필 상단 (읽기 전용) -->
+      <section id="profileHeaderSection" class="profile-header container-max" aria-labelledby="profile-title">
         <h1 id="profile-title" class="visually-hidden">프로필</h1>
 
         <div class="profile-header__left">
-          <!-- 읽기 전용 뷰 -->
-          <div id="profileHeaderView">
-            <div class="avatar">
-              <img
-                class="avatar__img"
-                th:src="${user.profileImage}"
-                th:alt="${user.nickname} + '님의 프로필 사진'"
-                loading="lazy"
-                data-fallback="/images/placeholders/no-image.png"
-              />
-            </div>
-
-            <div class="user-meta">
-              <div class="user-meta__row">
-                <span class="user-meta__nickname" th:text="${user.nickname}">닉네임</span>
-              </div>
-              <div class="user-meta__row">
-                <span class="user-meta__email" th:text="${user.email}">email@example.com</span>
-              </div>
-              <div class="user-meta__row">
-                <span class="user-meta__bio" th:text="${user.bio ?: ''}">한 줄 소개</span>
-              </div>
-            </div>
-
-            <button type="button" id="editProfileBtn" class="edit-profile-button" th:if="${isOwner}" aria-label="프로필 수정">프로필 수정</button>
+          <div class="avatar">
+            <img
+              class="avatar__img"
+              th:src="${user.profileImage}"
+              th:alt="${user.nickname} + '님의 프로필 사진'"
+              loading="lazy"
+              data-fallback="/images/placeholders/no-image.png"
+            />
           </div>
 
-          <!-- 편집 모드 폼 -->
-          <form id="profileHeaderEdit" class="profile-header__edit hidden" enctype="multipart/form-data">
+          <div class="user-meta">
+            <div class="user-meta__row">
+              <span class="user-meta__nickname" th:text="${user.nickname}">닉네임</span>
+            </div>
+            <div class="user-meta__row">
+              <span class="user-meta__email" th:text="${user.email}">email@example.com</span>
+            </div>
+            <div class="user-meta__row">
+              <span class="user-meta__bio" th:text="${user.bio ?: ''}">한 줄 소개</span>
+            </div>
+          </div>
+          <button type="button" id="editProfileBtn" class="edit-profile-button" th:if="${isOwner}" aria-label="프로필 수정">프로필 수정</button>
+        </div>
+
+        <div class="profile-header__right" aria-label="점수" aria-live="polite">
+          <span class="score__label">점수</span>
+          <strong class="score__value" th:text="${#numbers.formatInteger(user.score, 0)}">0</strong>
+        </div>
+      </section>
+
+      <!-- 프로필 편집 (폼) -->
+      <section id="profileHeaderEditSection" class="profile-header container-max hidden" aria-labelledby="edit-profile-title">
+        <h1 id="edit-profile-title" class="visually-hidden">프로필 수정</h1>
+
+        <form id="profileHeaderEditForm" enctype="multipart/form-data" class="edit-profile-form">
+          <div class="profile-edit-inputs">
             <div class="avatar-edit">
-              <label for="profileImageInput" class="sr-only">프로필 사진 업로드</label>
-              <input type="file" id="profileImageInput" name="profileImage" accept="image/*" />
-              <img id="avatarPreview" class="avatar__img" src="" alt="프로필 사진 프리뷰" loading="lazy" data-fallback="/images/placeholders/no-image.png" />
+              <label for="profileImageInput" class="avatar-label">
+                <img
+                  id="avatarPreview"
+                  class="avatar__img"
+                  th:src="${user.profileImage}"
+                  alt="프로필 사진 프리뷰"
+                  loading="lazy"
+                  data-fallback="/images/placeholders/no-image.png"
+                />
+                <!-- 오버레이 -->
+                <div class="avatar-overlay">파일 선택하기</div>
+              </label>
+              <input type="file" id="profileImageInput" name="profileImage" accept="image/.jpg, image/.jpeg, image/.png" />
             </div>
 
             <div class="user-meta">
@@ -66,18 +83,12 @@
                 <textarea id="bioInput" name="bio" maxlength="100" rows="2" th:text="${user.bio ?: ''}"></textarea>
               </div>
             </div>
-
-            <div class="profile-edit-buttons">
-              <button type="button" id="cancelProfileEdit" class="btn-secondary">취소</button>
-              <button type="submit" class="btn-primary">저장</button>
-            </div>
-          </form>
-        </div>
-
-        <div class="profile-header__right" aria-label="점수" aria-live="polite">
-          <span class="score__label">점수</span>
-          <strong class="score__value" th:text="${#numbers.formatInteger(user.score, 0)}">0</strong>
-        </div>
+          </div>
+          <div class="profile-edit-buttons">
+            <button type="button" id="cancelProfileEdit" class="btn-secondary">취소</button>
+            <button type="submit" class="btn-primary">저장</button>
+          </div>
+        </form>
       </section>
 
       <!-- 탭 -->
