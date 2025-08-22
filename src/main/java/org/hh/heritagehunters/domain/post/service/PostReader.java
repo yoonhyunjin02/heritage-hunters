@@ -41,14 +41,13 @@ public class PostReader {
    */
   public Page<Post> getPage(String keyword, String region, String sort, String direction, int page, int size) {
 
-    // 정렬/검증 로직은 기존 PostService.getPostsWithFilters 사용
+    // 정렬/검증
     Sort sortCondition = createSortCondition(sort, direction);
     Pageable pageable = PageRequest.of(page, size, sortCondition);
 
     String searchKeyword = getSearchParam(keyword);
     String searchRegion = getSearchParam(region);
 
-    // 기존 findPostsWithFilters 그대로 활용
     return postRepository.findPostsWithFilters(searchKeyword, searchRegion, pageable);
   }
 
