@@ -21,16 +21,19 @@ export default function initPostModal() {
   const comments = createComments({ ...state, renderDetail });
 
   function renderDetail(data) {
+    const commentCount = Array.isArray(data.comments) ? data.comments.length : data.commentCount ?? 0;
+    const newData = { ...data, commentCount };
+
     core.clearDetail();
-    core.togglePostActions(data.owner);
-    modal.dataset.authorId = data.userId;
-    core.renderHeader(data);
-    getEl("#postContent").textContent = data.content || "";
-    getEl("#postLocation").textContent = data.location || "위치 정보 없음";
-    gallery.setImages(data.images || []);
-    renderStats(data);
-    comments.renderComments(data);
-    bindDynamicEventListeners(data);
+    core.togglePostActions(newData.owner);
+    modal.dataset.authorId = newData.userId;
+    core.renderHeader(newData);
+    getEl("#postContent").textContent = newData.content || "";
+    getEl("#postLocation").textContent = newData.location || "위치 정보 없음";
+    gallery.setImages(newData.images || []);
+    renderStats(newData);
+    comments.renderComments(newData);
+    bindDynamicEventListeners(newData);
   }
 
   function renderStats({ viewCount, likeCount, commentCount, liked }) {
