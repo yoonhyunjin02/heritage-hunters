@@ -25,9 +25,9 @@
           <!-- 로그인 O -->
           <div sec:authorize="isAuthenticated()" th:if="${currentUser != null}" class="user-dropdown">
             <div class="user-welcome" onclick="toggleDropdown(event)">
-              <span class="welcome-text">어서오세요</span>
+              <span class="welcome-text">안녕하세요</span>
               <span class="user-name" th:text="${currentUser.nickname} ?: '사용자'">닉네임</span>
-              <span class="welcome-text">님</span>
+              <span class="welcome-text">님!</span>
               <svg class="dropdown-arrow">
                 <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
