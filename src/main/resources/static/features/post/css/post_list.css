@@ -474,6 +474,60 @@
   border-radius: var(--border-radius);
 }
 
+/* =========================
+   Post – Banner (120px fixed)
+   ========================= */
+.post-banner {
+  background: var(--sand-600);
+  overflow: hidden; /* 이미지 넘침 방지 */
+}
+
+.post-banner__inner {
+  width: 100%;
+  max-width: var(--section-max, 1200px);
+  margin: 0 auto;
+  height: 120px;                 /* 높이 고정 */
+  display: flex;
+  align-items: center;
+  justify-content: center;       /* 텍스트+이미지 중앙 배치 */
+  gap: 16px;
+  padding: 0 16px;               /* 세로 패딩 0 → 정확히 120px 유지 */
+  box-sizing: border-box;
+}
+
+/* 왼쪽 이미지 */
+.post-banner__visual {
+  height: 100%;                  /* 배너 높이에 맞춤 */
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.post-banner__img {
+  height: 100%;                  /* 세로를 120px에 맞춤 */
+  width: auto;                   /* 가로는 비율 유지 */
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.08));
+}
+
+/* 오른쪽 텍스트 */
+.post-banner__copy {
+  flex: 0 1 520px;               /* 내용 기준 가변 폭 */
+  max-width: 520px;
+  min-width: 240px;
+  text-align: left;
+}
+
+.post-banner__title {
+  margin: 0;                     /* 공간 절약 */
+  font-weight: 800;
+  font-size: clamp(14px, 1.4vw, 18px); /* 120px 안에 3줄 들어가도록 소형 폰트 */
+  line-height: 1.35;
+  color: #fff;
+}
+
 /* 태블릿 (1024px 이하) - 3열 */
 @media (max-width: 64rem) {
   .posts-grid {
@@ -596,4 +650,8 @@
   .no-posts-message p {
     font-size: 1rem;
   }
+
+  .post-banner__inner { gap: 10px; padding: 0 12px; }
+  .post-banner__copy   { min-width: 0; }
+  .post-banner__title  { font-size: clamp(12px, 3.4vw, 16px); text-align: center; }
 }
