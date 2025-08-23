@@ -1,11 +1,10 @@
 package org.hh.heritagehunters.domain.search.specification;
 
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import java.util.List;
 import org.hh.heritagehunters.domain.search.dto.SearchCriteria;
 import org.hh.heritagehunters.domain.search.entity.Heritage;
-import org.hh.heritagehunters.domain.search.util.EraCategory;
+import org.hh.heritagehunters.domain.search.util.EraCodeMapper;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
@@ -69,21 +68,19 @@ public class HeritageSpecification {
   /**
    * 시대 필터 (전체가 아닌 경우 필드 값이 리스트에 포함된 경우)
    */
-  public static Specification<Heritage> byEra(List<EraCategory> eras) {
+  private static Specification<Heritage> byEra(List<String> eras) {
     return (root, query, cb) -> {
-      if (eras == null
-          || eras.isEmpty()
-          || eras.contains(EraCategory.ALL)) {
+      if (eras == null || eras.contains("00")) { // 전체
         return cb.conjunction();
       }
-
-      Path<String> eraField = root.get("era");
-      List<Predicate> preds = eras.stream()
-          .map(cat -> cat.toPredicate(eraField, cb))
+      // 코드 → 한글명 변환
+      List<String> eraNames = eras.stream()
+          .map(EraCodeMapper::getKoreanName)
           .toList();
 
-      return cb.or(preds.toArray(new Predicate[0]));
+      return root.get("era").in(eraNames);
     };
   }
+
 
 }

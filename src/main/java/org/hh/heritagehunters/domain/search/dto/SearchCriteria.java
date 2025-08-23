@@ -4,7 +4,6 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hh.heritagehunters.domain.search.util.EraCategory;
 
 /**
  * 세부 검색사항을 담는 DTO
@@ -32,7 +31,7 @@ public class SearchCriteria {
   /**
    * 시대 필터 전체 선택 시 List.of("전체")
    */
-  private List<EraCategory> era = List.of(EraCategory.ALL);
+  private List<String> era = List.of("00");
 
   /**
    * 페이지 번호 (1부터 시작)

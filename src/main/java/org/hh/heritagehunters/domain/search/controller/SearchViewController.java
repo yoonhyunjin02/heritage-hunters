@@ -1,7 +1,6 @@
 package org.hh.heritagehunters.domain.search.controller;
 
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -10,7 +9,7 @@ import org.hh.heritagehunters.domain.search.dto.HeritageResponse;
 import org.hh.heritagehunters.domain.search.dto.HeritageSearchRequest;
 import org.hh.heritagehunters.domain.search.service.HeritageService;
 import org.hh.heritagehunters.domain.search.util.DesignationCodeMapper;
-import org.hh.heritagehunters.domain.search.util.EraCategory;
+import org.hh.heritagehunters.domain.search.util.EraCodeMapper;
 import org.hh.heritagehunters.domain.search.util.RegionCodeMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -27,11 +26,6 @@ public class SearchViewController {
 
   private final HeritageService heritageService;
 
-  @ModelAttribute("eraOptions")
-  public List<EraCategory> eraOptions() {
-    return Arrays.asList(EraCategory.values());
-  }
-
   @GetMapping
   public String searchForm(
       @ModelAttribute HeritageSearchRequest request,
@@ -41,12 +35,15 @@ public class SearchViewController {
 
     model.addAttribute("designationMap", DesignationCodeMapper.getCodeMap());
     model.addAttribute("designationCodes", DesignationCodeMapper.getCodeMap().keySet().stream().sorted());
+
     model.addAttribute("regionMap", RegionCodeMapper.getCodeMap());
     model.addAttribute("regionCodes", RegionCodeMapper.getCodeMap().keySet().stream().sorted());
 
+    model.addAttribute("eraMap", EraCodeMapper.getCodeMap());
+    model.addAttribute("eraCodes", EraCodeMapper.getCodeMap().keySet().stream().sorted());
+
     boolean hasAnyCriteria =
-        Boolean.TRUE.equals(searchTriggered)     // 검색 버튼 눌렀으면 무조건 조회
-            || request.hasSearchCondition();            // 기존 필터/키워드가 있으면 조회
+        Boolean.TRUE.equals(searchTriggered) || request.hasSearchCondition();
 
     Page<HeritageResponse> page;
     if (hasAnyCriteria) {
