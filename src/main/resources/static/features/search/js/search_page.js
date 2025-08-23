@@ -5,13 +5,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleBtn = document.getElementById("toggle-filters");
   const filterPanel = document.getElementById("filter-panel");
   const filterGroups = document.querySelectorAll(".search__filter");
+  const searchInput = document.getElementById("keyword");
 
-  // 1) 리셋 버튼: 각 그룹에서 “전체” 체크박스만 켜고 나머지 끄기
+  // 1) 리셋 버튼: 각 그룹에서 “전체” 체크박스만 켜고 나머지 끄기, 검색어 초기화
   resetBtn.addEventListener("click", () => {
     filterGroups.forEach((group) => {
       const checkboxes = Array.from(group.querySelectorAll('input[type="checkbox"]'));
       const allBox = checkboxes.find((cb) => cb.value === "00" || cb.value === "ALL");
       checkboxes.forEach((cb) => (cb.checked = cb === allBox));
+      searchInput.value = "";
     });
   });
 
