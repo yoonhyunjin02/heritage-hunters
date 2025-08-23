@@ -1,27 +1,24 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
-    <th:block th:insert="~{fragments/head :: common-head('Profile')}"></th:block>
+    <th:block th:insert="~{fragments/head :: common-head('Profile/'+${user.nickname})}"></th:block>
 
-    <!-- POST 요청을 위한 CSRF 헤더 -->
-    <meta name="_csrf" content="[[${_csrf.token}]]" />
-    <meta name="_csrf_header" content="[[${_csrf.headerName}]]" />
+    <!-- CSRF 헤더 -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/features/profile/css/profile_page.css}" />
-    <!-- 게시물 모달용 CSS -->
-    <link rel="stylesheet" th:href="@{/features/post/css/modal_common.css}" />
-    <link rel="stylesheet" th:href="@{/features/post/css/post_write.css}" />
-    <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}" />
+    <link rel="stylesheet" th:href="@{/features/profile/css/modal.css}" />
+
   </head>
   <body>
     <!--header-->
     <div th:replace="~{fragments/header :: common-header}"></div>
 
-    <!--main-->
     <main>
-      <!-- 프로필 상단 정보 -->
-      <section class="profile-header container-max" aria-labelledby="profile-title">
+      <!-- 프로필 상단 (읽기 전용) -->
+      <section id="profileHeaderSection" class="profile-header container-max" aria-labelledby="profile-title">
         <h1 id="profile-title" class="visually-hidden">프로필</h1>
 
         <div class="profile-header__left">
@@ -30,8 +27,8 @@
               class="avatar__img"
               th:src="${user.profileImage}"
               th:alt="${user.nickname} + '님의 프로필 사진'"
-              alt="프로필 사진"
-              onerror="this.onerror=null;this.src='/images/placeholders/no-image.png'"
+              loading="lazy"
+              data-fallback="/images/placeholders/no-image.png"
             />
           </div>
 
@@ -42,191 +39,269 @@
             <div class="user-meta__row">
               <span class="user-meta__email" th:text="${user.email}">email@example.com</span>
             </div>
+            <div class="user-meta__row">
+              <span class="user-meta__bio" th:text="${user.bio ?: ''}">한 줄 소개</span>
+            </div>
           </div>
+          <button type="button" id="editProfileBtn" class="edit-profile-button" th:if="${isOwner}" aria-label="프로필 수정">프로필 수정</button>
         </div>
 
-        <div class="profile-header__right" aria-label="점수">
+        <div class="profile-header__right" aria-label="점수" aria-live="polite">
           <span class="score__label">점수</span>
           <strong class="score__value" th:text="${#numbers.formatInteger(user.score, 0)}">0</strong>
         </div>
       </section>
 
-      <!-- 탭 내비게이터 -->
+      <!-- 프로필 편집 (폼) -->
+      <section id="profileHeaderEditSection" class="profile-header container-max hidden" aria-labelledby="edit-profile-title">
+        <h1 id="edit-profile-title" class="visually-hidden">프로필 수정</h1>
+
+        <form id="profileHeaderEditForm" enctype="multipart/form-data" class="edit-profile-form">
+          <div class="profile-edit-inputs">
+            <div class="avatar-edit">
+              <label for="profileImageInput" class="avatar-label">
+                <img
+                  id="avatarPreview"
+                  class="avatar__img"
+                  th:src="${user.profileImage}"
+                  alt="프로필 사진 프리뷰"
+                  loading="lazy"
+                  data-fallback="/images/placeholders/no-image.png"
+                />
+                <!-- 오버레이 -->
+                <div class="avatar-overlay">파일 선택하기</div>
+              </label>
+              <input type="file" id="profileImageInput" name="profileImage" accept="image/.jpg, image/.jpeg, image/.png" />
+            </div>
+
+            <div class="user-meta">
+              <div class="user-meta__row">
+                <label for="nicknameInput" class="sr-only">닉네임</label>
+                <input type="text" id="nicknameInput" name="nickname" th:value="${user.nickname}" required maxlength="30" />
+              </div>
+              <div class="user-meta__row">
+                <label for="bioInput" class="sr-only">한 줄 소개</label>
+                <textarea id="bioInput" name="bio" maxlength="100" rows="2" th:text="${user.bio ?: ''}"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="profile-edit-buttons">
+            <button type="button" id="cancelProfileEdit" class="btn-secondary">취소</button>
+            <button type="submit" class="btn-primary">저장</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- 탭 -->
       <nav class="profile-tabs container-max" role="tablist" aria-label="프로필 탭">
-        <button class="tab-btn" id="tab-stamps" role="tab" aria-controls="panel-stamps" aria-selected="false" tabindex="-1" data-tab="stamps">얻은 우표</button>
-
-        <button class="tab-btn is-active" id="tab-posts" role="tab" aria-controls="panel-posts" aria-selected="true" data-tab="posts">내가 올린 게시물</button>
-
-        <button class="tab-btn" id="tab-liked" role="tab" aria-controls="panel-liked" aria-selected="false" tabindex="-1" data-tab="liked">
-          '좋아요' 누른 게시물
+        <button class="tab-btn" id="tab-stamps" role="tab" aria-controls="panel-stamps" aria-selected="false" tabindex="-1">얻은 우표</button>
+        <button class="tab-btn is-active" id="tab-posts" role="tab" aria-controls="panel-posts" aria-selected="true">
+          <span th:if="${isOwner}">내가 올린 </span>게시물
         </button>
-
-        <span class="tab-indicator" aria-hidden="true"></span>
+        <button class="tab-btn" id="tab-liked" role="tab" aria-controls="panel-liked" aria-selected="false" tabindex="-1">'좋아요' 누른 게시물</button>
       </nav>
 
-      <!-- 탭 패널 -->
+      <!-- 패널 -->
       <section class="profile-panels container-max">
         <!-- 얻은 우표 -->
         <div id="panel-stamps" class="tab-panel" role="tabpanel" aria-labelledby="tab-stamps" hidden>
           <ul class="stamp-grid" role="list">
             <li class="stamp-card" th:each="stamp : ${stamps}" th:classappend="${stamp.obtained} ? ' is-obtained' : ' is-locked'">
               <div class="stamp-card__name" th:text="${stamp.name}">우표 이름</div>
-
               <div class="stamp-card__image">
-                <img th:src="${stamp.imageUrl}" th:alt="${stamp.name}" alt="우표 이미지" loading="lazy" />
+                <div class="stamp-card__image-bg">
+                  <img th:src="${stamp.imageUrl}" th:alt="${stamp.name}" loading="lazy" data-fallback="/images/placeholders/no-image.png" />
+                </div>
               </div>
-
               <div class="stamp-card__date" th:if="${stamp.obtainedAt != null}">
-                <span class="stamp-card__date-label">획득일</span>
-                <time th:text="${#temporals.format(stamp.obtainedAt, 'yyyy.MM.dd')}">2025.01.01</time>
-              </div>
-
-              <div class="stamp-card__date is-pending" th:if="${stamp.obtainedAt == null}">
-                <span>미획득</span>
+                <time th:text="${#temporals.format(stamp.obtainedAt, 'yyyy.MM.dd')}"></time>
               </div>
             </li>
           </ul>
-
           <p class="empty-hint" th:if="${#lists.isEmpty(stamps)}">아직 얻은 우표가 없어요.</p>
         </div>
 
         <!-- 내가 올린 게시물 -->
-        <div id="panel-posts" class="tab-panel" role="tabpanel" aria-labelledby="tab-posts">
-          <ul class="post-grid" role="list" data-infinite="posts">
-            <li class="post-card" th:each="post : ${initialPosts}" th:attr="data-post-id=${post.id}">
-              <a href="#" class="post-thumb js-open-lightbox" th:attr="data-post-id=${post.id}" aria-label="게시물 상세 보기">
-                <img
-                  class="post-thumb__img"
-                  th:src="${post.mainImageUrl}"
-                  th:alt="${post.heritage != null ? post.heritage.name : '게시물 이미지'}"
-                  alt="게시물 썸네일"
-                  loading="lazy"
-                  onerror="this.onerror=null;this.src='/images/placeholders/no-image.png'"
-                />
-                <div class="post-thumb__overlay" aria-hidden="true">
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">♥</span>
-                    <span class="overlay-item__count" th:text="${post.likeCount}">0</span>
-                  </span>
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">💬</span>
-                    <span class="overlay-item__count" th:text="${post.commentCount}">0</span>
-                  </span>
-                </div>
-              </a>
-            </li>
+        <div
+          id="panel-posts"
+          class="tab-panel"
+          role="tabpanel"
+          aria-labelledby="tab-posts"
+          data-size="9"
+          data-page="-1"
+          data-has-next="true"
+          data-loaded="false"
+        >
+          <ul class="post-grid" role="list" data-infinite="posts" aria-live="polite" aria-busy="false">
+            <!-- JS가 첫 페이지 로드 시 채움 -->
           </ul>
-
-          <div class="infinite-sentinel" id="posts-sentinel" aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/posts'}"></div>
-
-          <!-- 초기 페이지네이션 상태 -->
-          <input type="hidden" id="has-next-posts" th:value="${hasNextPosts}" />
-          <input type="hidden" id="current-page-posts" value="1" />
-
-          <p class="empty-hint" th:if="${#lists.isEmpty(initialPosts)}">아직 올린 게시물이 없어요.</p>
+          <p class="empty-hint hidden">아직 올린 게시물이 없어요.</p>
+          <div class="infinite-sentinel" data-sentinel aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/posts'}" aria-busy="false">
+            <p class="infinite-sentinel__loading loading-text hidden">다음 글을 불러오는 중입니다...</p>
+          </div>
         </div>
 
-        <!-- '좋아요' 누른 게시물 -->
-        <div id="panel-liked" class="tab-panel" role="tabpanel" aria-labelledby="tab-liked" hidden>
-          <ul class="post-grid" role="list" data-infinite="liked">
-            <li class="post-card" th:each="post : ${initialLiked}" th:attr="data-post-id=${post.id}">
-              <a href="#" class="post-thumb js-open-lightbox" th:attr="data-post-id=${post.id}" aria-label="게시물 상세 보기">
-                <img
-                  class="post-thumb__img"
-                  th:src="${post.mainImageUrl}"
-                  th:alt="${post.heritage != null ? post.heritage.name : '게시물 이미지'}"
-                  alt="게시물 썸네일"
-                  loading="lazy"
-                  onerror="this.onerror=null;this.src='/images/placeholders/no-image.png'"
-                />
-                <div class="post-thumb__overlay" aria-hidden="true">
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">♥</span>
-                    <span class="overlay-item__count" th:text="${post.likeCount}">0</span>
-                  </span>
-                  <span class="overlay-item">
-                    <span class="overlay-item__icon" aria-hidden="true">💬</span>
-                    <span class="overlay-item__count" th:text="${post.commentCount}">0</span>
-                  </span>
-                </div>
-              </a>
-            </li>
+        <!-- 좋아요 -->
+        <div
+          id="panel-liked"
+          class="tab-panel"
+          role="tabpanel"
+          aria-labelledby="tab-liked"
+          hidden
+          data-size="9"
+          data-page="-1"
+          data-has-next="true"
+          data-loaded="false"
+        >
+          <ul class="post-grid" role="list" data-infinite="liked" aria-live="polite" aria-busy="false">
+            <!-- JS가 첫 페이지 로드 시 채움 -->
           </ul>
-
-          <div class="infinite-sentinel" id="liked-sentinel" aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/likes'}"></div>
-
-          <!-- 초기 페이지네이션 상태 -->
-          <input type="hidden" id="has-next-liked" th:value="${hasNextLiked}" />
-          <input type="hidden" id="current-page-liked" value="1" />
-
-          <p class="empty-hint" th:if="${#lists.isEmpty(initialLiked)}">아직 '좋아요' 누른 게시물이 없어요.</p>
+          <p class="empty-hint hidden">아직 '좋아요' 누른 게시물이 없어요.</p>
+          <div class="infinite-sentinel" data-sentinel aria-hidden="true" th:attr="data-endpoint=@{'/profile/' + ${user.userId} + '/likes'}" aria-busy="false">
+            <p class="infinite-sentinel__loading loading-text hidden">다음 글을 불러오는 중입니다...</p>
+          </div>
         </div>
       </section>
+    </main>
 
-      <!-- 라이트박스: JS에서 열고 데이터 주입 -->
-      <div class="lightbox" id="post-lightbox" role="dialog" aria-modal="true" aria-labelledby="lightbox-title" hidden>
-        <div class="lightbox__backdrop" data-close="lightbox" aria-hidden="true"></div>
+    <!-- 게시물 상세 모달 -->
+    <div id="post-modal-root" class="modal-root" hidden>
+      <div
+        id="postDetailModal"
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="postDetailTitle"
+        aria-describedby="postDetailDesc"
+        tabindex="-1"
+        data-post-id=""
+        hidden
+      >
+        <div class="modal-loading" id="modalLoading" aria-live="polite" aria-busy="true" hidden>
+          <div class="loading-spinner" aria-hidden="true"></div>
+          <p>게시글을 불러오는 중...</p>
+        </div>
 
-        <div class="lightbox__dialog" role="document">
-          <button class="lightbox__close" type="button" aria-label="닫기" data-close="lightbox">×</button>
-
-          <div class="lightbox__body">
-            <div class="lightbox__media">
-              <img class="lightbox__img" src="" onerror="this.onerror=null;this.src='/images/placeholders/no-image.png'" alt="게시물 이미지" />
-            </div>
-
-            <aside class="lightbox__side">
-              <header class="lightbox__header">
-                <div class="lightbox__author">
-                  <img class="lightbox__avatar" src="" alt="작성자 프로필" />
-                  <div class="lightbox__author-meta">
-                    <strong class="lightbox__nickname">닉네임</strong>
-                    <span class="lightbox__email">email@example.com</span>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 id="postDetailTitle" class="modal-title">게시글 상세</h1>
+            <div class="header-actions">
+              <div class="post-actions" hidden>
+                <div class="modal-dropdown">
+                  <button
+                    class="icon-btn"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-controls="postDropdown"
+                    data-action="toggle-post-dropdown"
+                    title="게시글 옵션"
+                  >
+                    ⋯
+                  </button>
+                  <div class="modal-dropdown-menu" id="postDropdown" role="menu" hidden>
+                    <button type="button" class="modal-dropdown-item" role="menuitem" data-action="edit-post">수정</button>
+                    <button type="button" class="modal-dropdown-item delete-item" role="menuitem" data-action="delete-post">삭제</button>
                   </div>
                 </div>
-              </header>
-
-              <div class="lightbox__content">
-                <p class="lightbox__text"></p>
               </div>
 
-              <div class="lightbox__stats">
-                <button class="btn-like" type="button" aria-pressed="false">
-                  <span class="btn-like__icon">♥</span>
-                  <span class="btn-like__label">좋아요</span>
-                </button>
-                <div class="counts">
-                  <span class="counts__item"> <strong class="counts__num js-like-count">0</strong> 좋아요 </span>
-                  <span class="counts__item"> <strong class="counts__num js-comment-count">0</strong> 댓글 </span>
+              <button class="modal-close icon-btn" aria-label="닫기" data-action="close-post-modal">&times;</button>
+            </div>
+          </div>
+
+          <div class="modal-body" id="postDetailDesc">
+            <div class="composer-grid">
+              <div class="compose-left" aria-label="게시글 이미지">
+                <div class="gallery" id="galleryWrapper" data-current-index="0" aria-live="polite">
+                  <div class="gallery-main" id="galleryMain">
+                    <img id="mainImage" src="" alt="게시글 이미지" draggable="false" data-fallback="/images/placeholders/no-image.png" />
+                    <div class="nav-wrapper">
+                      <button class="gallery-nav prev" aria-label="이전 이미지" data-action="prev-image">‹</button>
+                      <button class="gallery-nav next" aria-label="다음 이미지" data-action="next-image">›</button>
+                    </div>
+                  </div>
+                  <div class="gallery-thumbs" id="thumbContainer" role="list"></div>
                 </div>
               </div>
 
-              <form class="lightbox__comment-form" action="#" method="post" autocomplete="off">
-                <label for="comment-input" class="visually-hidden">댓글 입력</label>
-                <input id="comment-input" class="comment-input" type="text" name="content" placeholder="댓글을 입력하세요" />
-                <button class="comment-submit" type="submit">게시</button>
-              </form>
+              <div class="compose-right">
+                <section class="author-display">
+                  <img id="authorAvatar" class="author-avatar" alt="작성자 아바타" data-fallback="/images/placeholders/no-image.png" />
+                  <div class="author-info">
+                    <div class="author-name" id="authorName"></div>
+                    <time class="author-time" id="postCreatedAt"></time>
+                  </div>
+                </section>
 
-              <ul class="lightbox__comments" role="list" data-infinite="comments">
-                <!-- JS로 댓글 아이템 주입 -->
-              </ul>
-              <div class="infinite-sentinel" id="comments-sentinel" aria-hidden="true"></div>
-            </aside>
+                <section class="content-box">
+                  <!-- 읽기 전용 본문 -->
+                  <p class="content-text" id="postContent"></p>
+
+                  <!-- 편집 모드 폼 (본문만) -->
+                  <form id="editPostForm" class="edit-post-form hidden">
+                    <label for="editPostContentInput" class="sr-only">게시글 내용 수정</label>
+                    <textarea id="editPostContentInput" name="content" required maxlength="300" rows="5" placeholder="수정할 내용을 입력하세요..."></textarea>
+                    <div class="edit-post-tools">
+                      <div class="count"><span id="editPostCharCount">0</span> / 300자</div>
+                      <div class="edit-post-buttons">
+                        <button type="button" id="cancelPostEdit" class="btn-secondary">취소</button>
+                        <button type="submit" id="savePostBtn" class="btn-primary">저장</button>
+                      </div>
+                    </div>
+                  </form>
+                </section>
+
+                <section class="location-box">
+                  <h4>위치</h4>
+                  <p class="location-text" id="postLocation"></p>
+                </section>
+
+                <section class="actions-box" aria-live="polite">
+                  <!-- 좋아요 버튼 -->
+                  <button type="button" id="likeBtn" class="icon-action like-button" data-post-id="" aria-pressed="false" title="좋아요">
+                    <img src="/images/icons/heart-empty.svg" alt="좋아요" width="24" height="24" />
+                    <span class="sr-only">좋아요</span>
+                  </button>
+
+                  <!-- 댓글 버튼 -->
+                  <button class="icon-action" title="댓글 달기" aria-label="댓글 달기" data-action="focus-comment-input">
+                    <img src="/images/icons/comment.svg" alt="댓글" width="24" height="24" />
+                  </button>
+
+                  <div class="stats">
+                    <span class="stat"><span class="sr-only">조회수</span><b id="viewCount">0</b> 조회</span>
+                    <span class="stat"><span class="sr-only">좋아요 수</span><b id="likeCount">0</b> 좋아요</span>
+                    <span class="stat"><span class="sr-only">댓글 수</span><b id="commentCount">0</b> 댓글</span>
+                  </div>
+                </section>
+
+                <section class="comments-list" id="commentListSection">
+                  <div id="commentList"></div>
+                  <p id="noCommentsHint" class="empty-hint hidden">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>
+                </section>
+
+                <section class="login-notice" id="loginNotice" hidden>댓글을 작성하려면 <a href="/login">로그인</a>이 필요합니다.</section>
+
+                <section class="comment-write" id="commentWriteSection">
+                  <form class="comment-form" id="commentForm">
+                    <label for="commentTextarea" class="sr-only">댓글 입력</label>
+                    <textarea id="commentTextarea" name="content" class="comment-input" placeholder="댓글을 입력하세요..." maxlength="200" required></textarea>
+                    <div class="comment-tools">
+                      <div class="count"><span id="commentCharCount">0</span> / 200자</div>
+                      <button type="submit" class="btn-primary">등록</button>
+                    </div>
+                  </form>
+                </section>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </main>
-
-    <!-- 모달 HTML이 동적으로 들어올 자리 -->
-    <div id="post-modal-root"></div>
+    </div>
 
     <!--footer-->
     <div th:replace="~{fragments/footer :: common-footer}"></div>
 
-    <!-- 게시물 모달용 JS -->
-    <script defer th:src="@{/features/post/js/modal_manager.js}"></script>
-    <script defer th:src="@{/features/post/js/like_manager.js}"></script>
-    <script defer th:src="@{/features/post/js/post_detail.js}"></script>
     <!-- JS -->
     <script type="module" th:src="@{/features/profile/js/profile_main.js}"></script>
   </body>

@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.search.entity.Heritage;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 
 
@@ -42,31 +43,36 @@ public class Post {
   @JoinColumn(name = "heritage_id", nullable = false)
   private Heritage heritage;
 
-  @Column(name = "content", nullable = false, length = 200)
+  @Column(nullable = false, length = 200)
   private String content;
 
-  @Column(name = "location", nullable = false, length = 50)
+  @Column(nullable = false, length = 50)
   private String location;
 
-  @Column(name = "created_at", nullable = false)
   @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
-  @Column(name = "view_count", nullable = false)
+  @Column(nullable = false)
   private Integer viewCount = 0;
 
-  @Column(name = "comment_count", nullable = false)
+  @Column(nullable = false)
   private Integer commentCount = 0;
 
-  @Column(name = "like_count", nullable = false)
+  @Column(nullable = false)
   private Integer likeCount = 0;
 
+  @BatchSize(size = 100)
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+  @ToString.Exclude
   private List<PostImage> images = new ArrayList<>();
 
+  @BatchSize(size = 100)
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+  @ToString.Exclude
   private List<Comment> comments = new ArrayList<>();
 
+  @BatchSize(size = 100)
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
   @ToString.Exclude
   private List<Like> likes = new ArrayList<>();
@@ -121,12 +127,12 @@ public class Post {
   }
 
   /**
-   * 게시글의 메인 이미지 URL을 반환합니다
+   * 게시글의 메인 이미지 URL을 반환합니다 (orderIndex = 0 기준)
    * @return 메인 이미지 URL (없으면 null)
    */
   public String getMainImageUrl() {
     return images.stream()
-        .filter(PostImage::isMainImage)// 첫 번째 이미지를 메인 이미지로 가정
+        .filter(img -> img.getOrderIndex() == 0)
         .findFirst()
         .map(PostImage::getUrl)
         .orElse(null);

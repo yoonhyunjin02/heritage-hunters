@@ -1,39 +1,54 @@
 // post_renderer.js
+/**
+ * 프로필 페이지의 포스트 카드 렌더러
+ */
 export function renderPostCard(post) {
-  // <li> 요소 생성
   const li = document.createElement("li");
   li.className = "post-card";
-  li.dataset.postId = post.id ?? "";
 
-  // 안전한 기본값 설정
-  const imgSrc = post.mainImageUrl || "/images/placeholders/no-image.png";
-  const altText = post.heritage?.name || "게시물 이미지";
+  const a = document.createElement("a");
+  a.href = "#";
+  a.className = "post-thumb";
+  a.dataset.postId = post.id;
+  a.setAttribute("aria-label", `${post.heritage?.name ?? "게시물"} 상세 보기`);
 
-  // 내부 HTML 구성
-  li.innerHTML = `
-    <a href="#" class="post-thumb js-open-lightbox" data-post-id="${post.id ?? ""}" aria-label="게시물 상세 보기">
-      <img class="post-thumb__img"
-           src="${imgSrc}"
-           alt="${altText}"
-           loading="lazy"
-           onerror="this.onerror=null;this.src='/images/placeholders/no-image.png'">
-      <div class="post-thumb__overlay" aria-hidden="true">
-        <span class="overlay-item">
-          <span aria-hidden="true">♥</span> ${post.likeCount ?? 0}
-        </span>
-        <span class="overlay-item">
-          <span aria-hidden="true">💬</span> ${post.commentCount ?? 0}
-        </span>
-      </div>
-    </a>
-  `;
+  const img = document.createElement("img");
+  img.className = "post-thumb__img";
+  img.src = post.mainImageUrl || "/images/placeholders/no-image.png";
+  img.alt = post.heritage?.name ?? "게시물 이미지";
+  img.loading = "lazy";
+  img.dataset.fallback = "/images/placeholders/no-image.png";
 
-  return li;
-}
+  const overlay = document.createElement("div");
+  overlay.className = "post-thumb__overlay";
 
-export function renderCommentItem(c) {
-  const li = document.createElement("li");
-  li.className = "comment-item";
-  li.textContent = c.content || "";
+  // ♥ 아이콘
+  const likeSpan = document.createElement("span");
+  likeSpan.className = "overlay-item";
+  const heartIcon = document.createElement("img");
+
+  heartIcon.src = post.likedByCurrentUser ? "/images/icons/heart-filled.svg" : "/images/icons/heart-white.svg";
+  heartIcon.alt = "좋아요";
+  heartIcon.width = 16;
+  heartIcon.height = 16;
+
+  likeSpan.append(heartIcon, ` ${post.likeCount ?? 0}`);
+
+  // 💬 아이콘
+  const commentSpan = document.createElement("span");
+  commentSpan.className = "overlay-item";
+
+  const commentIcon = document.createElement("img");
+  commentIcon.src = "/images/icons/comment-white.svg";
+  commentIcon.alt = "댓글";
+  commentIcon.width = 16;
+  commentIcon.height = 16;
+
+  commentSpan.append(commentIcon, ` ${post.commentCount ?? 0}`);
+
+  overlay.append(likeSpan, commentSpan);
+
+  a.append(img, overlay);
+  li.appendChild(a);
   return li;
 }

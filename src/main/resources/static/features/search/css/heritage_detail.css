@@ -141,6 +141,7 @@ main {
   font-size: 0.9rem;
   color: var(--white);
   text-align: center;
+  padding-bottom: 5px;
 }
 
 .heritage__summary__info img {

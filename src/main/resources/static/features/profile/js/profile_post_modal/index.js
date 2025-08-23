@@ -1,0 +1,85 @@
+import { getEl } from "/common/js/utils/dom.js";
+import createModalCore from "./modal_core.js";
+import createGallery from "./modal_gallery.js";
+import createActions from "./modal_actions.js";
+import createEdit from "./modal_edit.js";
+import createComments from "./modal_comments.js";
+
+export default function initPostModal() {
+  const root = getEl("#post-modal-root");
+  const modal = getEl("#postDetailModal");
+  const content = getEl(".modal-content", modal);
+  const loader = getEl("#modalLoading", modal);
+
+  // 상태 공유
+  const state = { root, modal, content, loader, renderDetail };
+
+  const core = createModalCore(state);
+  const gallery = createGallery(state);
+  const actions = createActions({ ...state, closeModal: core.closeModal });
+  const edit = createEdit({ ...state, renderDetail });
+  const comments = createComments({ ...state, renderDetail });
+
+  function renderDetail(data) {
+    const commentCount = Array.isArray(data.comments) ? data.comments.length : data.commentCount ?? 0;
+    const newData = { ...data, commentCount };
+
+    core.clearDetail();
+    core.togglePostActions(newData.owner);
+    modal.dataset.authorId = newData.userId;
+    core.renderHeader(newData);
+    getEl("#postContent").textContent = newData.content || "";
+    getEl("#postLocation").textContent = newData.location || "위치 정보 없음";
+    gallery.setImages(newData.images || []);
+    renderStats(newData);
+    comments.renderComments(newData);
+    bindDynamicEventListeners(newData);
+  }
+
+  function renderStats({ viewCount, likeCount, commentCount, liked }) {
+    getEl("#viewCount").textContent = viewCount ?? 0;
+    getEl("#likeCount").textContent = likeCount ?? 0;
+    getEl("#commentCount").textContent = commentCount ?? 0;
+
+    const likeBtn = getEl("#likeBtn");
+    likeBtn.classList.toggle("liked", liked);
+    likeBtn.setAttribute("aria-pressed", String(liked));
+
+    // 버튼 내부의 <img> 아이콘 교체
+    const iconImg = likeBtn.querySelector("img");
+    if (iconImg) {
+      iconImg.src = liked ? "/images/icons/heart-filled.svg" : "/images/icons/heart-empty.svg";
+    }
+  }
+
+  function bindDynamicEventListeners(data) {
+    getEl(".author-display", modal)?.addEventListener("click", () => {
+      window.location.href = `/profile/${modal.dataset.authorId}`;
+    });
+    edit.bindPostEditForm();
+    comments.bindCommentForm(data);
+  }
+
+  core.bindStaticEventListeners(onThumbClick, core.closeModal);
+  getEl("#likeBtn", modal).addEventListener("click", actions.toggleLike);
+  getEl('[data-action="delete-post"]', modal)?.addEventListener("click", actions.onDelete);
+  getEl(".gallery-nav.prev", modal)?.addEventListener("click", gallery.prevImage);
+  getEl(".gallery-nav.next", modal)?.addEventListener("click", gallery.nextImage);
+
+  // 댓글 버튼 클릭 시 textarea로 포커스 이동
+  modal.addEventListener("click", (e) => {
+    const btn = e.target.closest('[data-action="focus-comment-input"]');
+    if (!btn) return;
+    const textarea = getEl("#commentTextarea", modal);
+    if (textarea) {
+      textarea.focus();
+      textarea.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  });
+  async function onThumbClick(e) {
+    const card = e.target.closest(".post-thumb");
+    if (!card?.dataset.postId) return;
+    e.preventDefault();
+    await core.openModal(modal.dataset.userId || "", card.dataset.postId);
+  }
+}
