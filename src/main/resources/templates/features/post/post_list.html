@@ -52,15 +52,22 @@
         <div class="post-filter-controls">
           <div class="post-filters-left">
             <div class="post-filter region-filter">
-              <select name="region" class="region-filter-select" onchange="submitForm()">
-                <option value="">전체 지역</option>
-                <option
-                    th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
-                    th:if="${entry.key != '00'}"
-                    th:value="${entry.key}"
-                    th:selected="${region == entry.key}"
-                    th:text="${entry.value}"></option>
-              </select>
+              <div class="custom-select">
+                <div class="select-trigger" onclick="toggleRegionDropdown(this)">
+                  <span class="selected-text" th:text="${#strings.isEmpty(region)} ? '전체 지역' : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getKoreanName(region)}">전체 지역</span>
+                  <span class="select-arrow">▼</span>
+                </div>
+                <div class="select-options">
+                  <div class="select-option" data-value="" onclick="selectOption(this)">전체 지역</div>
+                  <div th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
+                       th:if="${entry.key != '00'}"
+                       class="select-option"
+                       th:data-value="${entry.key}"
+                       onclick="selectOption(this)"
+                       th:text="${entry.value}"></div>
+                </div>
+              </div>
+              <input type="hidden" name="region" th:value="${region}" id="regionInput">
             </div>
 
             <div class="post-filter sort-filter">
@@ -142,42 +149,43 @@
 
           <!-- ③ 액션(좋아요/댓글) : a 바깥 -->
           <div class="post-actions" sec:authorize="isAuthenticated()">
-            <button type="button" class="icon-action like-button"
-                    th:data-post-id="${post.id}"
-                    th:classappend="${post.likedByCurrentUser} ? ' liked' : ''"
-                    th:attr="aria-pressed=${post.likedByCurrentUser}"
-                    title="좋아요">
-              <!-- 하트 -->
-              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0-0-7.78z"
-                    stroke="currentColor" stroke-width="2"
-                    th:fill="${post.likedByCurrentUser} ? 'currentColor' : 'none'"></path>
-              </svg>
-              <span class="sr-only">좋아요</span>
-            </button>
+            <div class="action-item">
+              <button type="button" class="icon-action like-button"
+                      th:data-post-id="${post.id}"
+                      th:classappend="${post.likedByCurrentUser} ? ' liked' : ''"
+                      th:attr="aria-pressed=${post.likedByCurrentUser}"
+                      title="좋아요">
+                <!-- 하트 -->
+                <img th:src="${post.likedByCurrentUser} ? '/images/icons/heart-filled.svg' : '/images/icons/heart-empty.svg'" 
+                     alt="좋아요" width="24" height="24" />
+              </button>
+              <span class="action-count" th:text="${post.likeCount}">0</span>
+            </div>
 
-            <button class="icon-action comment-btn"
-                    th:data-post-id="${post.id}" data-action="open-detail-comment" title="댓글 달기">
-              <!-- 말풍선 -->
-              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-                      stroke="currentColor" stroke-width="2" fill="none"/>
-              </svg>
-            </button>
-
-            <!-- 통계 표시 -->
-            <div class="stats">
-              <span class="stat"><b th:text="${post.likeCount}">0</b> 좋아요</span>
-              <span class="stat"><b th:text="${post.commentCount}">0</b> 댓글</span>
+            <div class="action-item">
+              <button class="icon-action comment-btn"
+                      th:data-post-id="${post.id}" data-action="open-detail-comment" title="댓글 달기">
+                <!-- 말풍선 -->
+                <img th:src="@{/images/icons/comment.svg}" alt="댓글" width="24" height="24" />
+              </button>
+              <span class="action-count" th:text="${post.commentCount}">0</span>
             </div>
           </div>
 
           <!-- 비로그인: 통계만 -->
           <div class="post-actions" sec:authorize="!isAuthenticated()">
-            <div class="stats">
-              <span class="stat"><b th:text="${post.likeCount}">0</b> 좋아요</span>
-              <span class="stat"><b th:text="${post.commentCount}">0</b> 댓글</span>
+            <div class="action-item">
+              <span class="icon-action">
+                <img th:src="@{/images/icons/heart-empty.svg}" alt="좋아요" width="24" height="24" />
+              </span>
+              <span class="action-count" th:text="${post.likeCount}">0</span>
+            </div>
+            
+            <div class="action-item">
+              <span class="icon-action">
+                <img th:src="@{/images/icons/comment.svg}" alt="댓글" width="24" height="24" />
+              </span>
+              <span class="action-count" th:text="${post.commentCount}">0</span>
             </div>
           </div>
 
@@ -235,12 +243,14 @@
 <div th:replace="~{fragments/toast :: toast}"></div>
 
 <!-- JS 파일들 -->
+<script defer th:src="@{/common/js/toggle_dropdown.js}"></script>
 <script defer th:src="@{/common/js/toast_manager.js}"></script>
 <script defer th:src="@{/features/post/js/like_manager.js}"></script>
 <script defer th:src="@{/features/post/js/modal_manager.js}"></script>
 <script defer th:src="@{/features/post/js/post_detail.js}"></script>
 <script type="module" th:src="@{/features/post/js/post_write.js}"></script>
 <script defer th:src="@{/features/post/js/post_list.js}"></script>
+
 <!-- 사진메타데이터 추출 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
 <!-- 구글 지도 자동완성 -->

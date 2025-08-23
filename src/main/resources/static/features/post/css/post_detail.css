@@ -165,7 +165,7 @@
   background: #f8f9fa;
 }
 
-/* 오른쪽 패널 스타일 - post_write_modal.css와 일관성 유지 */
+/* 오른쪽 패널 스타일 */
 .compose-right {
   display: flex;
   flex-direction: column;
@@ -174,7 +174,7 @@
   overflow-y: auto;
 }
 
-/* 작성자 정보 - 게시글 작성과 동일한 스타일 */
+/* 작성자 정보 */
 .author-display {
   display: flex;
   align-items: center;
@@ -266,6 +266,10 @@
 .icon-action:hover {
   background: #f8f9fa;
   color: #333;
+}
+
+.icon-action:focus {
+  outline: none;
 }
 
 .icon-action.liked {

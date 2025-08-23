@@ -2,7 +2,6 @@
 :root {
   --secondary-color: #6c757d;
   --light-color: #f8f9fa;
-  --dark-color: #343a40;
   --border-color: #f9f5ff;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -50,7 +49,7 @@
 .search-input {
   flex: 1;
   padding: 0.5rem 1.2rem !important;
-  border: 1px solid var(--stone-800) !important;
+  border: 1px solid var(--gray-300) !important;
   border-radius: 4px !important;
   font-size: 1rem !important;
   transition: var(--transition);
@@ -88,7 +87,7 @@
   gap: 8px;
   margin: 2rem 1rem 0;
   flex-wrap: wrap;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .post-action-btn {
@@ -183,45 +182,75 @@
   border-bottom: none;
 }
 
-/* 백엔드에서 추가하는 활성 클래스 (Thymeleaf) */
 .sort-tab.active-sort {
   background: var(--stone-800) !important;
   color: var(--white) !important;
   border-color: var(--stone-800) !important;
 }
 
-.region-filter-select.active-region {
-  background: var(--stone-800);
-  color: var(--black);
-  border-color: var(--stone-800);
-}
 
-.region-filter-select {
-  box-sizing: border-box;
-  height: 31px;
-  line-height: 1;
-  vertical-align: middle;
-  padding: 0 1rem;
-  border: 1px solid var(--sand-600);
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  background: var(--sand-600);
-  color: var(--black);
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+/* 커스텀 셀렉트 */
+.custom-select {
+  position: relative;
+  display: inline-block;
   min-width: 10rem;
 }
 
-.region-filter-select:focus {
-  outline: none;
-  border-color: var(--stone-800);
-  color: var(--white);
-}
-
-.region-filter-select:hover {
+.select-trigger {
+  box-sizing: border-box;
+  height: 31px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  border: 1px solid var(--stone-800);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
   background: var(--stone-800);
   color: var(--white);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.select-arrow {
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.custom-select.open .select-arrow {
+  transform: rotate(180deg);
+}
+
+.select-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--stone-800);
+  border-radius: 0 0 8px 8px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+
+.custom-select.open .select-options {
+  display: block;
+}
+
+.select-option {
+  padding: 0.3rem 0.75rem;
+  background: var(--stone-800);
+  color: var(--white);
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.select-option:hover {
+  background: var(--white);
+  color: var(--black);
 }
 
 .new-post-btn {
@@ -238,8 +267,8 @@
 
 .reset-btn {
   background: var(--sand-600);
+  border: 1px solid var(--sand-600);
   color: var(--black);
-  border-color: var(--border-color);
 }
 
 .reset-btn:hover {
@@ -383,6 +412,10 @@
   color: #333;
 }
 
+.icon-action:focus {
+  outline: none;
+}
+
 .icon-action.liked {
   color: #ff6b6b;
 }
@@ -391,22 +424,19 @@
   color: #ff5252;
 }
 
-/* 통계 표시 */
-.stats {
+.action-item {
   display: flex;
-  gap: 5px;
-  margin-left: auto;
+  align-items: center;
+  gap: 4px;
 }
 
-.stat {
-  font-size: 13px;
-  color: #6c757d;
-  white-space: nowrap;
-}
-
-.stat b {
+.action-count {
   color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 16px;
 }
+
 
 /* sr-only 클래스 추가 */
 .sr-only {
@@ -596,9 +626,6 @@
     padding: 0.2rem 0.5rem;
   }
 
-  .stat {
-    font-size: 12px;
-  }
 
   .post-date {
     font-size: 10px;
@@ -624,12 +651,6 @@
     flex-shrink: 1;
   }
 
-  .region-filter-select {
-    padding: 0 0.5rem;
-    font-size: 12px;
-    min-width: 0;
-    flex-shrink: 1;
-  }
 
   .post-action-btn {
     padding: 0 0.5rem;

@@ -21,4 +21,21 @@ public interface HeritageRepository extends JpaRepository<Heritage, Long>, JpaSp
       @Param("regions") List<String> regions,
       @Param("eras") List<String> eras
   );
+
+  /**
+   * 지정된 좌표에서 주어진 거리 이내의 가장 가까운 문화유산을 찾습니다
+   * PostgreSQL의 earth_distance 함수 사용 (정확한 지구상 거리 계산)
+   */
+  @Query(value = """
+        SELECT * FROM heritages h
+        WHERE h.latitude IS NOT NULL AND h.longitude IS NOT NULL
+          AND earth_distance(ll_to_earth(h.latitude, h.longitude), ll_to_earth(:lat, :lng)) <= :maxDistanceMeters
+        ORDER BY earth_distance(ll_to_earth(h.latitude, h.longitude), ll_to_earth(:lat, :lng))
+        LIMIT 1
+        """, nativeQuery = true)
+  Heritage findNearestHeritages(
+      @Param("lat") Double lat, 
+      @Param("lng") Double lng, 
+      @Param("maxDistanceMeters") Double maxDistanceMeters
+  );
 }
