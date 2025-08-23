@@ -429,26 +429,6 @@ border-bottom: 1px solid #e5e7eb;
 
 
 /* ---------- Controls row (내 위치 / 가까운 순) ---------- */
-/* 반반(50%) 한 줄 배치 + 제목과 간격 확대 */
-#locateBtn,
-#sortByDistance {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #111827;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 999px;
-  cursor: pointer;
-  width: calc(50% - 4px);
-  margin-top: 10px;
-  vertical-align: top;
-}
-#locateBtn { margin-right: 8px; }
 #sortByDistance[disabled], #locateBtn[disabled] { opacity: .5; cursor: not-allowed; }
 #sortByDistance:hover:not([disabled]), #locateBtn:hover:not([disabled]) { background:#f9fafb; }
 
@@ -457,6 +437,40 @@ border-bottom: 1px solid #e5e7eb;
 margin-top: 18px;
 color: #FFFFFF;
 }
+
+/* 한 줄에 나란히 + 동일 규격 */
+.controls-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;            /* 둘 다 같은 상단 여백 */
+}
+
+.controls-row .locate-btn{
+  flex:1;                      /* 반반 너비 */
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:36px;
+  padding:0 12px;              /* 좌우 패딩만 */
+  margin:0;                    /* 개별 margin 제거 */
+  border-radius:999px;         /* 알약 모양 */
+  font-size:13px;
+  font-weight:600;
+  color:#111827;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+.controls-row .locate-btn .icon{
+  display:block;               /* 이미지 baseline 이슈 제거 */
+  margin-right:6px;
+}
+
+.controls-row .locate-btn[disabled]{ opacity:.5; cursor:not-allowed; }
+.controls-row .locate-btn:hover:not([disabled]){ background:#f9fafb; }
 
 /* ----- Reset button (bottom) ----- */
 .side-reset-btn{

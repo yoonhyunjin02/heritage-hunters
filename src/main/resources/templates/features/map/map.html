@@ -91,11 +91,14 @@
       <button id="clearSearchBtn" class="locate-btn" style="margin-left:6px">검색 해제</button>
     </section>
 
-    <button id="locateBtn" class="locate-btn" aria-label="내 위치로 이동" style="margin-top:12px">
-      <img src="/images/icons/target.svg" alt="" width="16" height="16">
-      <span>내 위치</span>
-    </button>
-    <button id="sortByDistance" class="locate-btn" style="float:right" disabled>가까운 순</button>
+    <div class="controls-row">
+      <button id="locateBtn" class="locate-btn" aria-label="내 위치로 이동">
+        <img src="/images/icons/target.svg" alt="" class="icon" width="16" height="16">
+        <span>내 위치</span>
+      </button>
+
+      <button id="sortByDistance" class="locate-btn" disabled>가까운 순</button>
+    </div>
 
     <!-- 목록 헤더 -->
     <h3 class="legend-title" style="margin-top:14px">
