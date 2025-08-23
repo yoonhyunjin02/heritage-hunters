@@ -2,7 +2,6 @@
 :root {
   --secondary-color: #6c757d;
   --light-color: #f8f9fa;
-  --dark-color: #343a40;
   --border-color: #f9f5ff;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -88,7 +87,7 @@
   gap: 8px;
   margin: 2rem 1rem 0;
   flex-wrap: wrap;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .post-action-btn {
@@ -190,38 +189,70 @@
   border-color: var(--stone-800) !important;
 }
 
-.region-filter-select.active-region {
-  background: var(--stone-800);
-  color: var(--black);
-  border-color: var(--stone-800);
-}
 
-.region-filter-select {
-  box-sizing: border-box;
-  height: 31px;
-  line-height: 1;
-  vertical-align: middle;
-  padding: 0 1rem;
-  border: 1px solid var(--sand-600);
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  background: var(--sand-600);
-  color: var(--black);
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+/* 커스텀 셀렉트 */
+.custom-select {
+  position: relative;
+  display: inline-block;
   min-width: 10rem;
 }
 
-.region-filter-select:focus {
-  outline: none;
-  border-color: var(--stone-800);
-  color: var(--white);
-}
-
-.region-filter-select:hover {
+.select-trigger {
+  box-sizing: border-box;
+  height: 31px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  border: 1px solid var(--stone-800);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
   background: var(--stone-800);
   color: var(--white);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.select-arrow {
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.custom-select.open .select-arrow {
+  transform: rotate(180deg);
+}
+
+.select-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--stone-800);
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+
+.custom-select.open .select-options {
+  display: block;
+}
+
+.select-option {
+  padding: 8px 12px;
+  background: var(--stone-800);
+  color: var(--white);
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.select-option:hover {
+  background: var(--white);
+  color: var(--black);
 }
 
 .new-post-btn {
@@ -568,12 +599,6 @@
     flex-shrink: 1;
   }
 
-  .region-filter-select {
-    padding: 0 0.5rem;
-    font-size: 12px;
-    min-width: 0;
-    flex-shrink: 1;
-  }
 
   .post-action-btn {
     padding: 0 0.5rem;

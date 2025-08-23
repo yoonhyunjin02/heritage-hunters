@@ -30,15 +30,22 @@
         <div class="post-filter-controls">
           <div class="post-filters-left">
             <div class="post-filter region-filter">
-              <select name="region" class="region-filter-select" onchange="submitForm()">
-                <option value="">전체 지역</option>
-                <option
-                    th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
-                    th:if="${entry.key != '00'}"
-                    th:value="${entry.key}"
-                    th:selected="${region == entry.key}"
-                    th:text="${entry.value}"></option>
-              </select>
+              <div class="custom-select">
+                <div class="select-trigger" onclick="toggleRegionDropdown(this)">
+                  <span class="selected-text" th:text="${#strings.isEmpty(region)} ? '전체 지역' : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getKoreanName(region)}">전체 지역</span>
+                  <span class="select-arrow">▼</span>
+                </div>
+                <div class="select-options">
+                  <div class="select-option" data-value="" onclick="selectOption(this)">전체 지역</div>
+                  <div th:each="entry : ${T(org.hh.heritagehunters.domain.search.util.RegionCodeMapper).getCodeMap()}"
+                       th:if="${entry.key != '00'}"
+                       class="select-option"
+                       th:data-value="${entry.key}"
+                       onclick="selectOption(this)"
+                       th:text="${entry.value}"></div>
+                </div>
+              </div>
+              <input type="hidden" name="region" th:value="${region}" id="regionInput">
             </div>
 
             <div class="post-filter sort-filter">
@@ -214,12 +221,14 @@
 <div th:replace="~{fragments/toast :: toast}"></div>
 
 <!-- JS 파일들 -->
+<script defer th:src="@{/common/js/toggle_dropdown.js}"></script>
 <script defer th:src="@{/common/js/toast_manager.js}"></script>
 <script defer th:src="@{/features/post/js/like_manager.js}"></script>
 <script defer th:src="@{/features/post/js/modal_manager.js}"></script>
 <script defer th:src="@{/features/post/js/post_detail.js}"></script>
 <script type="module" th:src="@{/features/post/js/post_write.js}"></script>
 <script defer th:src="@{/features/post/js/post_list.js}"></script>
+
 <!-- 사진메타데이터 추출 -->
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
 <!-- 구글 지도 자동완성 -->
