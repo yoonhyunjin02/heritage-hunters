@@ -1,5 +1,6 @@
 # Heritage Hunters 🏛️📸
 로고 넣자
+
 📅 진행 기간: 2025년 7월 28일 ~ 2025년 8월 25일
 
 
@@ -70,7 +71,8 @@
   </tr>
   <tr>
     <td align="center">
-      <a href="https://github.com/yoonhyunjin02" target="_blank">윤현진(팀장)</
+      <a href="https://github.com/yoonhyunjin02" target="_blank">윤현진(팀장)
+    </td>
     <td align="center">
       <a href="https://github.com/eastdh" target="_blank">유동혁</a>
     </td>
@@ -115,7 +117,8 @@ asdfasdf
 
 ## 4. 피그마 디자인
 <img width="1883" height="601" alt="Image" src="https://github.com/user-attachments/assets/36d78e69-369d-43e5-958c-4d4ffa5d6952" />
-🎨 [피그마 주소](https://www.figma.com/design/2QGcq7VGRlTLl6yIMhmIOQ/Heritage-Hunters?node-id=98-1413&p=f&t=pwWieG5cbZx8tyYK-0)
+
+🎨[피그마](https://www.figma.com/design/2QGcq7VGRlTLl6yIMhmIOQ/Heritage-Hunters?node-id=98-1413&p=f&t=pwWieG5cbZx8tyYK-0)
 
 ## 5. 페이지 구성 미리보기
 <details>
@@ -170,6 +173,7 @@ asdfasdf
 ## 7. 디렉토리 구조
 <details>
 <summary>상세 디렉토리 구조</summary>
+
 ```
 heritage-hunters/
 ├── etl/
@@ -308,7 +312,10 @@ heritage-hunters/
 ├── mvnw.cmd
 └── pom.xml
 ```
+
 </details>
+
+
 ```
 heritage-hunters/
 ├── etl/
@@ -349,8 +356,11 @@ heritage-hunters/
 ```
 
 ## 8. 브랜치 전략 및 컨벤션
-# [컨벤션](https://chain-winter-af2.notion.site/23e2233de6938078b383f379438b6ff2?source=copy_link)
+
+### 🔹 브랜치 전략
 <img width="693" height="298" alt="Image" src="https://github.com/user-attachments/assets/90a22db8-8302-4d13-9395-0ef0e03c69fe" />
+
+### 🔹 [컨벤션](https://chain-winter-af2.notion.site/23e2233de6938078b383f379438b6ff2?source=copy_link)
 
 ## 9. 사용 기술 및 도구
 
@@ -389,11 +399,11 @@ heritage-hunters/
 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
   <img src="https://img.shields.io/badge/AWS%20EC2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white">
   <img src="https://img.shields.io/badge/AWS%20S3-569A31?style=for-the-badge&logo=amazonaws&logoColor=white">
-  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
-  <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white">
   <img src="https://img.shields.io/badge/AWS%20ECR-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white">
   <img src="https://img.shields.io/badge/AWS%20ACM-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white">
   <img src="https://img.shields.io/badge/AWS%20ALB-146EB4?style=for-the-badge&logo=amazonaws&logoColor=white">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
+  <img src="https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white">
 </div>
 
 ---
