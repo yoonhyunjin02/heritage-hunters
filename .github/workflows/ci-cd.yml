@@ -2,7 +2,7 @@ name: CI - Build & Push to ECR
 
 on:
   push:
-    branches: [ "main" ]   # 배포 브랜치가 다르면 여기 바꿔줘
+    branches: [ "main" ]
 
 env:
   AWS_REGION: eu-north-1
