@@ -1,4 +1,4 @@
-<img width="2323" height="444" alt="Image" src="https://github.com/user-attachments/assets/890eada2-c847-435c-8194-a9554a44b567" />
+<img width="2081" height="383" alt="Image" src="https://github.com/user-attachments/assets/471bd46f-f1e4-46a2-b6c8-bf3397351579" />
 
 - 📅 진행 기간: 2025년 7월 28일 ~ 2025년 8월 25일
 
@@ -29,8 +29,9 @@
 6. [페이지별 주요 상세 기능](#6-페이지별-주요-상세-기능)  
 7. [디렉토리 구조](#7-디렉토리-구조)  
 8. [브랜치 전략 및 컨벤션](#8-브랜치-전략-및-컨벤션)  
-9. [사용 기술 및 도구](#9-사용-기술-및-도구)  
-10. [최종 회고](#10-최종-회고)
+9. [사용 기술 및 도구](#9-사용-기술-및-도구)
+10. [아키텍쳐 구조 및 유저플로우](#10-아키텍쳐-구조-및-유저플로우)
+11. [최종 회고](#11-최종-회고)
 
 ---
 
@@ -440,8 +441,14 @@ heritage-hunters/
 </div>
 
 ---
+## 10. 아키텍쳐 구조 및 유저플로우
 
-## 10. 최종 회고
+### 🔹 아키텍쳐 구조
+
+### 🔹 UserFlow
+<img width="896" height="649" alt="Image" src="https://github.com/user-attachments/assets/ca31c2cf-8df2-49aa-b828-27729ad6de93" />
+
+## 11. 최종 회고
 - 윤현진
 - 유동혁
 - 이수완
