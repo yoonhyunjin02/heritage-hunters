@@ -13,6 +13,30 @@
 
     <!--main-->
     <main class="main-container">
+      <!-- 배너 -->
+      <section class="search-banner" aria-label="검색 안내 배너">
+        <div class="search-banner__inner">
+          <div class="search-banner__copy">
+            <h2 class="search-banner__title">
+              궁금한 유산을 검색해보세요!
+            </h2>
+            <p class="search-banner__subtitle">
+              해당 유산에 도움이 되는 정보를 앨런 AI가 제공합니다
+            </p>
+          </div>
+
+          <!-- 오른쪽 일러스트 -->
+          <div class="search-banner__visual" aria-hidden="true">
+            <img
+                class="search-banner__img"
+                th:src="@{/images/banner/search-banner.png}"
+                src="/images/banner/search-banner.png"
+                alt=""
+                loading="eager"
+            />
+          </div>
+        </div>
+      </section>
       <div class="search-inner">
         <form id="search-form" th:action="@{/search}" method="get" class="search__form">
           <!-- 1. 검색창 -->
