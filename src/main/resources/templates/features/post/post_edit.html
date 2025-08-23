@@ -124,9 +124,9 @@
             <div class="location-input-wrapper">
               <input type="text" id="locationInput" name="location"
                      class="form-input location-input" th:value="${post.location}"
-                     placeholder="위치를 입력하거나 검색하세요..." maxlength="100" autocomplete="off">
-              <input type="hidden" id="latHidden" name="latitude">
-              <input type="hidden" id="lngHidden" name="longitude">
+                     placeholder="위치를 입력하거나 검색하세요..." maxlength="100" autocomplete="off" required>
+              <input type="hidden" id="latHidden" name="lat">
+              <input type="hidden" id="lngHidden" name="lng">
               <div id="locationSuggestions" class="location-suggestions"></div>
             </div>
           </section>
@@ -156,9 +156,13 @@
 
 <script defer th:src="@{/features/post/js/modal_manager.js}"></script>
 <script defer th:src="@{/features/post/js/post_edit.js}"></script>
+<!-- 사진메타데이터 추출 -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
 <!-- Google Maps API (위치 자동완성) -->
 <script defer
         th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places&language=ko'">
 </script>
+<!-- 구글 지도 자동완성 -->
+<script defer src="/features/post/js/location_autocomplete.js"></script>
 </body>
 </html>
