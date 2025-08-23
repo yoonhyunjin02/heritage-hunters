@@ -8,6 +8,30 @@
 <!-- 사이트 공통 헤더 -->
 <div th:replace="~{fragments/header :: common-header}"></div>
 
+<!-- 지도 페이지 배너 -->
+<section class="map-banner" aria-label="지도 안내 배너">
+  <div class="map-banner__inner">
+    <!-- 왼쪽 이미지 -->
+    <div class="map-banner__visual" aria-hidden="true">
+      <img
+          class="map-banner__img"
+          th:src="@{/images/banner/map-banner.png}"
+          src="/images/banner/map-banner.png"
+          alt="대한민국 지도 일러스트"
+          loading="eager"
+      />
+    </div>
+
+    <!-- 오른쪽 문구 -->
+    <div class="map-banner__copy">
+      <h2 class="map-banner__title">
+        방문하고 싶은 박물관 · 미술관 또는 문화재 위치를 찾아보세요!
+      </h2>
+      <p>해당 문화재가 궁금하다면 정보 페이지로 바로 이동할 수 있어요</p>
+    </div>
+  </div>
+</section>
+
 <!-- 지도 전용 헤더(툴바) -->
 <div class="map-toolbar">
   <div class="toolbar-left">
