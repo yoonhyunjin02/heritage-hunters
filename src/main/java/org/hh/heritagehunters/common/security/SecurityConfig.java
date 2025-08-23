@@ -16,6 +16,12 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+  // swagger 관련 URL 화이트리스트
+  public static final String[] SWAGGER_WHITESLIST = {
+      "/swagger-ui.html",
+      "/swagger-ui/**",
+      "/v3/api-docs/**"};
+
   @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
@@ -56,7 +62,8 @@ public class SecurityConfig {
                 "/posts/**",
                 "/search/**",
                 "/leaderboard/**"
-            )
+            ).permitAll()
+            .requestMatchers(SWAGGER_WHITESLIST)
             .permitAll()
             .anyRequest().authenticated()
         )
@@ -74,20 +81,25 @@ public class SecurityConfig {
             .failureHandler((request, response, exception) -> {
               exception.printStackTrace();
               String message = exception.getMessage();
-              if (message == null || message.isBlank()) message = "알 수 없는 오류가 발생했습니다.";
-              String encoded = java.net.URLEncoder.encode(message, java.nio.charset.StandardCharsets.UTF_8);
+              if (message == null || message.isBlank()) {
+                message = "알 수 없는 오류가 발생했습니다.";
+              }
+              String encoded = java.net.URLEncoder.encode(message,
+                  java.nio.charset.StandardCharsets.UTF_8);
               response.sendRedirect("/login?error=" + encoded);
             })
             .defaultSuccessUrl("/main", true)
         )
         .logout(logout -> logout.logoutSuccessUrl("/login?logout").permitAll())
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
     return http.build();
   }
 
   @Bean
-  public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+  public DaoAuthenticationProvider daoAuthenticationProvider(UserDetailsService userDetailsService,
+      PasswordEncoder passwordEncoder) {
     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
     provider.setUserDetailsService(userDetailsService);
     provider.setPasswordEncoder(passwordEncoder);

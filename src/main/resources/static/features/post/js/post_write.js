@@ -329,38 +329,45 @@ const PostModal = {
 
   /**
    * 폼 입력 내용을 검증합니다.
-   * 
+   *
    * @returns {boolean} 검증 통과 여부
-   * @description
-   * - 내용 입력 및 글자 수 제한 확인
-   * - 위치 입력 확인
-   * - 이미지 업로드 확인 (최소 1장)
-   * - GPS 정보와 선택 위치 간의 거리 검증 (200m 이내)
    */
   validateForm() {
     const {content, location, lat, lng} = this.form;
+
+    // 1. 사진 검사
+    if (this.imageInput.files.length === 0) {
+      alert('사진은 필수입니다');
+      return false;
+    }
+
+    // 2. 내용 검사
     if (!content.value.trim()) {
-      return alert('내용을 입력하세요.');
+      alert('내용은 필수입니다.');
+      return false;
     }
     if (content.value.length > 200) {
-      return alert('내용은 200자를 넘을 수 없습니다.');
+      alert('내용은 200자를 넘을 수 없습니다.');
+      return false;
     }
+
+    // 3. 위치 검사
     if (!location.value.trim()) {
-      return alert('위치를 입력하세요.');
+      alert('위치는 필수입니다.');
+      return false;
     }
-    if (this.imageInput.files.length === 0) {
-      return alert('이미지를 최소 1장 업로드하세요.');
-    }
-    
-    // GPS 메타데이터 필수 검증
+
+    // GPS 메타데이터 필수 검증 (사진이 있어야만 실행 가능하므로 순서상 적합)
     if (!this.gpsFromImg) {
-      return alert('업로드한 사진에 위치 정보가 없습니다.\nGPS 기능이 켜진 상태에서 촬영한 사진을 업로드해주세요.');
+      alert('업로드한 사진에 위치 정보가 없습니다.\nGPS 기능이 켜진 상태에서 촬영한 사진을 업로드해주세요.');
+      return false;
     }
-    
+
     const latV = parseFloat(lat.value), lngV = parseFloat(lng.value);
     if (!isNaN(latV) && !isNaN(lngV)) {
       if (this.haversine(this.gpsFromImg, {lat: latV, lng: lngV}) > 200) {
-        return alert('사진 GPS와 선택 위치가 200m 이상 차이납니다.\n사진이 촬영된 위치와 일치하는 장소를 선택해주세요.');
+        alert('사진 GPS와 선택 위치가 200m 이상 차이납니다.\n사진이 촬영된 위치와 일치하는 장소를 선택해주세요.');
+        return false;
       }
     }
     return true;

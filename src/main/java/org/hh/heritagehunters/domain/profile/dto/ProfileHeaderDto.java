@@ -1,16 +1,13 @@
 package org.hh.heritagehunters.domain.profile.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+public record ProfileHeaderDto(
+    Long userId,
+    String nickname,
+    String email,
+    String bio,
+    String profileImage,
+    String defaultProfileImage,
+    Integer score) {
 
-@Getter
-@AllArgsConstructor
-public class ProfileHeaderDto {
-
-  private final Long userId;
-  private final String nickname;
-  private final String email;
-  private final String profileImage;
-  private final Integer score;
 }
 

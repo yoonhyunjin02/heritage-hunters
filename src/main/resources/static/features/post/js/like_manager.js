@@ -141,23 +141,21 @@ class LikeManager {
                     likeButton.setAttribute('aria-pressed', 'false');
                 }
 
-                // SVG fill 속성 업데이트
-                const path = likeButton.querySelector('svg path');
-                if (path) {
-                    path.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+                // SVG 아이콘 교체 (프로젝트 heart 아이콘 사용)
+                const iconImg = likeButton.querySelector('img');
+                if (iconImg) {
+                    iconImg.src = isLiked ? '/images/icons/heart-filled.svg' : '/images/icons/heart-empty.svg';
                 }
             }
 
-            // 좋아요 개수 업데이트 (게시글 리스트의 통계 영역)
-            const likeStatElements = card.querySelectorAll('.stat');
-            likeStatElements.forEach(stat => {
-                if (stat.textContent.includes('좋아요')) {
-                    const bElement = stat.querySelector('b');
-                    if (bElement) {
-                        bElement.textContent = likeCount;
-                    }
+            // 좋아요 개수 업데이트 (게시글 리스트의 action-count)
+            const actionItem = likeButton.closest('.action-item');
+            if (actionItem) {
+                const likeCountSpan = actionItem.querySelector('.action-count');
+                if (likeCountSpan) {
+                    likeCountSpan.textContent = likeCount;
                 }
-            });
+            }
         });
     }
 
@@ -186,10 +184,10 @@ class LikeManager {
                 modalLikeButton.setAttribute('aria-pressed', 'false');
             }
 
-            // SVG fill 속성 업데이트
-            const path = modalLikeButton.querySelector('svg path');
-            if (path) {
-                path.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+            // SVG 아이콘 교체 (프로젝트 heart 아이콘 사용)
+            const iconImg = modalLikeButton.querySelector('img');
+            if (iconImg) {
+                iconImg.src = isLiked ? '/images/icons/heart-filled.svg' : '/images/icons/heart-empty.svg';
             }
         }
 
@@ -268,12 +266,15 @@ class LikeManager {
      * 현재 좋아요 개수 가져오기
      */
     getCurrentLikeCount(button) {
-        // 게시글 리스트에서 - 해당 카드의 좋아요 통계만
+        // 게시글 리스트에서 - action-item의 action-count에서 숫자 가져오기
         const postCard = button.closest('.post-card');
         if (postCard) {
-            const likeStatElement = postCard.querySelector('.stats .stat:first-child b');
-            if (likeStatElement) {
-                return parseInt(likeStatElement.textContent) || 0;
+            const actionItem = button.closest('.action-item');
+            if (actionItem) {
+                const likeCountSpan = actionItem.querySelector('.action-count');
+                if (likeCountSpan) {
+                    return parseInt(likeCountSpan.textContent) || 0;
+                }
             }
         }
 
@@ -307,10 +308,10 @@ class LikeManager {
             button.setAttribute('aria-pressed', 'false');
         }
 
-        // SVG fill 속성 업데이트
-        const path = button.querySelector('svg path');
-        if (path) {
-            path.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+        // SVG 아이콘 교체 (프로젝트 heart 아이콘 사용)
+        const iconImg = button.querySelector('img');
+        if (iconImg) {
+            iconImg.src = isLiked ? '/images/icons/heart-filled.svg' : '/images/icons/heart-empty.svg';
         }
 
         // 좋아요 개수 업데이트 (여러 위치에서 찾기)
@@ -321,12 +322,15 @@ class LikeManager {
      * 좋아요 개수 업데이트 (특정 게시글만)
      */
     updateLikeCount(button, likeCount) {
-        // 게시글 리스트의 경우 - 해당 카드의 좋아요 수만 업데이트
+        // 게시글 리스트의 경우 - action-item의 action-count 업데이트
         const postCard = button.closest('.post-card');
         if (postCard) {
-            const likeStatElement = postCard.querySelector('.stats .stat:first-child b');
-            if (likeStatElement) {
-                likeStatElement.textContent = likeCount;
+            const actionItem = button.closest('.action-item');
+            if (actionItem) {
+                const likeCountSpan = actionItem.querySelector('.action-count');
+                if (likeCountSpan) {
+                    likeCountSpan.textContent = likeCount;
+                }
             }
             return;
         }

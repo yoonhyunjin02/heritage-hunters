@@ -308,16 +308,115 @@
 }
 
 /*----------------------------------------
+  Empty State Message
+----------------------------------------*/
+.no-results-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #6c757d;
+}
+
+.no-results-message p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* =========================
+   Search – Banner (updated)
+   ========================= */
+.search-banner {
+  background: var(--sand-600);
+  overflow: hidden; /* 이미지 넘침 방지 */
+  /* height: 120px; */
+}
+
+.search-banner__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 120px;
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 중앙 배치 */
+  gap: calc(var(--spacing-unit) * 0.75);
+  padding: calc(var(--spacing-unit) * 0.75) var(--spacing-unit);
+  box-sizing: border-box;
+}
+
+.search-banner__copy {
+  flex: 0 1 520px;        /* 내용 기준 가변 폭 */
+  max-width: 520px;
+  min-width: 260px;
+  text-align: left;
+}
+
+.search-banner__title {
+  margin: 0 0 0.25em 0;
+  font-weight: 800;
+  font-size: clamp(18px, 1.8vw, 26px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.search-banner__subtitle {
+  margin: 0;
+  font-size: clamp(12px, 1.2vw, 14px);
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--gray-050);
+  opacity: 0.95;
+}
+
+.search-banner__visual {
+  flex: 0 0 clamp(340px, 38vw, 560px); /* 이미지 더 큼 */
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.search-banner__img {
+  width: 100%;
+  height: auto;
+  display: block;
+  padding-top: 15px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08));
+}
+
+/*----------------------------------------
   Responsive Breakpoints
 ----------------------------------------*/
 @media (max-width: var(--bp-tablet)) {
   /* .search__grid {
     grid-template-columns: repeat(3, 1fr);
   } */
+  .search-banner__inner {
+      gap: var(--spacing-unit);
+      padding: calc(var(--spacing-unit) * 2.5) var(--spacing-unit);
+      min-height: 300px;
+    }
 }
 
 @media (max-width: var(--bp-mobile)) {
   /* .search__grid {
     grid-template-columns: repeat(2, 1fr);
   } */
+  .search-banner__inner {
+      flex-direction: column;
+      align-items: flex-start;
+      min-height: unset;
+      padding: calc(var(--spacing-unit) * 2) var(--spacing-unit);
+    }
+    .search-banner__visual {
+      width: 100%;
+      flex: 0 0 auto;
+      justify-content: center;
+      margin-top: var(--spacing-unit);
+    }
+    .search-banner__img {
+      max-width: 520px;                   /* 과도한 확대 방지 */
+    }
 }

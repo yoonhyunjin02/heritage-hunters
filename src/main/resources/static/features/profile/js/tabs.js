@@ -1,29 +1,27 @@
 // tabs.js
-import { $, $$, setHidden } from "./utils.js";
+import { getEls } from "/common/js/utils/dom.js";
 
-export function initTabs() {
-  const nav = $(".profile-tabs");
-  if (!nav) return;
+/**
+ * 프로필 탭 UI 초기화
+ */
+export default function initTabs() {
+  const tabs = getEls(".profile-tabs .tab-btn");
+  const panels = getEls(".tab-panel");
 
-  const tabs = $$(".tab-btn", nav);
-  const panels = $$(".tab-panel", $(".profile-panels"));
-  const indicator = $(".tab-indicator", nav);
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const target = tab.getAttribute("aria-controls");
 
-  const activate = (idx) => {
-    tabs.forEach((t, i) => {
-      const active = i === idx;
-      t.classList.toggle("is-active", active);
-      t.setAttribute("aria-selected", active);
-      t.tabIndex = active ? 0 : -1;
-      setHidden(panels[i], !active);
+      tabs.forEach((t) => {
+        const active = t === tab;
+        t.classList.toggle("is-active", active);
+        t.setAttribute("aria-selected", String(active));
+        t.tabIndex = active ? 0 : -1;
+      });
+
+      panels.forEach((panel) => {
+        panel.hidden = panel.id !== target;
+      });
     });
-    indicator.style.transform = `translateX(${idx * 100}%)`;
-  };
-
-  tabs.forEach((btn, idx) => {
-    btn.addEventListener("click", () => activate(idx));
   });
-
-  const initialIdx = tabs.findIndex((t) => t.classList.contains("is-active"));
-  activate(initialIdx >= 0 ? initialIdx : 0);
 }

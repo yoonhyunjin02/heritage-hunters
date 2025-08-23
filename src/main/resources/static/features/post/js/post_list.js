@@ -21,6 +21,48 @@
   };
 
   // --------------------------->
+  // 커스텀 셀렉트 드롭다운 기능
+  // --------------------------->
+  
+  // 커스텀 셀렉트 드롭다운 토글 (region filter용)
+  window.toggleRegionDropdown = function(trigger) {
+    const customSelect = trigger.parentElement;
+    customSelect.classList.toggle('open');
+    
+    // 다른 드롭다운들 닫기
+    document.querySelectorAll('.custom-select').forEach(select => {
+      if (select !== customSelect) {
+        select.classList.remove('open');
+      }
+    });
+  };
+
+  // 옵션 선택
+  window.selectOption = function(option) {
+    const customSelect = option.closest('.custom-select');
+    const trigger = customSelect.querySelector('.select-trigger');
+    const selectedText = trigger.querySelector('.selected-text');
+    const hiddenInput = document.getElementById('regionInput');
+    const value = option.getAttribute('data-value');
+    
+    selectedText.textContent = option.textContent;
+    hiddenInput.value = value;
+    customSelect.classList.remove('open');
+    
+    // 폼 제출
+    submitForm();
+  };
+
+  // 외부 클릭시 드롭다운 닫기
+  document.addEventListener('click', function(event) {
+    if (!event.target.closest('.custom-select')) {
+      document.querySelectorAll('.custom-select').forEach(select => {
+        select.classList.remove('open');
+      });
+    }
+  });
+
+  // --------------------------->
   // 전역 네임스페이스
   // --------------------------->
   window.PostListManager = window.PostListManager || {};
@@ -68,7 +110,6 @@
         const cacheKey = `post_${postId}`;
         if (postDataCache.has(cacheKey)) {
           postDataCache.delete(cacheKey);
-          console.log(`게시글 ${postId} 캐시 삭제됨`);
         }
       }
     } catch (e) {
@@ -111,9 +152,7 @@
       // 메모리 캐시 확인
       if (postDataCache.has(cacheKey)) {
         html = postDataCache.get(cacheKey);
-        console.log('캐시에서 로드:', postId);
       } else {
-        console.log('서버에서 로드:', postId);
         const startTime = performance.now();
         
         const res = await fetch(`/posts/${postId}`, {
@@ -129,13 +168,9 @@
         
         html = await res.text();
         postDataCache.set(cacheKey, html);
-        
-        const loadTime = performance.now() - startTime;
-        console.log(`게시글 로드 시간: ${loadTime.toFixed(2)}ms`);
       }
 
       // 모달 콘텐츠 추출 및 렌더링 최적화
-      const domParseStart = performance.now();
       const doc = new DOMParser().parseFromString(html, 'text/html');
       const content = doc.querySelector('#postDetailModal .modal-content');
       
@@ -149,9 +184,6 @@
       
       modal.innerHTML = '';
       modal.appendChild(fragment);
-      
-      const domParseTime = performance.now() - domParseStart;
-      console.log(`DOM 파싱 시간: ${domParseTime.toFixed(2)}ms`);
 
       // 모달에 post ID 설정
       modal.setAttribute('data-post-id', postId);
@@ -168,9 +200,7 @@
         }, 250);
       }
 
-      // 이벤트 리스너 초기화 최적화
-      const initStart = performance.now();
-      
+      // 이벤트 리스너 초기화
       // 상세 스크립트 초기화(이미 로드돼 있다고 가정)
       if (typeof window.initializePostDetail === 'function') {
         window.initializePostDetail();
@@ -180,9 +210,6 @@
       if (typeof window.initializeCommentForm === 'function') {
         window.initializeCommentForm();
       }
-      
-      const initTime = performance.now() - initStart;
-      console.log(`이벤트 초기화 시간: ${initTime.toFixed(2)}ms`);
 
       // 좋아요 버튼은 like_manager.js에서 자동으로 전역 바인딩됨
       // 모달 내부의 새로운 버튼들도 자동으로 감지됨 (DOM 위임 패턴)
@@ -249,6 +276,7 @@
   // 초기 바인딩(문서 로드 후)
   // --------------------------->
   document.addEventListener('DOMContentLoaded', () => {
+
     // (1) 필터 초기화 버튼
     const clearBtn = document.getElementById('clearFiltersBtn');
     if (clearBtn) {

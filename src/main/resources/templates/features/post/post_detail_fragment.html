@@ -17,9 +17,9 @@
         <div class="post-actions">
           <div class="dropdown">
             <button class="icon-btn" aria-haspopup="menu" aria-expanded="false" onclick="togglePostDropdown()">⋯</button>
-            <div class="dropdown-menu" id="postDropdown" role="menu">
-              <button type="button" class="dropdown-item" role="menuitem" th:onclick="'openPostEdit(' + ${post.id} + ')'">수정</button>
-              <button class="dropdown-item delete-item" role="menuitem" onclick="deletePost()">삭제</button>
+            <div class="modal-dropdown-menu" id="postDropdown" role="menu">
+              <button type="button" class="modal-dropdown-item" role="menuitem" th:onclick="'openPostEdit(' + ${post.id} + ')'">수정</button>
+              <button class="modal-dropdown-item delete-item" role="menuitem" onclick="deletePost()">삭제</button>
             </div>
           </div>
         </div>
@@ -84,23 +84,14 @@
               title="좋아요"
             >
               <!-- 하트 -->
-              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12
-  21.23l8.84-8.84a5.5 5.5 0 0 0-0-7.78z"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  th:fill="${post.liked} ? 'currentColor' : 'none'"
-                ></path>
-              </svg>
+              <img th:src="${post.liked} ? '/images/icons/heart-filled.svg' : '/images/icons/heart-empty.svg'" 
+                   alt="좋아요" width="24" height="24" />
               <span class="sr-only">좋아요</span>
             </button>
 
             <button class="icon-action" onclick="focusCommentInput()" title="댓글 달기" aria-label="댓글 달기">
               <!-- 말풍선 -->
-              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" fill="none" />
-              </svg>
+              <img th:src="@{/images/icons/comment.svg}" alt="댓글" width="24" height="24" />
             </button>
 
             <div class="stats">

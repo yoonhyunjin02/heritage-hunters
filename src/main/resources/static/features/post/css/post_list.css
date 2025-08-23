@@ -2,7 +2,6 @@
 :root {
   --secondary-color: #6c757d;
   --light-color: #f8f9fa;
-  --dark-color: #343a40;
   --border-color: #f9f5ff;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -50,7 +49,7 @@
 .search-input {
   flex: 1;
   padding: 0.5rem 1.2rem !important;
-  border: 1px solid var(--stone-800) !important;
+  border: 1px solid var(--gray-300) !important;
   border-radius: 4px !important;
   font-size: 1rem !important;
   transition: var(--transition);
@@ -75,18 +74,20 @@
 }
 
 .search-btn:hover {
-  background: var(--stone-800);
-  border-color: var(--stone-800);
+  background: var(--sand-600) !important;
+  border-color: var(--sand-600) !important;
+  border: 1px solid var(--sand-600) !important;
+  color: var(--black) !important;
 }
 
 .post-filter-controls {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   margin: 2rem 1rem 0;
   flex-wrap: wrap;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .post-action-btn {
@@ -97,10 +98,10 @@
   line-height: 1;
   vertical-align: middle;
   padding: 0 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--sand-600);
   border-bottom: none;
-  background: var(--light-color);
-  color: var(--secondary-color);
+  background: var(--sand-600);
+  color: var(--black);
   border-radius: 4px 4px 0 0;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
@@ -111,24 +112,25 @@
 
 .post-action-btn:hover {
   background: var(--stone-800);
+  color: var(--white);
 }
 
 .post-filters-left {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 12px;
 }
 
 .post-actions-right {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 4px;
   height: 31px;
 }
 
 .post-filter {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
 }
 
 .sort-filter-tabs {
@@ -152,7 +154,7 @@
   vertical-align: middle;
   padding: 0 1rem;
   font-size: 14px;
-  color: var(--white);
+  color: var(--black);
   cursor: pointer;
   border-radius: 4px 4px 0 0;
   transition: background-color 0.2s, color 0.2s;
@@ -180,62 +182,93 @@
   border-bottom: none;
 }
 
-/* JavaScript에서 추가하는 활성 클래스 */
-.sort-tab.active-filter {
-  background: var(--stone-800);
+.sort-tab.active-sort {
+  background: var(--stone-800) !important;
   color: var(--white) !important;
-  border-color: var(--stone-800);
+  border-color: var(--stone-800) !important;
 }
 
-.region-filter-select.active-region {
-  background: var(--stone-800);
-  color: var(--white);
-  border-color: var(--stone-800);
+
+/* 커스텀 셀렉트 */
+.custom-select {
+  position: relative;
+  display: inline-block;
+  min-width: 10rem;
 }
 
-.region-filter-select {
+.select-trigger {
   box-sizing: border-box;
   height: 31px;
   line-height: 1;
-  vertical-align: middle;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 0 1rem;
-  border: 1px solid var(--sand-600);
+  border: 1px solid var(--stone-800);
   border-bottom: none;
   border-radius: 4px 4px 0 0;
-  background: var(--sand-600);
+  background: var(--stone-800);
   color: var(--white);
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
-  min-width: 10rem;
 }
 
-.region-filter-select:focus {
-  outline: none;
-  border-color: var(--stone-800);
-  color: var(--white);
+.select-arrow {
+  font-size: 12px;
+  transition: transform 0.2s;
 }
 
-.region-filter-select:hover {
+.custom-select.open .select-arrow {
+  transform: rotate(180deg);
+}
+
+.select-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid var(--stone-800);
+  border-radius: 0 0 8px 8px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+
+.custom-select.open .select-options {
+  display: block;
+}
+
+.select-option {
+  padding: 0.3rem 0.75rem;
   background: var(--stone-800);
   color: var(--white);
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.select-option:hover {
+  background: var(--white);
+  color: var(--black);
 }
 
 .new-post-btn {
   background: var(--sand-600);
-  color: var(--white);
+  color: var(--black);
   border-color: var(--sand-600);
 }
 
 .new-post-btn:hover {
   background: var(--stone-800);
   border-color: var(--stone-800);
+  color: var(--white);
 }
 
 .reset-btn {
   background: var(--sand-600);
-  color: var(--white);
-  border-color: var(--border-color);
+  border: 1px solid var(--sand-600);
+  color: var(--black);
 }
 
 .reset-btn:hover {
@@ -379,6 +412,10 @@
   color: #333;
 }
 
+.icon-action:focus {
+  outline: none;
+}
+
 .icon-action.liked {
   color: #ff6b6b;
 }
@@ -387,22 +424,19 @@
   color: #ff5252;
 }
 
-/* 통계 표시 */
-.stats {
+.action-item {
   display: flex;
-  gap: 5px;
-  margin-left: auto;
+  align-items: center;
+  gap: 4px;
 }
 
-.stat {
-  font-size: 13px;
-  color: #6c757d;
-  white-space: nowrap;
-}
-
-.stat b {
+.action-count {
   color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 16px;
 }
+
 
 /* sr-only 클래스 추가 */
 .sr-only {
@@ -429,6 +463,21 @@
   color: var(--secondary-color);
 }
 
+/* 빈 상태 메시지 */
+.no-posts-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--secondary-color);
+}
+
+.no-posts-message p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
 /* 페이지네이션 */
 .pagination-nav {
   text-align: center;
@@ -453,6 +502,60 @@
   color: var(--active-page-btn-number-color);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
+}
+
+/* =========================
+   Post – Banner (120px fixed)
+   ========================= */
+.post-banner {
+  background: var(--sand-600);
+  overflow: hidden; /* 이미지 넘침 방지 */
+}
+
+.post-banner__inner {
+  width: 100%;
+  max-width: var(--section-max, 1200px);
+  margin: 0 auto;
+  height: 120px;                 /* 높이 고정 */
+  display: flex;
+  align-items: center;
+  justify-content: center;       /* 텍스트+이미지 중앙 배치 */
+  gap: 16px;
+  padding: 0 16px;               /* 세로 패딩 0 → 정확히 120px 유지 */
+  box-sizing: border-box;
+}
+
+/* 왼쪽 이미지 */
+.post-banner__visual {
+  height: 100%;                  /* 배너 높이에 맞춤 */
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.post-banner__img {
+  height: 100%;                  /* 세로를 120px에 맞춤 */
+  width: auto;                   /* 가로는 비율 유지 */
+  display: block;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.08));
+}
+
+/* 오른쪽 텍스트 */
+.post-banner__copy {
+  flex: 0 1 520px;               /* 내용 기준 가변 폭 */
+  max-width: 520px;
+  min-width: 240px;
+  text-align: left;
+}
+
+.post-banner__title {
+  margin: 0;                     /* 공간 절약 */
+  font-weight: 800;
+  font-size: clamp(14px, 1.4vw, 18px); /* 120px 안에 3줄 들어가도록 소형 폰트 */
+  line-height: 1.35;
+  color: #fff;
 }
 
 /* 태블릿 (1024px 이하) - 3열 */
@@ -523,9 +626,6 @@
     padding: 0.2rem 0.5rem;
   }
 
-  .stat {
-    font-size: 12px;
-  }
 
   .post-date {
     font-size: 10px;
@@ -551,12 +651,6 @@
     flex-shrink: 1;
   }
 
-  .region-filter-select {
-    padding: 0 0.5rem;
-    font-size: 12px;
-    min-width: 0;
-    flex-shrink: 1;
-  }
 
   .post-action-btn {
     padding: 0 0.5rem;
@@ -568,4 +662,17 @@
   .post-actions-right {
     gap: 0px;
   }
+
+  /* 모바일에서 빈 상태 메시지 */
+  .no-posts-message {
+    padding: 2rem 1rem;
+  }
+
+  .no-posts-message p {
+    font-size: 1rem;
+  }
+
+  .post-banner__inner { gap: 10px; padding: 0 12px; }
+  .post-banner__copy   { min-width: 0; }
+  .post-banner__title  { font-size: clamp(12px, 3.4vw, 16px); text-align: center; }
 }

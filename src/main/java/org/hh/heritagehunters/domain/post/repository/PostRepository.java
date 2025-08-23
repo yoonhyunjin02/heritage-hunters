@@ -1,7 +1,9 @@
 package org.hh.heritagehunters.domain.post.repository;
 
 import java.util.Optional;
+import org.hh.heritagehunters.domain.oauth.entity.User;
 import org.hh.heritagehunters.domain.post.entity.Post;
+import org.hh.heritagehunters.domain.search.entity.Heritage;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -15,8 +17,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   /**
    * 키워드와 지역 필터로 게시글 목록을 조회합니다
-   * @param keyword 검색 키워드 (내용, 문화유산명, 위치에서 검색)
-   * @param region 지역 필터
+   *
+   * @param keyword  검색 키워드 (내용, 문화유산명, 위치에서 검색)
+   * @param region   지역 필터
    * @param pageable 페이지네이션 정보
    * @return 필터링된 게시글 목록
    */
@@ -35,6 +38,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   /**
    * 이미지를 포함하여 게시글을 조회합니다
+   *
    * @param postId 게시글 ID
    * @return 이미지가 포함된 게시글 Optional
    */
@@ -47,13 +51,39 @@ public interface PostRepository extends JpaRepository<Post, Long> {
       """)
   Optional<Post> findByIdWithImages(@Param("postId") Long postId);
 
-  // 특정 유저가 작성한 게시물 목록 (최신순)
-  @EntityGraph(attributePaths = {"user", "heritage"})
-  @Query("select p from Post p where p.user.id = :userId order by p.id desc")
-  Page<Post> findByUserIdOrderByIdDesc(@Param("userId") Long userId, Pageable pageable);
+  // 유저의 글: to-one만 fetch (컬렉션은 별도 일괄 조회)
+  @Query(
+      value = """
+              select p from Post p
+              join fetch p.user
+              join fetch p.heritage
+              where p.user.id = :userId
+              order by p.id desc
+          """,
+      countQuery = """
+              select count(p) from Post p
+              where p.user.id = :userId
+          """
+  )
+  Page<Post> findPageWithToOnesByUserId(@Param("userId") Long userId, Pageable pageable);
 
-  // 특정 유저가 '좋아요'한 게시물 목록 (최신순)
-  @EntityGraph(attributePaths = {"user", "heritage"})
-  @Query("select l.post from Like l where l.user.id = :userId order by l.post.id desc")
-  Page<Post> findLikedPostsByUserId(@Param("userId") Long userId, Pageable pageable);
+  // 좋아요한 글: to-one만 fetch + countQuery 분리
+  @Query(
+      value = """
+              select p from Like l
+              join l.post p
+              join fetch p.user
+              join fetch p.heritage
+              where l.user.id = :userId
+              order by l.createdAt desc
+          """,
+      countQuery = """
+              select count(l) from Like l
+              where l.user.id = :userId
+          """
+  )
+  Page<Post> findLikedPostsPageWithToOnes(@Param("userId") Long userId, Pageable pageable);
+
+  // 특정 유저의 특정 Heritage에 대한 다른 게시글이 있는지 확인 (현재 게시글 제외)
+  boolean existsByUserAndHeritageAndIdNot(User user, Heritage heritage, Long id);
 }

@@ -1,6 +1,7 @@
 package org.hh.heritagehunters.domain.post.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,4 +18,10 @@ public class PostUpdateRequestDto {
 
   @NotBlank(message = "위치 정보는 필수입니다.")
   private String location;
+
+  @NotNull(message = "위도는 필수입니다.")
+  private Double lat;
+
+  @NotNull(message = "경도는 필수입니다.")
+  private Double lng;
 }

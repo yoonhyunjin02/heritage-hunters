@@ -19,8 +19,86 @@
     <a href="/map">MAP</a>
     <a href="/search">SEARCH</a>
     <a href="/posts">POST</a>
-    <a href="/leaderboards">LEADERBOARD</a>
+    <a href="/leaderboards" onclick="return checkLoginForLeaderboard(event)">LEADERBOARD</a>
   </nav>
+
+  <!-- 이미지 영역 -->
+  <section class="main-hero" aria-label="메인 소개">
+    <img
+        class="main-logo"
+        th:src="@{/images/main/main-logo.png}"
+        src="/images/main/main-logo.png"
+        alt="HERITAGE HUNTERS 메인 로고" />
+
+    <p class="hero-caption">
+      케이팝 데몬 헌터스의 헌트릭스처럼<br>
+      대한민국의 문화재와 유물들을 사냥해 디지털 우표를 모아보세요!
+    </p>
+
+    <img
+        class="main-heritage"
+        th:src="@{/images/main/main-heritage.png}"
+        src="/images/main/main-heritage.png"
+        alt="문화재·유물 콜라주 이미지" />
+  </section>
+
+  <section class="info-section" aria-label="서비스 안내">
+    <!-- Row 1: 이미지(왼) + 문구(오) -->
+    <div class="info-row">
+      <div class="info-media">
+        <img class="info-img"
+             th:src="@{/images/main/post.png}"
+             src="/images/main/post.png"
+             alt="Post 페이지 예시">
+      </div>
+      <div class="info-text">
+        <p>문화 유산지를 방문하고<br>인증글을 남기면 우표를 얻을 수 있어요</p>
+        <p>지금 바로 유산지를 방문하고<br>
+          <a href="/posts" th:href="@{/posts}">Post</a> 페이지에 글을 작성해보세요
+        </p>
+        <p>획득한 우표는 <a th:href="@{/profile}" href="/profile">Profile</a>에서 확인!</p>
+      </div>
+    </div>
+
+    <!-- Row 2: 문구(왼) + 이미지(오) -->
+    <div class="info-row reverse">
+      <div class="info-text">
+        <p>획득한 우표는 점수가 됩니다!</p>
+        <p>
+          <a href="/leaderboards" th:href="@{/leaderboards}">Leaderboard</a> 페이지에서<br>
+          현재 내 순위를 확인해보세요
+        </p>
+      </div>
+      <div class="info-media">
+        <img class="info-img"
+             th:src="@{/images/main/leaderboard.png}"
+             src="/images/main/leaderboard.png"
+             alt="Leaderboard 페이지 예시">
+      </div>
+    </div>
+  </section>
+
+  <section class="discover-section" aria-label="검색/지도 안내">
+    <p class="discover-heading">
+      문화재의 위치나 정보가 궁금하다면<br>
+      <a th:href="@{/map}" href="/map">Map</a> 페이지와
+      <a th:href="@{/search}" href="/search">Search</a> 페이지에서 원하는 문화재를 찾아보세요
+    </p>
+
+    <div class="discover-grid">
+      <!-- 왼: Search -->
+      <img class="discover-img"
+           th:src="@{/images/main/search.png}"
+           src="/images/main/search.png"
+           alt="Search 페이지 예시">
+      <!-- 오: Map -->
+      <img class="discover-img"
+           th:src="@{/images/main/map.png}"
+           src="/images/main/map.png"
+           alt="Map 페이지 예시">
+    </div>
+  </section>
+
 </main>
 
 <!--footer-->

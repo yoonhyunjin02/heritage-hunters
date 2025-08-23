@@ -3,10 +3,10 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-  <th:block th:insert="~{fragments/head :: common-head(${post.heritageName + ' 수정'})}"></th:block>
+  <th:block th:insert="~{fragments/head :: common-head('Postedit - ' + ${post.id})}"></th:block>
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-  <link rel="stylesheet" th:href="@{/features/post/css/modal-common.css}">
+  <link rel="stylesheet" th:href="@{/features/post/css/modal_common.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_write.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_edit.css}">
@@ -15,7 +15,7 @@
 
 <div th:replace="~{fragments/header :: common-header}"></div>
 
-<div id="postEditModal" class="modal show"
+<div class="modal show"
      role="dialog" aria-modal="true" aria-labelledby="postEditTitle"
      th:data-post-id="${post.id}">
   <div class="modal-content">
@@ -48,19 +48,19 @@
               <div class="thumb"
                    th:each="image, it : ${post.images}"
                    th:classappend="${it.index == 0} ? ' active'"
-                   th:data-index="${it.index}">
+                   th:data-index="${it.index}"
+                   data-original="true">
                 <img th:src="${image.url}"
                      th:attr="data-full=${image.url}"
                      th:alt="'썸네일 ' + ${it.index + 1}">
-                <!-- 유지/삭제 판단 -->
-                <input type="hidden" class="keep-image-input" name="keepImages"
-                       th:value="${image.id}" form="postEditForm">
+                
                 <!-- 편집 전용 삭제 버튼 (button 중첩 방지: span 사용) -->
                 <span class="thumb-delete-btn edit-only"
                       th:attr="data-image-id=${image.id}"
                       role="button"
                       tabindex="0"
                       title="삭제">×</span>
+                <input type="hidden" class="keep-image-input" th:value="${image.id}">
               </div>
 
               <!-- 이미지 추가 버튼 + 파일 입력 -->
@@ -68,7 +68,7 @@
                    aria-label="이미지 추가">
                 <span class="plus">+</span>
               </div>
-              <input id="imageInput" type="file" name="images" accept="image/*" multiple hidden form="postEditForm">
+              <input id="imageInput" type="file" name="images" accept="image/*" hidden form="postEditForm">
             </div>
           </div>
 
@@ -124,9 +124,9 @@
             <div class="location-input-wrapper">
               <input type="text" id="locationInput" name="location"
                      class="form-input location-input" th:value="${post.location}"
-                     placeholder="위치를 입력하거나 검색하세요..." maxlength="100" autocomplete="off">
-              <input type="hidden" id="latHidden" name="latitude">
-              <input type="hidden" id="lngHidden" name="longitude">
+                     placeholder="위치를 입력하거나 검색하세요..." maxlength="100" autocomplete="off" required>
+              <input type="hidden" id="latHidden" name="lat">
+              <input type="hidden" id="lngHidden" name="lng">
               <div id="locationSuggestions" class="location-suggestions"></div>
             </div>
           </section>
@@ -156,9 +156,13 @@
 
 <script defer th:src="@{/features/post/js/modal_manager.js}"></script>
 <script defer th:src="@{/features/post/js/post_edit.js}"></script>
+<!-- 사진메타데이터 추출 -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
 <!-- Google Maps API (위치 자동완성) -->
 <script defer
         th:src="'https://maps.googleapis.com/maps/api/js?key=' + ${@environment.getProperty('google.maps.api-key')} + '&libraries=places&language=ko'">
 </script>
+<!-- 구글 지도 자동완성 -->
+<script defer src="/features/post/js/location_autocomplete.js"></script>
 </body>
 </html>

@@ -11,8 +11,10 @@
             </a>
           </h1>
 
-          <button id="bgm-toggle" class="music-button">
-            <img th:src="@{/images/icons/music.svg}" alt="뮤직" class="icon">
+          <button id="bgm-toggle" class="music-button"
+                  th:attr="data-icon-on=@{/images/icons/music.svg},
+                 data-icon-off=@{/images/icons/mute.svg}">
+            <img class="icon" th:src="@{/images/icons/mute.svg}" alt="음악 꺼짐">
           </button>
 
           <audio id="bgm" loop preload="auto">
@@ -25,17 +27,17 @@
           <!-- 로그인 O -->
           <div sec:authorize="isAuthenticated()" th:if="${currentUser != null}" class="user-dropdown">
             <div class="user-welcome" onclick="toggleDropdown(event)">
-              <span class="welcome-text">어서오세요</span>
-              <span class="user-name" th:text="${currentUser.nickname} ?: '사용자'">닉네임</span>
-              <span class="welcome-text">님</span>
+              <span class="welcome-text">안녕하세요</span>
+              <span class="user-name" th:text="${#authentication?.principal?.nickname} ?: '사용자'">닉네임</span>
+              <span class="welcome-text">님!</span>
               <svg class="dropdown-arrow">
                 <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
-              <img
-                  class="profile-image"
-                  th:src="${#strings.isEmpty(currentUser.profileImage)} ? ${defaultProfileImage} : ${currentUser.profileImage}"
-                  alt="프로필 이미지"
-              />
+              <img class="profile-image"
+                   th:src="${#strings.isEmpty(#authentication?.principal?.profileImage)
+              ? defaultProfileImage
+              : #authentication.principal.profileImage}"
+                   alt="프로필 이미지"/>
             </div>
             <div class="dropdown-menu">
               <!-- 프로필 -->

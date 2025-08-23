@@ -27,7 +27,9 @@ public class ProfileQueryService {
         u.getId(),
         u.getNickname(),
         u.getEmail(),
+        u.getBio(),
         u.getProfileImage(),
+        "/images/profile/profile" + ((u.getId() % 4) + 1) + ".png",
         u.getScore()
     );
   }

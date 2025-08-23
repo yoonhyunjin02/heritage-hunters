@@ -71,7 +71,7 @@
   border-radius: 50%;
   font-size: 24px;
   cursor: pointer;
-  z-index: 10;
+  z-index: 9;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -99,7 +99,7 @@
   right: 20px;
   display: flex;
   gap: 8px;
-  z-index: 10;
+  z-index: 9;
   overflow-x: visible;
   padding: 4px;
   background: rgba(0, 0, 0, 0.3);
@@ -165,7 +165,7 @@
   background: #f8f9fa;
 }
 
-/* 오른쪽 패널 스타일 - post_write_modal.css와 일관성 유지 */
+/* 오른쪽 패널 스타일 */
 .compose-right {
   display: flex;
   flex-direction: column;
@@ -174,7 +174,7 @@
   overflow-y: auto;
 }
 
-/* 작성자 정보 - 게시글 작성과 동일한 스타일 */
+/* 작성자 정보 */
 .author-display {
   display: flex;
   align-items: center;
@@ -268,6 +268,10 @@
   color: #333;
 }
 
+.icon-action:focus {
+  outline: none;
+}
+
 .icon-action.liked {
   color: #ff6b6b;
 }
@@ -357,7 +361,7 @@
 
 .btn-primary {
   background: var(--sand-600);
-  color: white;
+  color: var(--black);
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
@@ -369,6 +373,7 @@
 
 .btn-primary:hover {
   background: var(--stone-800);
+  color: var(--white);
 }
 
 /* 댓글 목록 */
