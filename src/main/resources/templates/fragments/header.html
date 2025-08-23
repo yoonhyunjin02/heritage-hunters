@@ -11,8 +11,10 @@
             </a>
           </h1>
 
-          <button id="bgm-toggle" class="music-button">
-            <img th:src="@{/images/icons/music.svg}" alt="뮤직" class="icon">
+          <button id="bgm-toggle" class="music-button"
+                  th:attr="data-icon-on=@{/images/icons/music.svg},
+                 data-icon-off=@{/images/icons/mute.svg}">
+            <img class="icon" th:src="@{/images/icons/mute.svg}" alt="음악 꺼짐">
           </button>
 
           <audio id="bgm" loop preload="auto">
