@@ -26,16 +26,16 @@
           <div sec:authorize="isAuthenticated()" th:if="${currentUser != null}" class="user-dropdown">
             <div class="user-welcome" onclick="toggleDropdown(event)">
               <span class="welcome-text">안녕하세요</span>
-              <span class="user-name" th:text="${currentUser.nickname} ?: '사용자'">닉네임</span>
+              <span class="user-name" th:text="${#authentication?.principal?.nickname} ?: '사용자'">닉네임</span>
               <span class="welcome-text">님!</span>
               <svg class="dropdown-arrow">
                 <path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               </svg>
-              <img
-                  class="profile-image"
-                  th:src="${#strings.isEmpty(currentUser.profileImage)} ? ${defaultProfileImage} : ${currentUser.profileImage}"
-                  alt="프로필 이미지"
-              />
+              <img class="profile-image"
+                   th:src="${#strings.isEmpty(#authentication?.principal?.profileImage)
+              ? defaultProfileImage
+              : #authentication.principal.profileImage}"
+                   alt="프로필 이미지"/>
             </div>
             <div class="dropdown-menu">
               <!-- 프로필 -->
