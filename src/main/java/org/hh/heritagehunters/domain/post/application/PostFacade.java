@@ -147,11 +147,7 @@ public class PostFacade {
 
     // 이미지 처리
     if (newImages != null || keepImageIds != null) {
-      try {
-        imageService.updateImages(post, newImages, keepImageIds);
-      } catch (Exception e) {
-        log.warn("이미지 처리 실패: {}", e.getMessage());
-      }
+      imageService.updateImages(post, newImages, keepImageIds);
     }
   }
 

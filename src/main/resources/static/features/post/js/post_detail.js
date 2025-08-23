@@ -360,6 +360,55 @@
   }
 
   /**
+   * 게시글 수정에 필요한 스크립트들을 로드합니다
+   */
+  async function loadEditScripts() {
+    const scripts = [
+      {
+        src: 'https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js',
+        check: () => typeof EXIF !== 'undefined'
+      },
+      {
+        src: `/features/post/js/post_edit.js`,
+        check: () => typeof window.initializePostEdit === 'function'
+      }
+    ];
+
+    for (const scriptInfo of scripts) {
+      if (!scriptInfo.check()) {
+        await loadScript(scriptInfo.src);
+      }
+    }
+
+    // Google Maps API 로드 (API 키 필요)
+    if (typeof google === 'undefined') {
+      const apiKey = document.querySelector('meta[name="gmaps-api-key"]')?.content;
+      if (apiKey) {
+        await loadScript(`https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=ko`);
+      }
+    }
+  }
+
+  /**
+   * 스크립트를 동적으로 로드합니다
+   */
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  /**
    * 게시글 수정 모달을 엽니다.
    * 
    * @async
@@ -409,45 +458,50 @@
       
       // HTML 파싱 후 모달 콘텐츠만 추출
       const doc = new DOMParser().parseFromString(html, 'text/html');
-      const content = doc.querySelector('.modal-content') || doc.querySelector('main') || doc.body;
+      
+      // 첫 번째 .modal-content를 찾아서 사용 (실제 form이 있는 것)
+      const modalContents = doc.querySelectorAll('.modal-content');
+      let content = null;
+      
+      // postEditForm이 포함된 modal-content 찾기
+      for (const mc of modalContents) {
+        if (mc.querySelector('#postEditForm')) {
+          content = mc;
+          break;
+        }
+      }
+      
+      // 못 찾았으면 첫 번째 것 사용
+      if (!content) {
+        content = modalContents[0] || doc.querySelector('main') || doc.body;
+      }
       
       if (!content) {
         throw new Error('Edit form content not found');
       }
 
-      // 모달 콘텐츠 설정
+      console.log('파싱된 content:', content);
+      console.log('Form 요소 존재:', !!content.querySelector('#postEditForm'));
+
+      // 모달 콘텐츠 설정 - 직접 content를 사용
       editModal.innerHTML = '';
-      const modalContent = document.createElement('div');
-      modalContent.className = 'modal-content';
-      modalContent.appendChild(content.cloneNode(true));
-      editModal.appendChild(modalContent);
+      editModal.appendChild(content.cloneNode(true));
 
       // 모달에 post ID 설정
       editModal.setAttribute('data-post-id', targetId);
       editModal.dataset.postId = targetId;
 
-      // post_edit.js 스크립트 동적 로드 및 초기화
-      const scriptSrc = '/features/post/js/post_edit.js';
-      const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
-
-      const initialize = () => {
+      // 필요한 스크립트들을 순차적으로 로드
+      await loadEditScripts();
+      
+      // 초기화 함수 호출
+      setTimeout(() => {
         if (typeof window.initializePostEdit === 'function') {
           window.initializePostEdit();
         } else {
           console.error('initializePostEdit function not found.');
         }
-      };
-
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.src = scriptSrc;
-        script.defer = true;
-        script.onload = initialize;
-        document.head.appendChild(script);
-      } else {
-        // 이미 스크립트가 로드된 경우, DOM이 준비된 후 초기화 함수를 호출
-        setTimeout(initialize, 0);
-      }
+      }, 100);
 
     } catch (err) {
       console.error('openPostEdit 오류:', err);

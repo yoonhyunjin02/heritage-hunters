@@ -20,6 +20,18 @@
    * @type {number}
    */
   let current = 0;
+  
+  /**
+   * 첫 번째 신규 이미지에서 추출된 GPS 정보
+   * @type {Object|null}
+   */
+  let gpsFromImg = null;
+  
+  /**
+   * 기존 이미지에서 추출된 GPS 정보
+   * @type {Object|null}
+   */
+  let gpsFromExistingImg = null;
 
   /**
    * 수정 모달의 모든 기능을 초기화하는 메인 함수
@@ -31,9 +43,25 @@
    * - 폼 제출 기능 초기화
    */
   function initializePostEdit() {
+    const modal = document.getElementById('postEditModal');
+    const form = document.getElementById('postEditForm');
+    const locationInput = document.getElementById('locationInput');
+    const thumbs = modal ? modal.querySelectorAll('.thumb') : [];
+    
     initEditGallery();
     initImageEditTools();
     initFormSubmit();
+    
+    // 기존 이미지에서 GPS 추출
+    setTimeout(() => {
+      extractGpsFromExistingImages();
+    }, 100);
+    
+    // 자동완성은 약간 지연 후 실행
+    setTimeout(() => {
+      initLocationAutocomplete();
+    }, 500);
+    
   }
 
   /**
@@ -265,7 +293,7 @@
    * - 최대 3장 제한 검증
    * - 각 파일에 대해 유효성 검사 후 썸네일 생성
    */
-  function onFilesSelected(e) {
+  async function onFilesSelected(e) {
     const files = Array.from(e.target.files || []);
     const existing = document.querySelectorAll(
         '#postEditModal .thumb:not(.thumb-add-btn)').length;
@@ -276,30 +304,34 @@
       return;
     }
 
-    files.forEach(file => {
-      if (!validateFile(file)) {
-        return;
+    for (const file of files) {
+      const isValid = await validateFile(file);
+      if (!isValid) {
+        e.target.value = '';
+        continue;
       }
       const reader = new FileReader();
       reader.onload = ev => addNewThumb(ev.target.result, file);
       reader.readAsDataURL(file);
-    });
+    }
   }
 
   /**
    * 업로드할 파일의 유효성을 검사합니다
    * 
    * @param {File} file - 검사할 파일 객체
-   * @returns {boolean} 유효한 파일이면 true, 그렇지 않으면 false
+   * @returns {Promise<boolean>} 유효한 파일이면 true, 그렇지 않으면 false
    * @description
    * - 지원 형식: JPEG, JPG, PNG, GIF, WebP
    * - 최대 크기: 50MB
+   * - GPS 메타데이터 검증 (JPEG만)
    * - 유효하지 않은 경우 사용자에게 알림 표시
    */
-  function validateFile(file) {
+  async function validateFile(file) {
     const ok = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif',
       'image/webp'];
     const max = 50 * 1024 * 1024;
+    
     if (!ok.includes(file.type)) {
       alert(`${file.name}: 지원하지 않는 형식입니다.`);
       return false;
@@ -308,7 +340,97 @@
       alert(`${file.name}: 파일 크기가 50MB를 초과합니다.`);
       return false;
     }
+
+    // JPEG 파일인 경우 GPS 메타데이터 검증
+    if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
+      const hasGps = await validateImageGps(file);
+      if (!hasGps) {
+        alert(`${file.name}: GPS 정보가 없는 사진입니다. 문화유산 방문 시 찍은 사진을 업로드해주세요.`);
+        return false;
+      }
+      
+      // 첫 번째 신규 이미지에서 GPS 추출
+      if (gpsFromImg === null) {
+        await extractGpsFromImage(file);
+      }
+    }
+    
     return true;
+  }
+
+  /**
+   * 이미지 파일의 GPS 메타데이터를 검증합니다
+   * @param {File} file - 검사할 이미지 파일
+   * @returns {Promise<boolean>} GPS 정보가 있으면 true
+   */
+  function validateImageGps(file) {
+    return new Promise((resolve) => {
+      if (typeof EXIF === 'undefined') {
+        resolve(true); // EXIF 라이브러리 없으면 패스
+        return;
+      }
+
+      EXIF.getData(file, function() {
+        const lat = EXIF.getTag(this, 'GPSLatitude');
+        const lng = EXIF.getTag(this, 'GPSLongitude');
+        const latRef = EXIF.getTag(this, 'GPSLatitudeRef');
+        const lngRef = EXIF.getTag(this, 'GPSLongitudeRef');
+        
+        const hasGps = lat && lng && latRef && lngRef;
+        resolve(hasGps);
+      });
+    });
+  }
+  
+  /**
+   * 이미지에서 GPS 정보를 추출합니다
+   * @param {File} file - GPS 정보를 추출할 이미지 파일
+   * @returns {Promise<void>}
+   */
+  function extractGpsFromImage(file) {
+    return new Promise((resolve) => {
+      if (typeof EXIF === 'undefined') {
+        gpsFromImg = null;
+        resolve();
+        return;
+      }
+
+      EXIF.getData(file, function() {
+        const lat = EXIF.getTag(this, 'GPSLatitude');
+        const lng = EXIF.getTag(this, 'GPSLongitude');
+        const latRef = EXIF.getTag(this, 'GPSLatitudeRef');
+        const lngRef = EXIF.getTag(this, 'GPSLongitudeRef');
+        
+        if (!lat || !lng || !latRef || !lngRef) {
+          gpsFromImg = null;
+          resolve();
+          return;
+        }
+        
+        const toDec = (dms, ref) => (dms[0] + dms[1] / 60 + dms[2] / 3600)
+            * (['S', 'W'].includes(ref) ? -1 : 1);
+        gpsFromImg = {
+          lat: toDec(lat, latRef || 'N'),
+          lng: toDec(lng, lngRef || 'E')
+        };
+        resolve();
+      });
+    });
+  }
+  
+  /**
+   * 두 지점 간의 거리를 계산합니다 (Haversine formula)
+   * @param {Object} a - 첫 번째 지점 {lat, lng}
+   * @param {Object} b - 두 번째 지점 {lat, lng}
+   * @returns {number} 두 지점 간의 거리 (미터)
+   */
+  function haversine(a, b) {
+    const R = 6371000, rad = x => x * Math.PI / 180;
+    const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+    return 2 * R * Math.asin(Math.sqrt(
+        Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat))
+        * Math.sin(dLng / 2) ** 2
+    ));
   }
 
   /**
@@ -381,6 +503,16 @@
   function onDeleteThumb(delBtn) {
     const thumb = delBtn.closest('.thumb');
     if (!thumb) {
+      return;
+    }
+
+    // 현재 이미지 개수 확인 (최소 1장 보장)
+    const modal = document.getElementById('postEditModal');
+    const currentImageCount = modal ? modal.querySelectorAll('.thumb:not(.thumb-add-btn)').length : 0;
+    
+    
+    if (currentImageCount <= 1) {
+      alert('최소 1장의 이미지는 유지해야 합니다.');
       return;
     }
 
@@ -500,6 +632,7 @@
    */
   function initFormSubmit() {
     const form = document.getElementById('postEditForm');
+    
     if (!form) {
       return;
     }
@@ -529,6 +662,57 @@
       }
 
       try {
+        // 최소 1장 이미지 검증
+        const modal = document.getElementById('postEditModal');
+        const totalImages = modal ? modal.querySelectorAll('.thumb:not(.thumb-add-btn)').length : 0;
+        
+        
+        if (totalImages === 0) {
+          alert('최소 1장의 이미지가 필요합니다.');
+          return;
+        }
+        
+        // GPS 검증 (신규 이미지 또는 기존 이미지)
+        const hasNewImages = images.some(img => img.isNew);
+        let referenceGps = null;
+        
+        if (hasNewImages) {
+          // 신규 이미지가 있는 경우: 신규 이미지의 GPS 사용
+          if (!gpsFromImg) {
+            alert('업로드한 사진에 위치 정보가 없습니다.\nGPS 기능이 켜진 상태에서 촬영한 사진을 업로드해주세요.');
+            return;
+          }
+          referenceGps = gpsFromImg;
+        } else if (gpsFromExistingImg) {
+          // 신규 이미지가 없고 기존 이미지에 GPS가 있는 경우: 기존 이미지의 GPS 사용
+          referenceGps = gpsFromExistingImg;
+        }
+        
+        // GPS 정보가 있으면 위치와의 거리 검증
+        if (referenceGps) {
+          // 위치 입력 확인
+          const locationInput = modal.querySelector('#locationInput') || modal.querySelector('input[name="location"]');
+          const latHidden = modal.querySelector('#latHidden') || modal.querySelector('input[name="lat"]');
+          const lngHidden = modal.querySelector('#lngHidden') || modal.querySelector('input[name="lng"]');
+          
+          if (!locationInput?.value.trim()) {
+            alert('위치를 선택해주세요.');
+            return;
+          }
+          
+          const selectedLat = parseFloat(latHidden?.value);
+          const selectedLng = parseFloat(lngHidden?.value);
+          
+          // 200m 이내 거리 검증
+          if (!isNaN(selectedLat) && !isNaN(selectedLng)) {
+            const distance = haversine(referenceGps, {lat: selectedLat, lng: selectedLng});
+            if (distance > 200) {
+              alert('사진의 GPS 위치와 선택한 장소가 200m 이상 차이납니다.\n사진이 촬영된 위치와 일치하는 장소를 선택해주세요.');
+              return;
+            }
+          }
+        }
+
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn?.textContent;
         if (submitBtn) {
@@ -539,6 +723,31 @@
         const fd = new FormData(form);
         if (!fd.has('_method')) {
           fd.append('_method', 'PUT');
+        }
+        
+        // Content 값 강제 업데이트 (textarea DOM 값 우선)
+        const contentTextarea = form.querySelector('textarea[name="content"]');
+        if (contentTextarea?.value) {
+          fd.set('content', contentTextarea.value);
+        }
+        
+        // GPS 좌표 확인 및 강제 설정
+        const latHidden = modal.querySelector('#latHidden') || modal.querySelector('input[name="lat"]');
+        const lngHidden = modal.querySelector('#lngHidden') || modal.querySelector('input[name="lng"]');
+        
+        if (latHidden?.value) {
+          fd.set('lat', latHidden.value);
+        }
+        if (lngHidden?.value) {
+          fd.set('lng', lngHidden.value);
+        }
+        
+        // GPS 좌표가 없고 기존 이미지에 GPS가 있으면 기존 GPS 사용
+        if ((!latHidden?.value || !lngHidden?.value) && gpsFromExistingImg) {
+          if (latHidden) latHidden.value = gpsFromExistingImg.lat;
+          if (lngHidden) lngHidden.value = gpsFromExistingImg.lng;
+          fd.set('lat', gpsFromExistingImg.lat);
+          fd.set('lng', gpsFromExistingImg.lng);
         }
 
         // 새 이미지 파일들을 FormData에 수동으로 추가
@@ -590,7 +799,6 @@
         }
 
       } catch (err) {
-        console.error(err);
         alert('게시글 수정 중 오류가 발생했습니다.');
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
@@ -601,6 +809,145 @@
     };
     form.addEventListener('submit', form.submitHandler);
     form.hasSubmitListener = true;
+  }
+
+  /**
+   * 위치 자동완성을 초기화합니다 (수정 모달 전용)
+   */
+  async function initLocationAutocomplete() {
+    // 모달 내에서만 찾기 (ID 중복 방지)
+    const modal = document.getElementById('postEditModal');
+    if (!modal) {
+      return;
+    }
+    
+    const locationInput = modal.querySelector('#locationInput') || modal.querySelector('input[name="location"]');
+    
+    if (!locationInput) {
+      return;
+    }
+
+    // 이미 자동완성이 적용된 경우 스킵
+    if (locationInput._autocompleteInstance) {
+      return;
+    }
+
+    // Google Maps API 대기 및 직접 초기화
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const tryInitAutocomplete = async () => {
+      attempts++;
+      
+      if (typeof google === 'undefined' || !google.maps) {
+        if (attempts < maxAttempts) {
+          setTimeout(tryInitAutocomplete, 1000);
+        }
+        return;
+      }
+
+      try {
+        
+        // Places 라이브러리 로드
+        const { Autocomplete } = await google.maps.importLibrary('places');
+        
+        // 기존 자동완성 제거 (혹시 있다면)
+        if (window.autocomplete) {
+          google.maps.event.clearInstanceListeners(window.autocomplete);
+        }
+        
+        // 새 자동완성 생성
+        const autocomplete = new Autocomplete(locationInput, {
+          componentRestrictions: { country: 'kr' },
+          fields: ['formatted_address', 'geometry']
+        });
+
+        // 이벤트 리스너
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace();
+          
+          if (place.geometry) {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            
+            // 숨겨진 좌표 필드에 설정 (모달 내에서 찾기)
+            const latHidden = modal.querySelector('#latHidden') || modal.querySelector('input[name="lat"]');
+            const lngHidden = modal.querySelector('#lngHidden') || modal.querySelector('input[name="lng"]');
+            
+            if (latHidden) latHidden.value = lat;
+            if (lngHidden) lngHidden.value = lng;
+          }
+        });
+        
+        // 인스턴스 저장하여 중복 방지
+        locationInput._autocompleteInstance = autocomplete;
+        window.editAutocomplete = autocomplete;
+        
+      } catch (error) {
+        // 자동완성 초기화 실패 시 조용히 처리
+      }
+    };
+    
+    tryInitAutocomplete();
+  }
+
+  /**
+   * 기존 이미지에서 GPS 정보를 추출합니다
+   */
+  async function extractGpsFromExistingImages() {
+    if (images.length === 0) {
+      return;
+    }
+    
+    // 기존 이미지 중 첫 번째에서 GPS 추출 (신규 이미지가 아닌 것)
+    const existingImage = images.find(img => !img.isNew);
+    if (!existingImage) {
+      return;
+    }
+    
+    try {
+      // 이미지 URL에서 파일을 가져와서 GPS 추출
+      const response = await fetch(existingImage.url);
+      const blob = await response.blob();
+      
+      gpsFromExistingImg = await extractGpsFromBlob(blob);
+    } catch (error) {
+      gpsFromExistingImg = null;
+    }
+  }
+  
+  /**
+   * Blob에서 GPS 정보를 추출합니다
+   * @param {Blob} blob - GPS 정보를 추출할 이미지 Blob
+   * @returns {Promise<Object|null>} GPS 좌표 {lat, lng} 또는 null
+   */
+  function extractGpsFromBlob(blob) {
+    return new Promise((resolve) => {
+      if (typeof EXIF === 'undefined') {
+        resolve(null);
+        return;
+      }
+
+      EXIF.getData(blob, function() {
+        const lat = EXIF.getTag(this, 'GPSLatitude');
+        const lng = EXIF.getTag(this, 'GPSLongitude');
+        const latRef = EXIF.getTag(this, 'GPSLatitudeRef');
+        const lngRef = EXIF.getTag(this, 'GPSLongitudeRef');
+        
+        if (!lat || !lng || !latRef || !lngRef) {
+          resolve(null);
+          return;
+        }
+        
+        const toDec = (dms, ref) => (dms[0] + dms[1] / 60 + dms[2] / 3600)
+            * (['S', 'W'].includes(ref) ? -1 : 1);
+        const gps = {
+          lat: toDec(lat, latRef || 'N'),
+          lng: toDec(lng, lngRef || 'E')
+        };
+        resolve(gps);
+      });
+    });
   }
 
   /**
