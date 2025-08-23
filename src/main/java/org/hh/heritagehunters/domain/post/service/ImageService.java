@@ -1,11 +1,11 @@
 package org.hh.heritagehunters.domain.post.service;
 
-import jakarta.annotation.PreDestroy;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,9 +13,10 @@ import org.hh.heritagehunters.common.exception.BadRequestException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.post.entity.Post;
 import org.hh.heritagehunters.domain.post.entity.PostImage;
-import org.hh.heritagehunters.domain.post.infrastructure.storage.ImageUploadService;
+import org.hh.heritagehunters.domain.post.service.ImageUploadService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.annotation.PreDestroy;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImageService {
 
   private final ImageUploadService imageUploadService;
-
+  
   // 이미지 업로드용 스레드 풀 (CPU 코어 수만큼 스레드)
   private final ExecutorService imageUploadExecutor = Executors.newFixedThreadPool(
       Math.min(Runtime.getRuntime().availableProcessors(), 8)
@@ -31,9 +32,8 @@ public class ImageService {
 
   /**
    * 게시글에 새 이미지들을 첨부합니다 (병렬 처리)
-   *
    * @param images 업로드할 이미지 파일 목록
-   * @param post   이미지를 첨부할 게시글
+   * @param post 이미지를 첨부할 게시글
    */
   public void attachImages(List<MultipartFile> images, Post post) {
     if (images == null || images.isEmpty()) {
@@ -104,9 +104,8 @@ public class ImageService {
 
   /**
    * 게시글 이미지를 수정합니다 (병렬 처리)
-   *
-   * @param post         이미지를 수정할 게시글
-   * @param newImages    새로 추가할 이미지 파일 목록
+   * @param post 이미지를 수정할 게시글
+   * @param newImages 새로 추가할 이미지 파일 목록
    * @param keepImageIds 유지할 기존 이미지 ID 목록
    */
   public void updateImages(Post post, List<MultipartFile> newImages, List<Long> keepImageIds) {
@@ -160,10 +159,8 @@ public class ImageService {
               try {
                 MultipartFile image = validImages.get(i);
                 log.debug("수정 시 이미지 업로드 시작: {} ({}번째)", image.getOriginalFilename(), i);
-
                 String url = imageUploadService.uploadImage(image);
                 log.debug("수정 시 이미지 업로드 완료: {} -> {}", image.getOriginalFilename(), url);
-
                 return url;
               } catch (Exception e) {
                 log.error("수정 시 이미지 업로드 실패: {}", validImages.get(i).getOriginalFilename(), e);
@@ -201,7 +198,7 @@ public class ImageService {
     for (int i = 0; i < post.getImages().size(); i++) {
       post.getImages().get(i).updateOrder(i);
     }
-
+    
     // 5. 최소 1장 이미지 검증 (게시글에는 최소 1장의 이미지가 필요)
     if (post.getImages().isEmpty()) {
       throw new BadRequestException(ErrorCode.EMPTY_IMAGE_FILE);
@@ -209,8 +206,8 @@ public class ImageService {
   }
 
   /**
-   * S3에서 이미지 파일을 삭제합니다. 이 메서드는 PostFacade에서 호출됩니다.
-   *
+   * S3에서 이미지 파일을 삭제합니다.
+   * 이 메서드는 PostFacade에서 호출됩니다.
    * @param imageUrl 삭제할 이미지의 URL
    */
   public void deleteImage(String imageUrl) {

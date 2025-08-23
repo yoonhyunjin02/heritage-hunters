@@ -10,6 +10,7 @@ import org.hh.heritagehunters.common.exception.ForbiddenException;
 import org.hh.heritagehunters.common.exception.UnauthorizedException;
 import org.hh.heritagehunters.common.exception.payload.ErrorCode;
 import org.hh.heritagehunters.domain.oauth.entity.User;
+import org.hh.heritagehunters.domain.post.dto.request.CommentCreateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.request.PostCreateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.request.PostUpdateRequestDto;
 import org.hh.heritagehunters.domain.post.dto.response.CommentResponseDto;
@@ -59,7 +60,10 @@ public class PostFacade {
       String sort, String direction,
       int page, int size) {
     Page<Post> posts = postReader.getPage(keyword, region, sort, direction, page, size);
-    return mapWithLikeFlag(posts, currentUser);
+    Set<Long> likedIds = (currentUser == null)
+        ? Set.of()
+        : postReader.findLikedPostIds(currentUser.getId(), posts.getContent());
+    return posts.map(p -> PostListResponseDto.from(p, likedIds.contains(p.getId())));
   }
 
   @Transactional
@@ -111,16 +115,15 @@ public class PostFacade {
    * @param user   수정 요청자
    * @return 수정용 게시글 데이터
    */
-
   @Transactional(readOnly = true)
   public PostDetailResponseDto forEdit(Long postId, User user) {
     Post post = postReader.getPostWithImages(postId);
+    if (!post.getUser().getId().equals(user.getId())) {
+      throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
+    }
 
-    // 게시글 소유자 검증
-    validateOwnership(post, user);
     return PostDetailResponseDto.from(post, false, true);
   }
-
 
   /**
    * 게시글과 이미지를 함께 수정합니다
@@ -135,14 +138,6 @@ public class PostFacade {
   public void update(Long postId, User user, PostUpdateRequestDto dto,
       List<MultipartFile> newImages, List<Long> keepImageIds) {
     Post post = postReader.getById(postId);
-
-
-    // 게시글 소유자 검증
-    validateOwnership(post, user);
-
-    postWriter.update(post, dto);
-
-
     if (!post.getUser().getId().equals(user.getId())) {
       throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
     }
@@ -151,7 +146,6 @@ public class PostFacade {
     postWriter.update(post, dto);
 
     // 이미지 처리
-
     if (newImages != null || keepImageIds != null) {
       try {
         imageService.updateImages(post, newImages, keepImageIds);
@@ -160,7 +154,6 @@ public class PostFacade {
       }
     }
   }
-
 
   /**
    * 게시글을 삭제합니다
@@ -171,25 +164,27 @@ public class PostFacade {
   @Transactional
   public void delete(Long postId, User user) {
     Post post = postReader.getById(postId);
+    if (!post.getUser().getId().equals(user.getId())) {
+      throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
+    }
 
-    // 게시글 소유자 검증
-    validateOwnership(post, user);
-
+    // 1. S3에서 이미지 파일 삭제 (비동기 처리)
     if (post.getImages() != null && !post.getImages().isEmpty()) {
       log.info("게시글 삭제 시 S3에서 {}개의 이미지 파일을 삭제합니다.", post.getImages().size());
       post.getImages().forEach(image -> {
         try {
           imageService.deleteImage(image.getUrl());
         } catch (Exception e) {
+          // S3 파일 삭제에 실패하더라도 게시글 삭제는 계속 진행 (로그만 남김)
           log.warn("게시글 삭제 중 S3 파일 삭제 실패: {}. 게시글은 DB에서 제거됩니다.", image.getUrl(), e);
         }
       });
     }
 
+    // 2. DB에서 게시글 및 연관된 PostImage 엔티티 삭제 (orphanRemoval = true에 의해 자동 처리)
     postWriter.delete(post);
   }
 
-  // PostFacade
   /**
    * 게시글 좋아요를 토글합니다
    *
@@ -232,17 +227,15 @@ public class PostFacade {
         .map(CommentResponseDto::from)
         .toList();
   }
-  
+
   @Transactional(readOnly = true)
-  public Page<PostListResponseDto> userPosts(Long targetUserId, User currentUser, int page,
-      int size) {
+  public Page<PostListResponseDto> userPosts(Long targetUserId, User currentUser, int page, int size) {
     Page<Post> posts = postReader.getUserPosts(targetUserId, page, size);
     return mapWithLikeAndThumbnails(posts, currentUser);
   }
 
   @Transactional(readOnly = true)
-  public Page<PostListResponseDto> likedPosts(Long targetUserId, User currentUser, int page,
-      int size) {
+  public Page<PostListResponseDto> likedPosts(Long targetUserId, User currentUser, int page, int size) {
     Page<Post> posts = postReader.getLikedPosts(targetUserId, page, size);
     return mapWithLikeAndThumbnails(posts, currentUser);
   }
@@ -284,10 +277,5 @@ public class PostFacade {
     postWriter.updateContent(post, content);
   }
 
-  private void validateOwnership(Post post, User user) {
-    if (!post.getUser().getId().equals(user.getId())) {
-      throw new UnauthorizedException(ErrorCode.OWNER_ONLY);
-    }
-  }
 
 }

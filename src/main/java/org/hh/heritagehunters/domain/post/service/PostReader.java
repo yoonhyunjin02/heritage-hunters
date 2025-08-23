@@ -48,21 +48,14 @@ public class PostReader {
    * @return 게시글 목록 페이지
    */
   public Page<Post> getPage(String keyword, String region, String sort, String direction, int page, int size) {
-
-    // 정렬/검증
+    // 정렬/검증 로직은 기존 PostService.getPostsWithFilters 사용
     Sort sortCondition = createSortCondition(sort, direction);
     Pageable pageable = PageRequest.of(page, size, sortCondition);
-
-    String searchKeyword = getSearchParam(keyword);
-    String searchRegion = getSearchParam(region);
-
+    String searchKeyword = (keyword != null && !keyword.trim().isEmpty()) ? keyword.trim() : null;
+    String searchRegion = (region != null && !region.trim().isEmpty()) ? region.trim() : null;
+    // 기존 findPostsWithFilters 그대로 활용
     return postRepository.findPostsWithFilters(searchKeyword, searchRegion, pageable);
   }
-
-  private String getSearchParam(String param) {
-    return (param != null && !param.trim().isEmpty()) ? param.trim() : null;
-  }
-
 
   /**
    * ID로 게시글을 조회합니다
@@ -116,7 +109,6 @@ public class PostReader {
    */
   private Sort createSortCondition(String sort, String direction) {
     Sort.Direction dir = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
-
     return switch (sort != null ? sort.toLowerCase() : "createdat") {
       case "viewcount" -> Sort.by(dir, "viewCount");
       case "likecount" -> Sort.by(dir, "likeCount");

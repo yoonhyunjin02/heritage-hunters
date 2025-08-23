@@ -6,7 +6,7 @@
   <meta name="_csrf" th:content="${_csrf.token}"/>
   <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
   <meta name="gmaps-api-key" th:content="${@environment.getProperty('google.maps.api-key')}"/>
-  <link rel="stylesheet" th:href="@{/features/post/css/modal_common.css}">
+  <link rel="stylesheet" th:href="@{/features/post/css/modal-common.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_write.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_list.css}">
   <link rel="stylesheet" th:href="@{/features/post/css/post_detail.css}">
@@ -173,7 +173,7 @@
       </div>
 
       <!-- 페이지네이션 -->
-      <nav class="pagination-nav" th:if="${posts != null and !posts.empty}">
+      <nav class="pagination-nav" th:if="${posts != null}">
         <div class="pagination">
           <a th:if="${posts.number > 0}"
              th:href="@{/posts(page=0, sort=${param.sort}, direction=${param.direction}, keyword=${param.keyword}, region=${param.region})}"
