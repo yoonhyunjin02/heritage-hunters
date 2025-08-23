@@ -108,10 +108,119 @@
   color:var(--gray-900); letter-spacing:.08em;
 }
 
+/* ========= Hero (logo + heritage images) ========= */
+.main-hero{
+  max-width: var(--section-max);
+  margin: 1.5rem auto 0;
+  padding: 0;
+}
+.main-hero img{
+  display:block;
+  width:100%;
+  height:auto;
+  border-radius: .625rem;
+}
+
+/* 위: 로고 / 아래: 헤리티지 이미지 간격 */
+.main-logo{ margin-bottom: .75rem; }
+.main-heritage{ margin-top: 1rem; }
+
+/* ========= Hero caption ========= */
+.hero-caption, .discover-heading{
+  max-width: var(--section-max);
+  margin: 2rem auto .75rem;
+  padding: 0 1rem;
+  text-align: center;
+  font-weight: 600;
+  line-height: 1.9;
+  letter-spacing: .01em;
+  color: var(--gray-900);
+  font-size: clamp(1rem, 0.7rem + 1.2vw, 1.375rem);
+}
+
+/* ========= Info Section (Post/Profile/Leaderboard 안내) ========= */
+.info-section{
+  max-width: var(--section-max);
+  margin: 2rem auto 0;
+  padding: 0 1rem;
+}
+
+.info-row{
+  display: grid;
+  grid-template-columns: 1.05fr .95fr; /* 이미지가 살짝 넓게 */
+  gap: 3.5rem;
+  align-items: center;
+  margin: 2.5rem 0;
+}
+.info-row.reverse{
+  grid-template-columns: .95fr 1.05fr; /* 반대로 */
+}
+
+.info-media{ width: 100%; }
+.info-img{
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: .625rem;
+}
+
+.info-text{
+  text-align: left;
+  color: var(--gray-900);
+  font-weight: 600;
+  line-height: 1.9;
+  letter-spacing: .01em;
+  font-size: clamp(1rem, 0.7rem + 1.2vw, 1.375rem);
+}
+.info-text p{ margin: 0 0 1.25rem; }
+.info-text p:last-child{ margin-bottom: 0; }
+
+/* 링크(페이지 이동) */
+.info-text a, .discover-heading a{
+  color: var(--golden-50);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;                 /* 기본도 pointer지만 확실히 지정 */
+  transition: opacity .15s ease, filter .15s ease;
+}
+.info-text a:hover, .discover-heading a:hover{
+  opacity: .9;
+  filter: drop-shadow(0 0 0 rgba(0,0,0,0.2)); /* 미세 강조 */
+}
+
+/* ========= Discover (Search + Map) ========= */
+.discover-section{
+  max-width: var(--section-max);
+  margin: 3rem auto 0;
+  padding: 0 1rem;
+  padding-bottom: 3rem;
+}
+
+.discover-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 왼: search, 오: map */
+  gap: 2rem;
+  align-items: start;
+}
+
+.discover-img{
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: .625rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+}
+
 /* ========= Responsive ========= */
 @media (max-width: var(--bp-tablet)){
   .main-container{ padding: .875rem 0; }
   .main-nav{ gap:2rem; }
+
+  .main-hero{ margin-top: 1rem; }
+  .hero-caption{ font-size: 1.125rem; }
+  .info-row{ gap:2rem; }
+  .discover-section{ margin-top: 2rem; }
+  .discover-grid{ gap: 1.5rem; }
 }
 @media (max-width: var(--bp-mobile)){
   .main-container{ padding: .75rem 0; }
@@ -120,4 +229,24 @@
   .dots{ bottom:.625rem; }
   .dot{ transform: scale(.95); }
   .main-nav{ gap:1.25rem; flex-wrap:wrap; row-gap:.5rem; }
+
+  .main-hero{ padding: 0 .5rem; }
+  .main-logo{ margin-bottom: .75rem; }
+  .hero-caption{ font-size: 1rem; margin: .75rem auto; padding: 0 .5rem; }
+
+  .info-row{
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+  /* 모바일 순서: 1행은 이미지 → 텍스트, 2행은 텍스트 → 이미지 */
+  .info-row .info-text{ order: 2; text-align: center; }
+  .info-row .info-media{ order: 1; }
+  .info-row.reverse .info-text{ order: 1; }
+  .info-row.reverse .info-media{ order: 2; }
+  .discover-heading{
+      font-size: clamp(1.125rem, 0.9rem + 2.5vw, 1.5rem);
+  }
+  .discover-grid{
+    grid-template-columns: 1fr;   /* 세로 스택 */
+  }
 }

@@ -16,8 +16,30 @@
 <div th:replace="~{fragments/header :: common-header}"></div>
 
 <div class="page-wrapper">
-  <main class="main-content container-max">
+  <!-- 게시글 페이지 배너 -->
+  <section class="post-banner" aria-label="방문 인증 안내 배너">
+    <div class="post-banner__inner">
+      <!-- 왼쪽 일러스트 -->
+      <div class="post-banner__visual" aria-hidden="true">
+        <img
+            class="post-banner__img"
+            th:src="@{/images/banner/stamp-banner.png}"
+            src="/images/banner/stamp-banner.png"
+            alt=""
+            loading="eager"
+        />
+      </div>
 
+      <!-- 오른쪽 카피 -->
+      <div class="post-banner__copy">
+        <h2 class="post-banner__title">
+          문화 유산지를 방문하고, 방문 인증글을 남기면<br>
+          우표와 점수를 얻을 수 있어요!
+        </h2>
+      </div>
+    </div>
+  </section>
+  <main class="main-content container-max">
     <!-- 검색/필터 -->
     <section class="search-filter-section">
       <form th:action="@{/posts}" method="get" class="search-form" id="searchForm">

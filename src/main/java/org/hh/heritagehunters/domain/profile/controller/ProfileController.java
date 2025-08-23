@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 public class ProfileController {
 
   private final ProfileQueryService profileQueryService;
-  private final PostFacade postFacade;
 
   @GetMapping
   public String myProfile(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
