@@ -267,8 +267,8 @@
 
 .reset-btn {
   background: var(--sand-600);
+  border: 1px solid var(--sand-600);
   color: var(--black);
-  border-color: var(--border-color);
 }
 
 .reset-btn:hover {
