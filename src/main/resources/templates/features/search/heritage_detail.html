@@ -17,6 +17,9 @@
 
     <!--main-->
     <main class="main-container">
+      <!-- 뒤로가기 플로팅 버튼 -->
+      <button id="backButton" class="floating-back" aria-label="뒤로가기" title="뒤로가기"><img src="/images/icons/back-white.svg" /></button>
+
       <!-- Heritage Title -->
       <div class="heritage__title">
         <p class="heritage__subtitle" th:text="${heritage.designation}">유산 종목</p>
@@ -99,6 +102,6 @@
     <!-- markdown parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- JS -->
-    <script type="module" th:src="@{/features/search/js/heritage_detail.js}"></script>
+    <script type="module" th:src="@{/features/search/js/heritage_detail/index.js}"></script>
   </body>
 </html>
