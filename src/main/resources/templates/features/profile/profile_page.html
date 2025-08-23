@@ -24,7 +24,7 @@
           <div class="avatar">
             <img
               class="avatar__img"
-              th:src="${user.profileImage}"
+              th:src="${user.profileImage ?: user.defaultProfileImage}"
               th:alt="${user.nickname} + '님의 프로필 사진'"
               loading="lazy"
               data-fallback="/images/placeholders/no-image.png"

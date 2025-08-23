@@ -6,6 +6,7 @@ public record ProfileHeaderDto(
     String email,
     String bio,
     String profileImage,
+    String defaultProfileImage,
     Integer score) {
 
 }
