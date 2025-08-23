@@ -6,9 +6,7 @@
     <meta name="_csrf" th:content="${_csrf.token}" />
     <meta name="_csrf_header" th:content="${_csrf.headerName}" />
 
-    <!-- <title th:text="${heritage.name} + ' | Heritage Hunters'">유산 이름 | Heritage Hunters</title> -->
-
-    <th:block th:insert="~{fragments/head :: common-head(${heritage.name})}"></th:block>
+    <th:block th:insert="~{fragments/head :: common-head('Heritage/' + ${heritage.name})}"></th:block>
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/features/search/css/heritage_detail.css}" />
   </head>
@@ -22,7 +20,10 @@
       <!-- Heritage Title -->
       <div class="heritage__title">
         <p class="heritage__subtitle" th:text="${heritage.designation}">유산 종목</p>
-        <h1 th:text="|${heritage.name} (${heritage.nameHanja})|">유산 이름 (유산 한자 이름)</h1>
+        <h1>
+          <div class="heritage__name" th:text="${heritage.name}">유산 이름</div>
+          <div class="heritage__hanja" th:text="|(${heritage.nameHanja ?: heritage.name})|">(유산 한자 이름)</div>
+        </h1>
       </div>
 
       <!-- 요약 섹션 -->

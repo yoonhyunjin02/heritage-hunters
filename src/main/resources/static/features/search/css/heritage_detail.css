@@ -25,16 +25,16 @@
   --bp-mobile: 768px;
 
   /* AI 카드 테마 컬러 */
-  --ai-recommends-color: #D08880;
-  --ai-news-color:       #1F354C;
-  --ai-weather-color:    #5C607D;
-  --ai-content-color:    #CCAEA4;
+  --ai-recommends-color: #d08880;
+  --ai-news-color: #1f354c;
+  --ai-weather-color: #5c607d;
+  --ai-content-color: #ccaea4;
 
   /* AI 카드 호버 배경 (알파 0.1) */
   --ai-recommends-light: rgba(208, 136, 128, 0.1);
-  --ai-news-light:       rgba(31, 53, 76, 0.1);
-  --ai-weather-light:    rgba(92, 96, 125, 0.1);
-  --ai-content-light:    rgba(204, 174, 164, 0.1);
+  --ai-news-light: rgba(31, 53, 76, 0.1);
+  --ai-weather-light: rgba(92, 96, 125, 0.1);
+  --ai-content-light: rgba(204, 174, 164, 0.1);
 
   --rail-w: 0.625rem;
 }
@@ -50,8 +50,12 @@ body::after {
   pointer-events: none;
   z-index: 1;
 }
-body::before { left: 0; }
-body::after  { right: 0; }
+body::before {
+  left: 0;
+}
+body::after {
+  right: 0;
+}
 
 /*----------------------------------------
   Title section
@@ -74,6 +78,10 @@ body::after  { right: 0; }
 }
 
 .heritage__title h1 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
   color: var(--primary-color);
   font-size: 2.5rem;
   font-weight: 800;
@@ -339,7 +347,20 @@ main {
 /*----------------------------------------
   Responsive
 ----------------------------------------*/
-@media (max-width: var(--bp-mobile)) {
+@media (max-width: 47.9375rem) {
+  .heritage__title h1 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-unit);
+  }
+  .heritage__name {
+    /* font-size: 1.8rem; */
+  }
+  .heritage__hanja {
+    font-size: 1.2rem;
+    color: var(--secondary-color);
+  }
   .heritage__summary {
     flex-direction: column;
   }
