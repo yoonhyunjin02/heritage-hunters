@@ -2,8 +2,7 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
-    <!-- <title>국가유산 검색 | Heritage Hunters</title> -->
-    <th:block th:insert="~{fragments/head :: common-head('국가유산 검색')}"></th:block>
+    <th:block th:insert="~{fragments/head :: common-head('Search')}"></th:block>
     <!-- CSS -->
     <link rel="stylesheet" th:href="@{/features/search/css/search_page.css}" />
   </head>
@@ -87,18 +86,17 @@
                 <h3 class="search__filter-title">시대</h3>
                 <div class="search__filter-options">
                   <ul class="search__options-list">
-                    <!-- eraOptions 는 List<EraCategory> -->
-                    <li th:each="era : ${eraOptions}">
+                    <li th:each="code : ${eraCodes}">
                       <label class="search__option">
                         <input
                           type="checkbox"
                           name="era"
-                          th:value="${era.code}"
+                          th:value="${code}"
                           th:checked="${(selectedEras == null or #lists.isEmpty(selectedEras))
-                            ? era == T(org.hh.heritagehunters.domain.search.util.EraCategory).ALL
-                            : selectedEras.contains(era)}"
+                            ? code == '00'
+                            : selectedEras.contains(code)}"
                         />
-                        <span th:text="${era.displayName}">전체</span>
+                        <span th:text="${eraMap.get(code)}">전체</span>
                       </label>
                     </li>
                   </ul>
@@ -122,14 +120,17 @@
                     </div>
                     <p class="search__card-designation" th:text="${item.designation}">유산 분류</p>
                     <h4 class="search__card-title" th:text="${item.name}">유산 이름</h4>
-                    <p class="search__card-hanja" th:text="${item.nameHanja}">유산 한자 이름</p>
+                    <p class="search__card-hanja" th:text="${item.nameHanja ?: item.name}">유산 한자 이름</p>
                   </article>
                 </a>
               </div>
             </div>
 
             <div class="no-results-message" th:if="${param.searchTriggered != null and results != null and results.empty}">
-              <p>검색 결과가 없습니다. <br> 다른 키워드 또는 필터 조건으로 검색해보세요!</p>
+              <p>
+                검색 결과가 없습니다. <br />
+                다른 키워드 또는 필터 조건으로 검색해보세요!
+              </p>
             </div>
 
             <nav class="search__pagination" th:if="${results != null and !results.empty}">
