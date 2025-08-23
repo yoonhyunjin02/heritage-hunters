@@ -1,4 +1,4 @@
-package org.hh.heritagehunters.domain.post.service;
+package org.hh.heritagehunters.domain.post.infrastructure.storage;
 
 import java.io.File;
 import lombok.RequiredArgsConstructor;
