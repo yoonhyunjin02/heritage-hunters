@@ -2,7 +2,6 @@ package org.hh.heritagehunters.domain.oauth.service;
 
 import jakarta.transaction.Transactional;
 import java.util.Objects;
-import java.io.File;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hh.heritagehunters.common.exception.NotFoundException;
@@ -15,6 +14,12 @@ import org.hh.heritagehunters.domain.profile.dto.ProfileUpdateRequestDto;
 import org.hh.heritagehunters.domain.post.service.ImageUploadService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.Map;
+import org.hh.heritagehunters.common.security.CustomUserDetails;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 @Slf4j
 @Service
@@ -66,6 +71,26 @@ public class UserFacade {
       user.setProfileImage(newImageUrl);
     }
 
-    return userRepository.save(user);
+    // 저장
+    User updated = userRepository.save(user);
+
+// 저장 직후 Authentication 갱신
+    var ctx = SecurityContextHolder.getContext();
+    var cur = ctx.getAuthentication();
+    if (cur != null && cur.getPrincipal() instanceof CustomUserDetails cud) {
+      Map<String, Object> attrs = cud.getAttributes(); // 소셜이면 존재, 로컬이면 null
+      CustomUserDetails fresh = (attrs != null)
+          ? new CustomUserDetails(updated, attrs)
+          : new CustomUserDetails(updated);
+
+      AbstractAuthenticationToken newAuth =
+          (cur instanceof OAuth2AuthenticationToken oat)
+              ? new OAuth2AuthenticationToken(fresh, cur.getAuthorities(), oat.getAuthorizedClientRegistrationId())
+              : new UsernamePasswordAuthenticationToken(fresh, cur.getCredentials(), cur.getAuthorities());
+
+      if (cur.getDetails() != null) newAuth.setDetails(cur.getDetails());
+      ctx.setAuthentication(newAuth);
+    }
+    return updated;
   }
 }
