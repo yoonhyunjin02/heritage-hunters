@@ -395,22 +395,19 @@
   color: #ff5252;
 }
 
-/* 통계 표시 */
-.stats {
+.action-item {
   display: flex;
-  gap: 5px;
-  margin-left: auto;
+  align-items: center;
+  gap: 4px;
 }
 
-.stat {
-  font-size: 13px;
-  color: #6c757d;
-  white-space: nowrap;
-}
-
-.stat b {
+.action-count {
   color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 16px;
 }
+
 
 /* sr-only 클래스 추가 */
 .sr-only {
@@ -546,9 +543,6 @@
     padding: 0.2rem 0.5rem;
   }
 
-  .stat {
-    font-size: 12px;
-  }
 
   .post-date {
     font-size: 10px;

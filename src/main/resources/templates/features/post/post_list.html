@@ -120,38 +120,43 @@
 
           <!-- ③ 액션(좋아요/댓글) : a 바깥 -->
           <div class="post-actions" sec:authorize="isAuthenticated()">
-            <button type="button" class="icon-action like-button"
-                    th:data-post-id="${post.id}"
-                    th:classappend="${post.likedByCurrentUser} ? ' liked' : ''"
-                    th:attr="aria-pressed=${post.likedByCurrentUser}"
-                    title="좋아요">
-              <!-- 하트 -->
-              <img th:src="${post.likedByCurrentUser} ? '/images/icons/heart-filled.svg' : '/images/icons/heart-empty.svg'" 
-                   alt="좋아요" width="24" height="24" />
-              <span class="sr-only">좋아요</span>
-            </button>
+            <div class="action-item">
+              <button type="button" class="icon-action like-button"
+                      th:data-post-id="${post.id}"
+                      th:classappend="${post.likedByCurrentUser} ? ' liked' : ''"
+                      th:attr="aria-pressed=${post.likedByCurrentUser}"
+                      title="좋아요">
+                <!-- 하트 -->
+                <img th:src="${post.likedByCurrentUser} ? '/images/icons/heart-filled.svg' : '/images/icons/heart-empty.svg'" 
+                     alt="좋아요" width="24" height="24" />
+              </button>
+              <span class="action-count" th:text="${post.likeCount}">0</span>
+            </div>
 
-            <button class="icon-action comment-btn"
-                    th:data-post-id="${post.id}" data-action="open-detail-comment" title="댓글 달기">
-              <!-- 말풍선 -->
-              <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-                      stroke="currentColor" stroke-width="2" fill="none"/>
-              </svg>
-            </button>
-
-            <!-- 통계 표시 -->
-            <div class="stats">
-              <span class="stat"><b th:text="${post.likeCount}">0</b> 좋아요</span>
-              <span class="stat"><b th:text="${post.commentCount}">0</b> 댓글</span>
+            <div class="action-item">
+              <button class="icon-action comment-btn"
+                      th:data-post-id="${post.id}" data-action="open-detail-comment" title="댓글 달기">
+                <!-- 말풍선 -->
+                <img th:src="@{/images/icons/comment.svg}" alt="댓글" width="24" height="24" />
+              </button>
+              <span class="action-count" th:text="${post.commentCount}">0</span>
             </div>
           </div>
 
           <!-- 비로그인: 통계만 -->
           <div class="post-actions" sec:authorize="!isAuthenticated()">
-            <div class="stats">
-              <span class="stat"><b th:text="${post.likeCount}">0</b> 좋아요</span>
-              <span class="stat"><b th:text="${post.commentCount}">0</b> 댓글</span>
+            <div class="action-item">
+              <span class="icon-action">
+                <img th:src="@{/images/icons/heart-empty.svg}" alt="좋아요" width="24" height="24" />
+              </span>
+              <span class="action-count" th:text="${post.likeCount}">0</span>
+            </div>
+            
+            <div class="action-item">
+              <span class="icon-action">
+                <img th:src="@{/images/icons/comment.svg}" alt="댓글" width="24" height="24" />
+              </span>
+              <span class="action-count" th:text="${post.commentCount}">0</span>
             </div>
           </div>
 
