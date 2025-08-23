@@ -231,9 +231,8 @@
   background: var(--white);
   border: 1px solid var(--stone-800);
   border-radius: 0 0 8px 8px;
-  max-height: 200px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 100;
   display: none;
 }
 
@@ -242,7 +241,7 @@
 }
 
 .select-option {
-  padding: 8px 12px;
+  padding: 0.3rem 0.75rem;
   background: var(--stone-800);
   color: var(--white);
   cursor: pointer;
