@@ -268,6 +268,10 @@
   color: #333;
 }
 
+.icon-action:focus {
+  outline: none;
+}
+
 .icon-action.liked {
   color: #ff6b6b;
 }

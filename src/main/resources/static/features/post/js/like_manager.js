@@ -141,10 +141,10 @@ class LikeManager {
                     likeButton.setAttribute('aria-pressed', 'false');
                 }
 
-                // SVG fill 속성 업데이트
-                const path = likeButton.querySelector('svg path');
-                if (path) {
-                    path.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+                // SVG 아이콘 교체 (프로젝트 heart 아이콘 사용)
+                const iconImg = likeButton.querySelector('img');
+                if (iconImg) {
+                    iconImg.src = isLiked ? '/images/icons/heart-filled.svg' : '/images/icons/heart-empty.svg';
                 }
             }
 
@@ -186,10 +186,10 @@ class LikeManager {
                 modalLikeButton.setAttribute('aria-pressed', 'false');
             }
 
-            // SVG fill 속성 업데이트
-            const path = modalLikeButton.querySelector('svg path');
-            if (path) {
-                path.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+            // SVG 아이콘 교체 (프로젝트 heart 아이콘 사용)
+            const iconImg = modalLikeButton.querySelector('img');
+            if (iconImg) {
+                iconImg.src = isLiked ? '/images/icons/heart-filled.svg' : '/images/icons/heart-empty.svg';
             }
         }
 
@@ -307,10 +307,10 @@ class LikeManager {
             button.setAttribute('aria-pressed', 'false');
         }
 
-        // SVG fill 속성 업데이트
-        const path = button.querySelector('svg path');
-        if (path) {
-            path.setAttribute('fill', isLiked ? 'currentColor' : 'none');
+        // SVG 아이콘 교체 (프로젝트 heart 아이콘 사용)
+        const iconImg = button.querySelector('img');
+        if (iconImg) {
+            iconImg.src = isLiked ? '/images/icons/heart-filled.svg' : '/images/icons/heart-empty.svg';
         }
 
         // 좋아요 개수 업데이트 (여러 위치에서 찾기)
