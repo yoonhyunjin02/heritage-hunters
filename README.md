@@ -40,6 +40,17 @@
     - Google Maps API로 위치 인증 기능
     - 공공데이터 4종 정보 제공
 
+- 📞 **사용한 API**
+      
+    | API / 서비스                    | 용도                       |
+    | ---------------------------- | ------------------------ |
+    | Google OAuth API         | 소셜 로그인 (Google 계정 인증)    |
+    | GitHub OAuth API         | 소셜 로그인 (GitHub 계정 인증)    |
+    | Naver OAuth API          | 소셜 로그인 (Naver 계정 인증)     |
+    | Google Maps API          | 문화재 위치 서비스 (좌표 자동완성, 검증) |
+    | Alan AI API              | 문화재 음성 안내/정보 제공          |
+    | AWS S3 API               | 이미지 업로드 및 파일 URL 관리      |
+    | AWS RDS API (PostgreSQL) | 데이터 저장 및 관리              |
 
 - 🏹 **팀명 HH**
     - 프로젝트명인 "Heritage Hunters"의 첫 글자 + 태극기 건곤감리의 감와 유사
@@ -48,7 +59,7 @@
 
 - 📺[시연 영상](https://youtu.be/lHHQWYGhi34?si=glzjWA5VIuKBd-gq)
 
-- 📢[발표 자료]()
+- 📢[발표 자료](https://docs.google.com/presentation/d/1lSMBLaTBHiUK2rpj--5X0bgtcSEp9V0W/edit?usp=sharing&ouid=107771278135945552523&rtpof=true&sd=true)
 
 ---- 
 
@@ -98,7 +109,7 @@
 ###  기간별 작업 요약(WBS)
 ▶️[👉 WBS 스프레드시트 보러가기](https://docs.google.com/spreadsheets/d/1ArMrJ5WymKD7nTBFT9s5xAKtZ0qpJCmKEO_AsoGtN9U/edit?usp=sharing)
 
-<img width="2128" height="2094" alt="Image" src="https://github.com/user-attachments/assets/1d171883-c46a-4dbe-8ce5-519003f4cb9d" />
+<img width="3086" height="3061" alt="Image" src="https://github.com/user-attachments/assets/da3c3acb-4416-4650-82aa-29351d9e3b2c" />
 
 ---
 ## 3. ERD
@@ -108,7 +119,7 @@
 <img width="1883" height="601" alt="Image" src="https://github.com/user-attachments/assets/36d78e69-369d-43e5-958c-4d4ffa5d6952" />
 
 3개의 페이지를 나눠 디자인함
-- 아이콘 및 컬러침, 배경, 로고
+- 아이콘 및 컬러칩, 배경, 로고
 - 디자인
 - 와이어프레임
 
