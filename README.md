@@ -1,25 +1,5 @@
 <img width="2081" height="383" alt="Image" src="https://github.com/user-attachments/assets/471bd46f-f1e4-46a2-b6c8-bf3397351579" />
 
-- 📅 **진행 기간**: 2025년 7월 28일 ~ 2025년 8월 25일
-
-
-- 🎯 **주요 기능**
-    - 회원가입/로그인 및 소셜 로그인(구글, 깃허브, 네이버)
-    - 문화재 정보 및 위치 검색 기능
-    - 앨런 AI를 이용한 문화재 관련 정보 제공
-    - 문화재 방문 인증 게시글 CRUD 기능
-    - Google Maps API로 위치 인증 기능
-    - 공공데이터 4종 정보 제공
-
-
-- 🏹 **팀명 HH** : 프로젝트명인 "Heritage Hunters"의 첫 글자 + 태극기 건곤감리의 감와 유사
-
-- 📬[배포](https://www.heritage-hunters.kro.kr/)
-
-- 📺[시연 영상](https://youtu.be/lHHQWYGhi34?si=glzjWA5VIuKBd-gq)
-
-- 📢[발표 자료]()
-
 ## 📍 목차
 1. [프로젝트 소개](#1-프로젝트-소개)  
 2. [팀원 소개 및 역할](#2-팀원-소개-및-역할)  
@@ -47,7 +27,28 @@
 
 랭킹 시스템을 통해 유산 탐험의 재미와 경쟁 요소를 동시에 제공합니다.
 
-### [더 자세한 프로젝트 기획서](https://chain-winter-af2.notion.site/Heritage-Hunters-23f2233de69380408581ef713fc77cc6?source=copy_link)
+### [👉 더 자세한 프로젝트 기획서 보러가기](https://chain-winter-af2.notion.site/Heritage-Hunters-23f2233de69380408581ef713fc77cc6?source=copy_link)
+
+- 📅 **진행 기간**: 2025년 7월 28일 ~ 2025년 8월 25일
+
+
+- 🎯 **주요 기능**
+    - 회원가입/로그인 및 소셜 로그인(구글, 깃허브, 네이버)
+    - 문화재 정보 및 위치 검색 기능
+    - 앨런 AI를 이용한 문화재 관련 정보 제공
+    - 문화재 방문 인증 게시글 CRUD 기능
+    - Google Maps API로 위치 인증 기능
+    - 공공데이터 4종 정보 제공
+
+
+- 🏹 **팀명 HH**
+    - 프로젝트명인 "Heritage Hunters"의 첫 글자 + 태극기 건곤감리의 감와 유사
+
+- 📬[배포](https://www.heritage-hunters.kro.kr/)
+
+- 📺[시연 영상](https://youtu.be/lHHQWYGhi34?si=glzjWA5VIuKBd-gq)
+
+- 📢[발표 자료]()
 
 ---- 
 
@@ -95,7 +96,7 @@
 
 
 ###  기간별 작업 요약(WBS)
-▶️[WBS 스프레드시트](https://docs.google.com/spreadsheets/d/1ArMrJ5WymKD7nTBFT9s5xAKtZ0qpJCmKEO_AsoGtN9U/edit?usp=sharing)
+▶️[👉 WBS 스프레드시트 보러가기](https://docs.google.com/spreadsheets/d/1ArMrJ5WymKD7nTBFT9s5xAKtZ0qpJCmKEO_AsoGtN9U/edit?usp=sharing)
 
 <img width="2128" height="2094" alt="Image" src="https://github.com/user-attachments/assets/1d171883-c46a-4dbe-8ce5-519003f4cb9d" />
 
@@ -111,7 +112,7 @@
 - 디자인
 - 와이어프레임
 
-🎨[피그마](https://www.figma.com/design/2QGcq7VGRlTLl6yIMhmIOQ/Heritage-Hunters?node-id=98-1413&p=f&t=pwWieG5cbZx8tyYK-0)
+🎨[👉 피그마 보러가기](https://www.figma.com/design/2QGcq7VGRlTLl6yIMhmIOQ/Heritage-Hunters?node-id=98-1413&p=f&t=pwWieG5cbZx8tyYK-0)
 
 ## 5. 페이지 구성 미리보기
 <details>
@@ -161,7 +162,7 @@
 </details>
 
 ## 6. 페이지별 주요 상세 기능
-### [노션 페이지 참고](https://chain-winter-af2.notion.site/2552233de69380ffbd00e4aa25e5e438?source=copy_link)
+### [👉 노션 페이지 참고](https://chain-winter-af2.notion.site/2552233de69380ffbd00e4aa25e5e438?source=copy_link)
 
 ## 7. 디렉토리 구조
 <details>
@@ -308,6 +309,7 @@ heritage-hunters/
 
 </details>
 
+도메인 기반으로 설계함
 
 ```
 heritage-hunters/
@@ -353,7 +355,7 @@ heritage-hunters/
 ### 🔹 브랜치 전략
 <img width="693" height="298" alt="Image" src="https://github.com/user-attachments/assets/90a22db8-8302-4d13-9395-0ef0e03c69fe" />
 
-### 🔹 [컨벤션](https://chain-winter-af2.notion.site/23e2233de6938078b383f379438b6ff2?source=copy_link)
+### 🔹 [👉 컨벤션 보러가기](https://chain-winter-af2.notion.site/23e2233de6938078b383f379438b6ff2?source=copy_link)
 
 ## 9. 사용 기술 및 도구
 
@@ -382,7 +384,7 @@ heritage-hunters/
 
 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
   <img src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">
-    <img src="https://img.shields.io/badge/AWS%20RDS-527FFF?style=for-the-badge&logo=amazonaws&logoColor=white">
+  <img src="https://img.shields.io/badge/AWS%20RDS-527FFF?style=for-the-badge&logo=amazonaws&logoColor=white">
 </div>
 
 ---
@@ -404,9 +406,7 @@ heritage-hunters/
 ### 🔹 Collaboration
 
 <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-  <a href="https://github.com/yoonhyunjin02/youtube-clone-frontend" target="_blank">
-    <img src="https://img.shields.io/badge/Github-181717?style=for-the-badge&logo=Github&logoColor=white">
-  </a>
+  <img src="https://img.shields.io/badge/Github-181717?style=for-the-badge&logo=Github&logoColor=white">
   <img src="https://img.shields.io/badge/figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white">
 </div>
 
