@@ -435,6 +435,7 @@ heritage-hunters/
 ## 10. 아키텍쳐 구조 및 유저플로우
 
 ### 🔹 아키텍쳐 구조
+<img width="4141" height="2090" alt="Image" src="https://github.com/user-attachments/assets/3058abca-c7e7-4af8-aa3a-52ef3629bf45" />
 
 ### 🔹 UserFlow
 <img width="896" height="649" alt="Image" src="https://github.com/user-attachments/assets/ca31c2cf-8df2-49aa-b828-27729ad6de93" />
