@@ -47,7 +47,7 @@
 
 랭킹 시스템을 통해 유산 탐험의 재미와 경쟁 요소를 동시에 제공합니다.
 
-[더 자세한 프로젝트 기획서](https://chain-winter-af2.notion.site/Heritage-Hunters-23f2233de69380408581ef713fc77cc6?source=copy_link)
+### [더 자세한 프로젝트 기획서](https://chain-winter-af2.notion.site/Heritage-Hunters-23f2233de69380408581ef713fc77cc6?source=copy_link)
 
 ---- 
 
@@ -85,33 +85,19 @@
 </table>
 
 ### 📆 페이지별 역할 분담
-<table>
-  <tr>
-   <td align="center">
-      윤현진
-    </td>
-    <td align="center">
-      유동혁
-    </td>
-    <td align="center">
-      이수완
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      디자인, ETL, 로그인/회원가입, 메인, 지도, 순위, 배포
-    </td>
-    <td align="center">
-      AWS RDS·s3, 검색 목록·상세, 앨런 AI 적용, util, 프로필
-    </td>
-    <td align="center">
-      환경 변수, 전역 예외처리, AWS s3, 게시글 목록·상세·작성, 스웨거
-    </td>
-  </tr>
-</table>
+
+| **구분** | **윤현진** | **유동혁** | **이수완** | **공통** |
+|----------|------------|------------|------------|----------|
+| **기능** | ETL<br>헤더/푸터 | AWS RDS, s3<br>앨런 AI<br>Util(날짜, XXS) | AWS s3<br>환경 변수 관리<br>전역 예외처리 | - |
+| **페이지** | 로그인/회원가입<br>메인<br>지도<br>순위 | 검색 목록<br>검색 상세<br>프로필 | 게시글 목록<br>게시글 상세<br>게시글 작성 | - |
+| **배포 및 디자인** | AWS<br>도커<br>깃허브액션<br>와이어프레임<br>피그마 | - | - | - |
+| **문서 및 기타** | 노션, WBS<br>리드미<br>유저플로우<br>시연영상<br>아키텍처 설계<br>PPT | 리드미<br>유저플로우 | 스웨거 | 요구사항 명세서<br>API 명세서<br>ERD<br>통합 테스트 |
+
 
 ###  기간별 작업 요약(WBS)
-asdfasdf
+▶️[WBS 스프레드시트](https://docs.google.com/spreadsheets/d/1ArMrJ5WymKD7nTBFT9s5xAKtZ0qpJCmKEO_AsoGtN9U/edit?usp=sharing)
+
+<img width="2128" height="2094" alt="Image" src="https://github.com/user-attachments/assets/1d171883-c46a-4dbe-8ce5-519003f4cb9d" />
 
 ---
 ## 3. ERD
@@ -119,6 +105,11 @@ asdfasdf
 
 ## 4. 피그마 디자인
 <img width="1883" height="601" alt="Image" src="https://github.com/user-attachments/assets/36d78e69-369d-43e5-958c-4d4ffa5d6952" />
+
+3개의 페이지를 나눠 디자인함
+- 아이콘 및 컬러침, 배경, 로고
+- 디자인
+- 와이어프레임
 
 🎨[피그마](https://www.figma.com/design/2QGcq7VGRlTLl6yIMhmIOQ/Heritage-Hunters?node-id=98-1413&p=f&t=pwWieG5cbZx8tyYK-0)
 
@@ -450,5 +441,16 @@ heritage-hunters/
 
 ## 11. 최종 회고
 - 윤현진
+    - 인상깊은 기능
+도커, 깃허브 액션, AWS 배포 및 도메인 연결 작업이 가장 인상 깊었습니다. 처음에는 어떤 순서로 진행해야 할지조차 몰라 어려움이 많았지만, 문제들을 하나씩 해결하며 최종적으로 배포까지 성공했을 때 성취감과 뿌듯함을 느낄 수 있었습니다.
+ETL 작업 또한 인상깊었습니다. ELT의 개념 조차 몰랐는데 파이썬으로 데이터를 파싱하고 원하는 형태로 정제하는 과정이 재밌게 느껴졌습니다.
+    - 소감
+3명의 팀원들과 기획, 디자인, 발표, 문서 정리까지 함께하며 하나의 프로젝트가 완성되기까지 많은 시간과 노력이 필요하다는 것을 깊이     느낄 수 있었습니다. 마지막 프로젝트인 만큼 모두가 최선을 다해 임했기에 과정 자체가 즐겁고 뜻깊었고, 함께 성장할 수 있었던 소중한 경험이 되었습니다.
+
 - 유동혁
+  - 인상깊은 기능
+Alan AI 적용 - Alan AI API 적용 과정에서 CORS 문제를 백엔드 경유로 우회했으나 응답 지연이 발생했고, 프롬프트 길이와 품질·속도 균형을 조율했으며, 라운드 로빈 방식으로 API 키 요청을 분산해 안정성과 효율을 높였다.
+  - 소감
+웹 서비스의 기획-설계-디자인-개발-배포 전 단계를 모두 내 손으로 끝마친 첫 프로젝트라서 감회가 새롭다. 특히 기획이나 디자인은 전문가가 괜히 있는 게 아니라는 생각이 많이 들었다.
+
 - 이수완
