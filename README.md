@@ -59,7 +59,7 @@
 
 - 📺[시연 영상](https://youtu.be/lHHQWYGhi34?si=glzjWA5VIuKBd-gq)
 
-- 📢[발표 자료](https://docs.google.com/presentation/d/1lSMBLaTBHiUK2rpj--5X0bgtcSEp9V0W/edit?usp=sharing&ouid=107771278135945552523&rtpof=true&sd=true)
+- 📢[발표 자료](https://drive.google.com/file/d/1F-81L6v9epOLKutm_YqMChMOUqty2NVO/view?usp=drive_link)
 
 ---- 
 
