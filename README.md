@@ -55,7 +55,7 @@
 - 🏹 **팀명 HH**
     - 프로젝트명인 "Heritage Hunters"의 첫 글자 + 태극기 건곤감리의 감와 유사
 
-- 📬[배포](https://www.heritage-hunters.kro.kr/)
+- 📬[배포](https://www.heritage-hunters.kro.kr/) 중단함
 
 - 📺[시연 영상](https://youtu.be/lHHQWYGhi34?si=glzjWA5VIuKBd-gq)
 
